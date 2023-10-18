@@ -171,7 +171,7 @@
             </v-toolbar-title>
 
             <!-- DIALOGO DE LA CABECERA -->
-            <v-dialog v-model="dialogCab" max-width="550px" :fullscreen="true">
+            <v-dialog v-model="dialogCab" max-width="550px" :fullscreen="true" transition="false">
               <template v-slot:activator="{}"></template>
               <v-card>
 
@@ -553,7 +553,7 @@
             <!--// FIN DE LA CABECERA DE LA COMPRA // -->
 
             <!-- INGRESO DE ITEMS -->
-            <v-dialog v-model="dialogArt" max-width="1350px" persistent>
+            <v-dialog v-model="dialogArt" max-width="1350px" persistent transition="false">
               <template v-slot:activator="{ on }"></template>
               <v-card>
                 <v-toolbar flat
@@ -861,7 +861,7 @@
             <!-- FIN INGRESO DE ITEMS -->
 
             <!--// IMPORTAR COMPROBANTE DESDE // -->
-            <v-dialog v-model="dialogImportarDesde" :fullscreen="true">
+            <v-dialog v-model="dialogImportarDesde" :fullscreen="true" transition="false">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat dark :color="temas.forms_titulo_bg">
@@ -1060,7 +1060,7 @@
             <!-- FIN IMPORTAR COMPROBANTE DESDE EXCEL -->
 
             <!--// SEGUIMIENTO/RASTREO DE COMPROBANTES // -->
-            <v-dialog v-model="dialogRas" max-width="1260px">
+            <v-dialog v-model="dialogRas" max-width="1260px" transition="false">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat dark :color="temas.forms_titulo_bg">
@@ -1098,7 +1098,7 @@
             <!-- FIN DEL RASTREO -->
 
             <!-- ANULACION DE PAGOS // -->
-            <v-dialog v-model="dialogPagAnula" max-width="510px">
+            <v-dialog v-model="dialogPagAnula" max-width="510px" transition="false">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat dark :color="temas.forms_titulo_bg">
@@ -1192,7 +1192,7 @@
             <!-- FIN ANULACION DE PAGOS -->
 
             <!--// TIMELINE // -->
-            <v-dialog v-model="dialogTimeLine" max-width="500px">
+            <v-dialog v-model="dialogTimeLine" max-width="500px" transition="false">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat
@@ -1237,7 +1237,7 @@
             <!-- FIN DEL TIMELINE -->
 
             <!--// EDITAR PERIODO FISCAL Y VENCIMIENTO // -->
-            <v-dialog v-model="dialogCambiarPeriodoFiscal" max-width="400px">
+            <v-dialog v-model="dialogCambiarPeriodoFiscal" max-width="400px" transition="false">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -1300,7 +1300,8 @@
             <!-- FIN DEL CAMNBIO PERIODO FISCAL -->
 
             <!--PAGO -->
-            <v-dialog v-model="dialogPag" max-width="1300px" persistent>
+            <v-dialog v-model="dialogPag" max-width="1300px" persistent
+              transition="false">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -1356,7 +1357,7 @@
                           <v-btn v-show="pend.length>0"
                             :color="temas.cen_btns_bg"
                             :dark="temas.cen_btns_dark==true"
-                            text
+                            outlined
                             @click="automaticoPend()">
                             Sel. Automática
                           </v-btn>
@@ -1365,7 +1366,7 @@
                           <v-btn v-show="pend.length>0"
                             :color="temas.cen_btns_bg"
                             :dark="temas.cen_btns_dark==true"
-                            text
+                            outlined
                             @click="limpiarSelPend()">
                             Limpiar
                           </v-btn>
@@ -1382,7 +1383,7 @@
                             dense
                             class="elevation-3">
                             <template v-slot:top>
-                              <v-dialog v-model="dialogPend" max-width="300px">
+                              <v-dialog v-model="dialogPend" max-width="300px" transition="false">
                                 <template v-slot:activator="{}">
                                   <v-btn small
                                     :color="temas.cen_btns_bg"
@@ -1509,10 +1510,17 @@
                             :items="valores"
                             dense
                             class="elevation-3"
-                            :footer-props="footerProps">
+                            :footer-props="{
+                              itemsPerPageOptions: [6],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              pageText: 'Páginas',
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }">
                             <template v-slot:top>
-                              <v-dialog v-model="dialogMed" :max-width="medpagwidth">
-
+                              <v-dialog v-model="dialogMed" :max-width="medpagwidth"
+                                transition="false">
                                 <v-card class="fg">
                                   <v-toolbar flat
                                     :color="temas.forms_titulo_bg"
@@ -1528,7 +1536,7 @@
                                       <span
                                         v-if="medioDePagoNombre=='Ch.3ro'">
                                         {{ medioDePagoNombre }}
-                                        - Cheques de no más de {{maxDiasChq}} días.
+                                        (Máximo {{maxDiasChq}} días).
                                       </span>
                                       <span v-else class="fg">
                                         {{ medioDePagoNombre }}
@@ -1539,7 +1547,7 @@
 
                                       <span v-if="medioDePagoNombre=='Ch.3ro'">
                                         Carga de Cheques de Terceros
-                                        (de no más de {{maxDiasChq}} días).
+                                        (Máximo {{maxDiasChq}} días).
                                       </span>
                                       <span v-else class="fg">
                                         {{ medioDePagoNombre }}
@@ -1579,7 +1587,14 @@
                                               dense
                                               class="elevation-1"
                                               item-key="id"
-                                              :footer-props="footerProps8">
+                                              :footer-props="{
+                                                itemsPerPageOptions: [10],
+                                                showFirstLastPage: true,
+                                                showCurrentPage: true,
+                                                pageText: 'Páginas',
+                                                nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                                                prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                                              }">
                                               <template v-slot:item.importe="{ item }">
                                                 <span>${{ formatoImporte(item.importe) }}</span>
                                               </template>
@@ -2027,7 +2042,7 @@
             <!-- FIN DEL PAGO -->
 
             <!--// ADMINISTRACION DE GASTOS // -->
-            <v-dialog v-model="dialogGas" max-width="1260px">
+            <v-dialog v-model="dialogGas" max-width="1260px" transition="false">
               <template v-slot:activator="{}"></template>
               <v-data-table
                 :headers="headersGas"
@@ -2063,7 +2078,7 @@
                     <v-spacer></v-spacer>
 
                     <!-- Modal del diálogo para Alta y Edicion -->
-                    <v-dialog v-model="dialogGasEdit" max-width="600px">
+                    <v-dialog v-model="dialogGasEdit" max-width="600px" transition="false">
                       <template v-slot:activator="{ on }"></template>
                       <v-card>
 
@@ -2357,7 +2372,7 @@
             <!-- FIN DE GASTOS -->
 
             <!--// ADMINISTRACION DE FALTANTES DE PEDIDOS // -->
-            <v-dialog v-model="dialogFaltantes" max-width="1260px">
+            <v-dialog v-model="dialogFaltantes" max-width="1260px" transition="false">
               <template v-slot:activator="{}"></template>
               <v-data-table
                 :headers="headersFaltantes"
@@ -2443,7 +2458,7 @@
             <!-- FIN DE FALTANTES PEDIDOS -->
 
             <!-- ERROR EN EL PEDIDO -->
-            <v-dialog v-model="dialogError" max-width="1200px" persistent>
+            <v-dialog v-model="dialogError" max-width="1200px" persistent transition="false">
               <template v-slot:activator="{ on }"></template>
               <v-card class="fg">
                 <v-toolbar flat
@@ -2516,7 +2531,7 @@
             <!-- FIN DEL ERROR EN EL PEDIDO -->
 
             <!--// RECEPCION DE PEDIDOS // -->
-            <v-dialog v-model="dialogRecepcion" max-width="640px">
+            <v-dialog v-model="dialogRecepcion" max-width="640px" transition="false">
               <template v-slot:activator="{}"></template>
               <v-card>
 

@@ -3651,6 +3651,7 @@ export default {
       return HTTP().get('/indexter/'+this.verCuentasInactivas+'/'+this.cual+'/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/'+sea)
         .then(({data})=>{
           debugger
+          alert(data.length)
           this.items = data;
           this.itemsAll = data;
       });
