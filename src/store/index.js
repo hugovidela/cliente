@@ -15,13 +15,17 @@ export default new Vuex.Store({
   /* eslint-disable */
   strict: true,
   state: {
+    transition: 'Sin transicion',
     usaMaletines: false,
     dolar: 0,
     anclarCostos: false,
     descuentos: [],
     soloArtComprados: true,
     desanclarAutomaticamente: 0,
-    operaciones: 9999999,
+    operaciones: 0,
+    topeOperaciones: 9999999,
+    topeArticulos: 9999999,
+    topeVinculaciones: 9999999,
     porrev: [],
     codigooid: 'C',
     comprobantesm: false,
@@ -340,6 +344,18 @@ export default new Vuex.Store({
       state.operaciones = payload;
     },
 
+    setTopeOperaciones(state, payload) {
+      state.topeOperaciones = payload;
+    },
+
+    setTopeArticulos(state, payload) {
+      state.topeArticulos = payload;
+    },
+
+    setTopeVinculaciones(state, payload) {
+      state.topeVinculaciones = payload;
+    },
+
     setDesanclarAutomaticamente(state, payload) {
       state.desanclarAutomaticamente = payload;
     },
@@ -594,6 +610,10 @@ export default new Vuex.Store({
 
     setUsaMaletines(state, payload) {
       state.usaMaletines = payload;
+    },
+
+    setTransition(state, payload) {
+      state.transition = payload
     },
 
     setExclusivoDe(state, payload ) {

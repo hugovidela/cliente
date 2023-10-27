@@ -24,7 +24,8 @@
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <!-- Modal del diálogo para Alta y Edicion -->
-            <v-dialog v-model="dialog" max-width="1250px">
+            <v-dialog v-model="dialog" max-width="1250px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card>
 
@@ -208,7 +209,8 @@
       </v-data-table>
 
       <!-- SELECCION DE GRUPOS-->
-      <v-dialog v-model="dialogGrupos" max-width="600px" max-height="600px">
+      <v-dialog v-model="dialogGrupos" max-width="600px" max-height="600px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card class="fg">
           <v-toolbar text
@@ -369,7 +371,8 @@ export default {
       'vinculosPadresAll',
       'soloArtComprados',
       'codigooid',
-      'descuentos'
+      'descuentos',
+      'transition'
     ]),
 
     itemsMarcasFil () {

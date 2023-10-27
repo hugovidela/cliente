@@ -113,7 +113,8 @@
             <!-- Modal del diálogo para Alta y Edicion -->
 
             <!-- INGRESO DE ITEMS -->
-            <v-dialog v-model="dialogArt" max-width="1350px" persistent>
+            <v-dialog v-model="dialogArt" max-width="1350px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card class="fg">
                 <v-toolbar flat
@@ -319,7 +320,8 @@
             <!-- FIN INGRESO DE ITEMS -->
 
             <!--// GENERAR PLANILLA EXCEL PARA CONTEO // -->
-            <v-dialog v-model="dialogPlaXls" max-width="1300px">
+            <v-dialog v-model="dialogPlaXls" max-width="1300px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat dark :color="temas.forms_titulo_bg">
@@ -350,7 +352,7 @@
                             :items="provItems"
                             :color="temas.forms_titulo_bg"
                             :item-color="temas.forms_titulo_bg"
-                            :disabled="tipo=='BA'"
+                            :disabled="tipo=='ME'||tipo=='BA'"
                             item-value="id"
                             item-text="nombre"
                             label="Proveedor"
@@ -447,7 +449,8 @@
             <!-- FIN GENERAR PLANILLA EXCEL PARA CONTEO -->
 
             <!--// BAJAR PLANILLA DE EXCEL DE CONTEO // -->
-            <v-dialog v-model="dialogActPlaXls" max-width="850px">
+            <v-dialog v-model="dialogActPlaXls" max-width="850px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat dark :color="temas.forms_titulo_bg">
@@ -841,7 +844,7 @@ export default {
       'tema', 'temas', 'centrales', 'notificaciones', 'caja', 'vinculosPadres', 'vinculosPadresLic',
       'vinculosPadresAll', 'vinculosHijos', 'empresa', 'datosEmpresa', 'tercero', 'responsable',
       'cuit', 'operario', 'operarioEsVendedor', 'operarioTerceroId', 'operarioUserId', 'level',
-      'externo', 'dolar', 'codigooid', 'descuentos'      
+      'externo', 'dolar', 'codigooid', 'descuentos','transition'
     ]),
   },
 

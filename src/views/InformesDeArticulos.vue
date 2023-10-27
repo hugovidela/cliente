@@ -22,7 +22,8 @@
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <!-- Modal del diálogo para Alta y Edicion -->
-            <v-dialog v-model="dialog" max-width="500px">
+            <v-dialog v-model="dialog" max-width="500px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card class="fg">
                 <v-toolbar
@@ -115,7 +116,8 @@
       </v-data-table>
 
       <!-- SELECCION DE GRUPOS-->
-      <v-dialog v-model="dialogGrupos" max-width="600px" max-height="600px">
+      <v-dialog v-model="dialogGrupos" max-width="600px" max-height="600px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card class="fg">
           <v-toolbar text
@@ -245,14 +247,7 @@ export default {
   }),
   computed: {
     ...mapGetters('authentication', ['isLoggedIn']),
-    ...mapState([
-      'sucursal',
-      'sucursales',      
-      'empresa',
-      'temas',
-      'codigooid',
-      'logotipo'
-    ]),
+    ...mapState(['sucursal','sucursales','empresa','temas','codigooid','logotipo','transition']),
 
     itemsMarcasFil () {
       return this.entriesMarcasFil.map(entry => {

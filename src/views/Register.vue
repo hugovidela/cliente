@@ -117,7 +117,8 @@
             </v-card>
           </v-col>
           <v-col cols="8" sm="8" md="8" class="fg pt-0">
-            <v-row v-if="registerTipo=='ERP Completo'||registerTipo=='ERP Básico'">
+            <v-row v-if="registerTipo=='ERP Completo'||registerTipo=='ERP Medio'
+              ||registerTipo=='ERP Básico'">
               <v-col cols="12" sm="12" md="12">
                 <b>gohu ERP</b> es un completo Sistema de Administración Comercial.<br><br>
                 Pusimos especial énfasis en la sencilléz, y que al mismo
@@ -129,21 +130,26 @@
                 momento de cargar Clientes, Proveedores, Transportistas, etc.
 
                 <br><br>
-                La licencia <b>gohu ERP</b> se divide en dos, <i><b>Completa</b></i> y <i><b>Básica
-                </b></i><br>
+                La licencia <b>gohu ERP</b> se divide en tres,
+                <i><b>Completa</b></i>,
+                <i><b>Medio</b></i>
+                y <i><b>Básica</b></i><br>
                 El motivo por el cual implementamos esta restricción es porque los costos de
                 internet se miden por volúmen y tráfico de información que el usuario genera.<br>
                 Revisa cuantas operaciones generas por mes para saber cual de las dos versiones
                 se adecúa mas a tus necesidades.<br><br>
                 <b>IMPORTANTE</b>
-                Aclaramos que la funcionalidad de la aplicación para ambas versiones es exactamente
+                Aclaramos que la funcionalidad de la aplicación en las tres versiones es exactamente
                 la misma, solo se aplica una traba en el volumen para poder solventar los costos de
                 nuestro proveedor de Hosting.
                 <br><br>
-                <b>Detalle de ambas licencias</b><br>
-                <i><b>Completa</b></i> Sin límites en el volúmen de información.<br>
-                <i><b>Básica</b></i> Permite administrar hasta 1.000 artículos propios y realizar
-                hasta 300 operaciones por mes, esto incluye a Facturas, Notas de Débito,
+                <b>Detalle de las licencias</b><br><br>
+                <i><b>Completa</b></i> Sin límites en el volúmen de información.<br><br>
+                <i><b>Media</b></i> Permite administrar hasta 1000 artículos propios y realizar
+                hasta 400 operaciones por mes, esto incluye a Facturas, Notas de Débito,
+                Notas de Crédito, Recibos, Pagos, Remitos, Presupuestos y Pedidos.<br><br>
+                <i><b>Básica</b></i> Permite administrar hasta 500 artículos propios y realizar
+                hasta 200 operaciones por mes, esto incluye a Facturas, Notas de Débito,
                 Notas de Crédito, Recibos, Pagos, Remitos, Presupuestos y Pedidos.<br><br>
 
                 <b>VINCULATE</b><br>
@@ -173,9 +179,15 @@
                     </td>
                   </tr>
                   <tr>
-                    <td>Licencia <b>ERP Básico</b></td><td></td>
+                    <td>Licencia <b>ERP Medio</b></td><td></td>
                     <td class="text-lg-right">
                       ${{ formatoImporte(preciosLicencias[1].precio)}}/mes +IVA
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Licencia <b>ERP Básico</b></td><td></td>
+                    <td class="text-lg-right">
+                      ${{ formatoImporte(preciosLicencias[2].precio)}}/mes +IVA
                     </td>
                   </tr>
                 </table>
@@ -264,7 +276,7 @@ export default {
     valid: true,
     show: false,
     tipoUsuario: '',
-    tipoUsuarioItems: ['ERP Completo','ERP Básico','Precios y Pedidos', 'Tienda'],
+    tipoUsuarioItems: ['ERP Completo','ERP Medio','ERP Básico','Precios y Pedidos', 'Tienda'],
     itemsResponsables: [],
     itemsDocumentos: [],
     documento_id: '',

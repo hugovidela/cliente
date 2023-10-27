@@ -620,9 +620,9 @@
             class="fg ml-0 ma-1" :color="temas.barra_lateral_bg">
             Exclusivo de {{ exclusivoDe.username }}
           </v-chip>
-          <v-chip v-if="tipo=='BA'"
+          <v-chip v-if="tipo=='BA'||tipo=='ME'"
             class="fg ml-0 ma-1" :color="temas.barra_lateral_bg">
-            operaciones restantes {{ 100-$store.state.operaciones }}
+            operaciones restantes {{ $store.state.topeOperaciones-$store.state.operaciones }}
           </v-chip>
           <v-chip v-if="administraGOHU"
             class="fg ml-0 ma-1" :color="temas.barra_lateral_bg">
@@ -1045,7 +1045,8 @@
     -->
 
     <!-- NOTIFICACIONES DE COMPROBANTES -->
-    <v-dialog v-model="dialogNotCprs" max-width="1300px">
+    <v-dialog v-model="dialogNotCprs" max-width="1300px"
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-card tile>
         <v-toolbar flat
@@ -1401,7 +1402,8 @@
     <!-- CIERRE DE NOTIFICACIONES DE COMPROBANTES -->
 
     <!-- NOTIFICACIONES DE USUARIOS -->
-    <v-dialog v-model="dialogNotUsrs" max-width="700px">
+    <v-dialog v-model="dialogNotUsrs" max-width="700px"
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-card>
         <v-toolbar flat
@@ -1413,7 +1415,7 @@
             :dark="temas.forms_close_dark==true">
             <v-icon>mdi-arrow-left-circle</v-icon>
           </v-btn>
-          <span class="text--right">Notificaciones de Usuarios</span>
+          <span class="fg">Notificaciones de Usuarios</span>
         </v-toolbar>
         <v-container fluid class="fg">
           <v-alert v-for="(nota, idx) in notUsrs" v-bind:key="idx"
@@ -1466,7 +1468,8 @@
     <!-- CIERRE DEL DIALOG NOTIFICACIONES DE USUARIOS -->
 
     <!-- NOTIFICACIONES DE GOHU -->
-    <v-dialog v-model="dialogNotGohu" max-width="1300px">
+    <v-dialog v-model="dialogNotGohu" max-width="1300px"
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-card>
         <v-toolbar flat
@@ -1558,7 +1561,8 @@
     <!-- CIERRE DEL DIALOG NOTIFICACIONES GOHU -->
 
     <!-- DIALOGO VER ARTICULOS -->
-    <v-dialog v-model="dialogVerArticulos" max-width="1100px" persistent>
+    <v-dialog v-model="dialogVerArticulos" max-width="1100px" persistent
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-toolbar flat dark :color="$store.state.temas.forms_titulo_bg">
         <v-btn icon
@@ -1594,7 +1598,8 @@
     <!-- FIN DIALOGO VER ARTICULOS -->
 
     <!-- DIALOGO VER CHEQUE RECHAZADO -->
-    <v-dialog v-model="dialogVerChequeRechazado" max-width="650px" persistent>
+    <v-dialog v-model="dialogVerChequeRechazado" max-width="650px" persistent
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-toolbar flat dark :color="$store.state.temas.forms_titulo_bg">
         <v-btn icon
@@ -1619,7 +1624,8 @@
     <!-- FIN DIALOGO VER CHEQUE RECHAZADO -->
 
     <!-- DIALOGO VER PENDIENTES -->
-    <v-dialog v-model="dialogVerPendientes" max-width="500px" persistent>
+    <v-dialog v-model="dialogVerPendientes" max-width="500px" persistent
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-toolbar flat dark :color="$store.state.temas.forms_titulo_bg">
         <v-btn icon class="fg85"
@@ -1656,7 +1662,8 @@
     <!-- FIN DIALOGO VER PENDIENTES -->
 
     <!-- DIALOGO VER CANCELACIONES -->
-    <v-dialog v-model="dialogVerCancelaciones" max-width="1100px" persistent>
+    <v-dialog v-model="dialogVerCancelaciones" max-width="1100px" persistent
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-toolbar flat dark :color="$store.state.temas.forms_titulo_bg">
         <v-btn icon
@@ -1713,7 +1720,8 @@
     <!-- FIN DIALOGO VER CANCELACIONES -->
 
     <!-- DIALOGO RECHAZAR CPR -->
-    <v-dialog v-model="dialogRechazarCpr" max-width="400px" persistent>
+    <v-dialog v-model="dialogRechazarCpr" max-width="400px" persistent
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-toolbar flat
         :color="temas.forms_titulo_bg"
@@ -1752,7 +1760,8 @@
 
     <!-- MENSAJES -->
     <v-dialog
-      v-model="dialogMensajes" max-width="800px" persistent>
+      v-model="dialogMensajes" max-width="800px" persistent
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-toolbar flat
         :color="temas.forms_titulo_bg"
@@ -1822,7 +1831,8 @@
 
     <!-- UNETE A GOHU -->
     <!--
-    <v-dialog v-model="dialogUneteAGohu" max-width="600px" persistent>
+    <v-dialog v-model="dialogUneteAGohu" max-width="600px" persistent
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-toolbar flat
         :color="temas.forms_titulo_bg"
@@ -1863,7 +1873,8 @@
 
     <!-- INFORMAR PAGO -->
     <!--
-    <v-dialog v-model="dialogInformarPago" max-width="600px" persistent>
+    <v-dialog v-model="dialogInformarPago" max-width="600px" persistent
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-toolbar flat
         :color="temas.forms_titulo_bg"
@@ -1913,7 +1924,8 @@
 
     <!-- CAMBIAR DE LICENCIA -->
     <v-dialog
-      v-model="dialogCambiarLicencia" max-width="600px" persistent>
+      v-model="dialogCambiarLicencia" max-width="600px" persistent
+        :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-toolbar flat
         :color="temas.forms_titulo_bg"
@@ -1959,6 +1971,12 @@
                   value="CO">
                 </v-radio>
                 <v-radio
+                  :disabled="tipo=='ME'"
+                  :color="temas.forms_titulo_bg"
+                  label="gohu ERP Medio (ME)"
+                  value="ME">
+                </v-radio>
+                <v-radio
                   :disabled="tipo=='BA'"
                   :color="temas.forms_titulo_bg"
                   label="gohu ERP Básico (BA)"
@@ -1985,7 +2003,8 @@
     <!-- FIN CAMBIAR A GOHU -->
 
     <!-- COTIZACIONES DEL DOLAR -->
-    <v-dialog v-model="dialogCotizaciones" max-width="450px" persistent>
+    <v-dialog v-model="dialogCotizaciones" max-width="450px" persistent
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-toolbar flat
         :color="temas.forms_titulo_bg"
@@ -1993,7 +2012,7 @@
         <v-btn
           :color="temas.forms_close_bg"
           :dark="temas.forms_close_dark==true"
-          icon @click="closeVerCotizaciones">
+          icon @click="dialogCotizaciones=false">
           <v-icon>mdi-arrow-left-circle</v-icon>
         </v-btn>
         <span class="fg">
@@ -2052,7 +2071,8 @@
     <!-- FIN COTIZACIONES DEL DOLAR -->
 
     <!-- ADMINISTRACION DE VINCULOS CON USUARIOS -->
-    <v-dialog v-model="dialogUsuarios" :fullscreen="true" persistent>
+    <v-dialog v-model="dialogUsuarios" :fullscreen="true" persistent
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-card>
         <v-toolbar flat
@@ -2230,6 +2250,23 @@
                         :elevation="hover ? 12 : 1"
                         open-delay="200"
                         :class="{ 'on-hover': hover }">
+
+                          <v-img height="90" width="160"
+                            :src="`/images/${us.logotipo}`">
+                          </v-img>
+                          <div class="ml-4 pt-3 mt-3">
+                            <span class="fg">
+                              {{us.username}}
+                              <v-badge class="pb-1" v-if="us.ctt>0"
+                                :content="us.ctt"
+                                :value="us.ctt"
+                                color='green'
+                                rigth>
+                              </v-badge>
+                            </span>
+                          </div>
+
+                        <!--
                         <v-toolbar
                           :color="us.pausado?'black':temas.barra_principal_bg"
                           dark
@@ -2244,22 +2281,19 @@
                             rigth>
                           </v-badge>
                         </v-toolbar>
-
-                        <!--
-                        <v-img height="90" width="160"
-                          :src="`/images/${us.logotipo}`">
-                        </v-img>
                         -->
 
                         <template slot="progress"></template>
                         <v-card-text class="pt-3 pb-0 pl-4 fg70 text--primary">
 
+                          <!--
                           <div>
                             <span v-for="(rub, r) in us.usersrubros" v-bind:key="r"
                               class="pt-1 pb-2">
                               <v-chip small>{{ rub.nombre }}</v-chip>
                             </span>
                           </div>
+                          -->
 
                           <div class="pt-0 pb-0">
                             <span class="pl-0">
@@ -2451,7 +2485,8 @@
     <!-- FIN DE ADMINISTRACION DE VINCULOS CON USUARIOS -->
 
     <!-- SOLICITAR NUEVO VINCULO -->
-    <v-dialog v-model="dialogSolicitarVinculo" max-width="600px" persistent>
+    <v-dialog v-model="dialogSolicitarVinculo" max-width="600px" persistent
+      :transition="transition==null?'false':transition">
       <v-card class="fg">
         <v-toolbar flat
           :color="temas.forms_titulo_bg"
@@ -2521,7 +2556,8 @@
     <!-- FIN SOLICITAR NUEVO VINCULO -->
 
     <!-- ACEPTAR NUEVO VINCULO -->
-    <v-dialog v-model="dialogAceptarVinculo" max-width="500px" persistent>
+    <v-dialog v-model="dialogAceptarVinculo" max-width="500px" persistent
+      :transition="transition==null?'false':transition">
       <v-card>
         <v-toolbar flat
           :color="temas.forms_titulo_bg"
@@ -2623,7 +2659,8 @@
     <!-- FIN ACEPTAR NUEVO VINCULO -->
 
     <!-- RECHAZAR VINCULO -->
-    <v-dialog v-model="dialogRechazarVinculo" max-width="500px" persistent>
+    <v-dialog v-model="dialogRechazarVinculo" max-width="500px" persistent
+      :transition="transition==null?'false':transition">
       <v-card>
         <v-toolbar flat
           :color="temas.forms_titulo_bg"
@@ -2674,7 +2711,8 @@
     <!-- FIN RECHAZAR VINCULO -->
 
     <!-- AVISO PARA USUARIOS EXCLUSIVOS -->
-    <v-dialog v-model="dialogAvisoAExclusivos" max-width="450px" persistent>
+    <v-dialog v-model="dialogAvisoAExclusivos" max-width="450px" persistent
+      :transition="transition==null?'false':transition">
       <v-card>
         <v-toolbar flat
           :color="temas.forms_titulo_bg"
@@ -2709,7 +2747,8 @@
     <!-- FIN RECHAZAR VINCULO -->
 
     <!-- NUEVOS VICULOS ACEPTADOS -->
-    <v-dialog v-model="dialogVinOk" width="500">
+    <v-dialog v-model="dialogVinOk" width="500"
+      :transition="transition==null?'false':transition">
       <!--
       <template v-slot:activator="{ on, attrs }">
         <v-btn
@@ -2774,7 +2813,8 @@
     <!-- FIN NUEVOS VINCULOS ACEPTADOS -->
 
     <!-- NUEVOS VICULOS RECHAZADOS -->
-    <v-dialog v-model="dialogVinRech" width="500">
+    <v-dialog v-model="dialogVinRech" width="500"
+      :transition="transition==null?'false':transition">
       <v-card>
         <v-toolbar flat
           :color="temas.forms_titulo_bg"
@@ -2831,7 +2871,8 @@
     <!-- FIN VINCULOS RECHAZADOS -->
 
     <!-- CANCELAR VINCULO -->
-    <v-dialog v-model="dialogCancelarVinculo" max-width="500px" persistent>
+    <v-dialog v-model="dialogCancelarVinculo" max-width="500px" persistent
+      :transition="transition==null?'false':transition">
       <v-card>
         <v-toolbar flat
           :color="temas.forms_titulo_bg"
@@ -2877,7 +2918,8 @@
     <!-- FIN CANCELAR VINCULO -->
 
     <!-- ACEPTAR PAUSAR VINCULO -->
-    <v-dialog v-model="dialogPausarVinculo" max-width="650px" persistent>
+    <v-dialog v-model="dialogPausarVinculo" max-width="650px" persistent
+      :transition="transition==null?'false':transition">
       <v-card class="fg">
         <v-toolbar flat
           :color="temas.forms_titulo_bg"
@@ -2929,7 +2971,8 @@
     <!-- FIN PAUSAR VINCULO -->
 
     <!-- ACEPTAR REANUDAR VINCULO -->
-    <v-dialog v-model="dialogReanudarVinculo" max-width="650px" persistent>
+    <v-dialog v-model="dialogReanudarVinculo" max-width="650px" persistent
+      :transition="transition==null?'false':transition">
       <v-card class="fg">
         <v-toolbar flat
           :color="temas.forms_titulo_bg"
@@ -2981,7 +3024,8 @@
     <!-- FIN REANUDAR VINCULO -->
 
     <!-- MAS INFORMACION -->
-    <v-dialog v-model="dialogMasInformacion" max-width="700px" persistent>
+    <v-dialog v-model="dialogMasInformacion" max-width="700px" persistent
+      :transition="transition==null?'false':transition">
       <v-card class="fg">
         <v-toolbar flat
           :color="temas.forms_titulo_bg"
@@ -3046,7 +3090,8 @@
     <!-- FIN MAS INFORMACION -->
 
     <!-- ESTADO FINANCIERO -->
-    <v-dialog v-model="dialogEstadoFinanciero" max-width="900px" persistent>
+    <v-dialog v-model="dialogEstadoFinanciero" max-width="900px" persistent
+      :transition="transition==null?'false':transition">
       <template v-slot:activator="{}"></template>
       <v-toolbar flat dark :color="$store.state.temas.forms_titulo_bg">
         <v-btn icon
@@ -3503,6 +3548,10 @@
         'graficosDatos',
         'turnos',
         'administraGOHU',
+        'transition',
+        'topeOperaciones',
+        'topeArticulos',
+        'topeVinculaciones',
       ]),
       visiblePages () {
         return this.usuarios.slice((this.pagina - 1)* this.perPage, this.pagina* this.perPage)
@@ -3594,6 +3643,8 @@
       licenciaActual(cual) {
         if (cual=='CO') {
           return 'ERP Completo'
+        } else if (cual=='ME') {
+          return 'ERP Medio'
         } else if (cual=='BA') {
           return 'ERP Básico'
         } else if (cual=='PP') {
@@ -3656,7 +3707,9 @@
           let n = []
           if (this.activo) { // && !this.operarioEsVendedor) { // && !this.operarioEsVendedor {
 
+            debugger
             return HTTP().post('/notificaciones', {id: this.userId, sucursal: this.sucursal}, {timeout: 20000} ).then(({ data }) => {
+              debugger
 
               let cttPed = 0
               let mismoTipoDeSucursal = false
@@ -3992,7 +4045,7 @@
 
                 }
 
-                if (this.tipo=='BA') {
+                if (this.tipo=='BA'||this.tipo=='ME') {
                   return HTTP().get('/cantidaddeoperaciones').then(({ data }) => {
                     this.$store.commit('setOperaciones', data[0].meta.ctt|0, { root: true });
                   })
@@ -4287,10 +4340,10 @@
       },
 
       cambiarLicencia() {
-        if (this.licenciaACambiar=='PP'||this.licenciaACambiar=='BA') {
+        if (this.licenciaACambiar=='PP'||this.licenciaACambiar=='BA'||this.licenciaACambiar=='ME') {
           this.licenciaACambiar = 'CO'
         } else {
-          this.licenciaACambiar = 'BA'
+          this.licenciaACambiar = 'ME'
         }
         this.dialogCambiarLicencia = true
       },
@@ -4427,6 +4480,8 @@
       },
 
       async verCotizaciones(ver) {
+        debugger
+        let x = this.$store.state.transition
         this.dialogCotizaciones = ver
         this.cotDolar = []
         return axios.get('https://dolarapi.com/v1/dolares').then(({ data }) => {
@@ -4667,8 +4722,10 @@
 */
 
       showNuevoMensaje() {
-        return HTTP().get('indexter/false/1/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/%%')
+        debugger
+        return HTTP().get('indexter/false/ALL/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/%%')
           .then(({data})=>{
+          debugger
           this.mensajeUsers = []
           this.mensajeUsersSel = []
           for (let i=0; i<=data.length-1; i++) {
@@ -5075,10 +5132,6 @@
         this.detRechazo = ''
         this.itemActual = nov
         this.dialogRechazarCpr = true
-      },
-
-      closeVerCotizaciones() {
-        this.dialogCotizaciones = false
       },
 
       confirmarRechazoCpr() {

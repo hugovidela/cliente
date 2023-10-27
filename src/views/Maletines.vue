@@ -97,7 +97,7 @@
             </v-toolbar-title>
 
             <!-- DIALOG NUEVO MALETIN -->
-            <v-dialog v-model="dialog" max-width="500px">
+            <v-dialog v-model="dialog" max-width="500px" :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -143,9 +143,11 @@
             <!-- FIN DIALOG NUEVO MALETIN -->
 
             <!-- RECAUDACION DE VALORES -->
-            <v-dialog v-model="dialogClientes" max-width="1390px" persistent>
+            <v-dialog v-model="dialogClientes" max-width="1390px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card class="fg" height="700px">
+
                 <v-toolbar flat
                   :color="temas.forms_titulo_bg"
                   :dark="temas.forms_titulo_dark==true">
@@ -173,18 +175,6 @@
                 <v-card flat>
                   <v-card-text>
                     <v-row>
-
-                      <!--
-                      <v-col cols="2" sm="2" md="2" class="fg pt-0">
-                        <v-text-field
-                          ref="codigocliente"
-                          v-model="editadoRet.tercero_id"
-                          label="Código"
-                          autofocus
-                          @change="buscarCliente">
-                        </v-text-field>
-                      </v-col>
-                      -->
 
                       <v-col cols="6" sm="6" md="6"
                         class="fg pt-0 pb-0">
@@ -268,7 +258,8 @@
             <!-- FIN RECAUDACION DE VALORES -->
 
             <!-- SELECCION DE CLIENTES -->
-            <v-dialog v-model="dialogSeleccionCliente" max-width="970px" persistent>
+            <v-dialog v-model="dialogSeleccionCliente" max-width="970px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card class="fg">
                 <v-toolbar flat
@@ -326,7 +317,8 @@
 
 
             <!-- FORMULARIO DE INGRESO DE VALORES NUS -->
-            <v-dialog v-model="dialogAgregarValoresNUS" max-width="450px" persistent>
+            <v-dialog v-model="dialogAgregarValoresNUS" max-width="450px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card class="fg" height="450px">
 
@@ -610,7 +602,6 @@ export default {
     losMeses: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
     cliente: null,
     acciones: [],
-    accionesValor: [],
     equipo: [],
     clientes: [],
     items: [],
@@ -725,8 +716,8 @@ export default {
 
   computed: {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId']),
-    ...mapState(['empresa','sucursal', 'sucursales', 'sucursalDemo', 'tema', 'temas', 'centrales', 'operario', 'operarioUserId', 'operarioEsVendedor',
-      'operarioTerceroId', 'operarioArea', 'level' ]),
+    ...mapState(['empresa','sucursal', 'sucursales', 'sucursalDemo', 'tema', 'temas', 'centrales', 'operario', 'operarioUserId',
+      'operarioEsVendedor', 'operarioTerceroId', 'operarioArea', 'level', 'transition' ]),
 
     itemsTerceros () {
       return this.entriesTerceros.map(entry => {
@@ -965,7 +956,9 @@ export default {
     },
 
     recaudacionClick(item, row) {
-      this.editarRecaudacion(item)
+      if (item.estado!='K') { // Si el valor ya esta chequeado no lo puedo editar
+        this.editarRecaudacion(item)
+      }
     },
 
     nuevaRecaudacion(item) {
@@ -1015,6 +1008,7 @@ export default {
     },
 
     editarRecaudacion(item) {
+      debugger
       this.agregando = false
       this.dialogAgregarValoresNUS = true
       this.editadoRet.tercero_id = item.cliente_id

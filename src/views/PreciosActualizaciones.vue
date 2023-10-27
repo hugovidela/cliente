@@ -49,7 +49,8 @@
             <v-spacer></v-spacer>
 
             <!--NUEVA ACTUALIZACION -->
-            <v-dialog v-model="dialogNuevaActualizacion" max-width="800px">
+            <v-dialog v-model="dialogNuevaActualizacion" max-width="800px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -291,7 +292,8 @@ export default {
   computed: {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId']),
     ...mapMutations(['alert','closeAlert']),
-    ...mapState(['sucursal','sucursalFiscal','sucursalDemo','empresa','tema','temas','operarioEsVendedor','operarioTerceroId','operarioUserId','caja']),
+    ...mapState(['sucursal','sucursalFiscal','sucursalDemo','empresa','tema','temas','operarioEsVendedor','operarioTerceroId',
+    'operarioUserId','caja','transition']),
   },
 
   watch: {
@@ -582,6 +584,22 @@ export default {
           if (r[0]!=undefined && r[2]!=undefined && !isNaN(r[2])) {
             this.arts.push({
               id:null, codigo:r[0].toString().trim(), nombre:r[1], miprecio:0, precio:this.roundTo(r[2],4), iva: 5, variacion: 0, estado: 'N'
+            })
+          }
+          this.progreso = (j / sheet.length) * 100;
+        }
+      } else if (this.cuit=='30708175907') {  //M ELECTRICIDAD )
+        // FILA 2
+        // CODIGO(A), NOMBRE(B), PRECIO(C - SINIVA)
+        // SALTOS DE LINEAS: SI
+        debugger
+        for (let j=1; j<=sheet.length-1; j++) {
+          let r = sheet[j]
+          if (r[0]!=undefined && r[5]!=undefined && !isNaN(r[5])) {
+            let cod = r[0].toString().trim()
+            cod += r[1].toString().trim()
+            this.arts.push({
+              id:null, codigo:cod, nombre:r[2], miprecio:0, precio:this.roundTo(r[5],4), iva: 5, variacion: 0, estado: 'N'
             })
           }
           this.progreso = (j / sheet.length) * 100;

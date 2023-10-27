@@ -101,7 +101,8 @@
               </v-progress-circular>
             </v-toolbar-title>
             <!-- DIALOG PARA NUEVA COMISION  -->
-            <v-dialog v-model="dialog" max-width="1200px">
+            <v-dialog v-model="dialog" max-width="1200px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -385,7 +386,7 @@ export default {
       'operarioUserId',
       'operarioEsVendedor',
       'operarioTerceroId',
-      'level',
+      'level', 'transition'
     ]),
 
     movSel() {

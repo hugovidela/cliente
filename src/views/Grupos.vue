@@ -141,7 +141,7 @@
         scrollable
         persistent :overlay="false"
         max-width="500px"
-        transition="dialog-transition">
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card v-show="panel2" class="fg">
           <v-toolbar flat
@@ -196,7 +196,8 @@
         </v-card>
       </v-dialog>
 
-      <v-dialog v-model="dialogPlantilla" max-width="600px">
+      <v-dialog v-model="dialogPlantilla" max-width="600px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card v-show="dialogPlantilla" class="fg">
           <v-toolbar flat

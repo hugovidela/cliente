@@ -34,7 +34,8 @@
             <v-spacer></v-spacer>
 
             <!-- Modal del diálogo para Alta y Edicion -->
-            <v-dialog v-model="dialog" max-width="1000px">
+            <v-dialog v-model="dialog" max-width="1000px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card class="fg">
                 <v-toolbar flat
@@ -135,7 +136,8 @@
 
                                 <v-toolbar flat color="white">
 
-                                  <v-dialog v-model="dialogGrupo" max-width="600px">
+                                  <v-dialog v-model="dialogGrupo" max-width="600px"
+                                    :transition="transition==null?'false':transition">
 
                                     <template v-slot:activator="{ on, attrs }">
                                       <v-btn
@@ -252,7 +254,8 @@
                               <template v-slot:top>
 
                                 <v-toolbar flat color="white">
-                                  <v-dialog v-model="dialogMarca" max-width="600px">
+                                  <v-dialog v-model="dialogMarca" max-width="600px"
+                                    :transition="transition==null?'false':transition">
 
                                     <template v-slot:activator="{ on, attrs }">
                                       <v-btn
@@ -366,7 +369,8 @@
                               <template v-slot:top>
 
                                 <v-toolbar flat color="white">
-                                  <v-dialog v-model="dialogArticulo" max-width="600px">
+                                  <v-dialog v-model="dialogArticulo" max-width="600px"
+                                    :transition="transition==null?'false':transition">
 
                                     <template v-slot:activator="{ on, attrs }">
                                       <v-btn
@@ -551,7 +555,8 @@
       </v-data-table>
 
       <!-- SELECCION DE GRUPOS-->
-      <v-dialog v-model="dialogGrupos" max-width="600px" max-height="600px">
+      <v-dialog v-model="dialogGrupos" max-width="600px" max-height="600px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card class="fg">
           <v-toolbar text
@@ -604,7 +609,8 @@
       <!-- FIN SELECCION DE GRUPOS -->
 
       <!-- BUSCAR ARTICULO -->
-      <v-dialog v-model="dialogBuscarArticulo" max-width="900px" max-height="600px">
+      <v-dialog v-model="dialogBuscarArticulo" max-width="900px" max-height="600px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card class="fg">
           <v-toolbar text
@@ -863,7 +869,7 @@ export default {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId']),
     ...mapState([
         'vinculosPadres', 'vinculosPadresLic', 'vinculosPadresAll', 'vinculosHijos', 'empresa', 'temas', 'dolar', 'externo', 'tipo', 'codigooid',
-        'cttLoadReg', 'descuentos'
+        'cttLoadReg', 'descuentos', 'transition'
       ]),
     formTitle () {
       return this.editedIndex === -1 ? 'Nueva Lista' : 'Editar Lista';

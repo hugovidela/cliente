@@ -1,6 +1,6 @@
 <template>
   <v-row justify="center">
-    <v-dialog v-model="visible" persistent max-height="400" max-width="500">
+    <v-dialog v-model="visible" persistent max-height="400" max-width="500" :transition="transition==null?'false':transition">
       <v-card>
         <v-card-title
           class="headline">{{ title }}

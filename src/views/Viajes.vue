@@ -77,7 +77,8 @@
             </v-toolbar-title>
 
             <!-- DIALOG PARA NUEVO VIAJE -->
-            <v-dialog v-model="dialog" max-width="500px">
+            <v-dialog v-model="dialog" max-width="500px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -149,7 +150,8 @@
             <!-- FIN DIALOG DEL NUEVO VIAJE -->
 
             <!--// ADMINISTRACION DE PEDIDOS // -->
-            <v-dialog v-model="dialogAdministracionPedidos" :fullscreen="true" persistent>
+            <v-dialog v-model="dialogAdministracionPedidos" :fullscreen="true" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-card class="fg" height="700px">
@@ -539,7 +541,8 @@
             <!-- FIN ADMINISTRACION DE PEDIDOS -->
 
             <!-- BULTOS DEL PEDIDO -->
-            <v-dialog v-model="dialogBultos" max-width="400px">
+            <v-dialog v-model="dialogBultos" max-width="400px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
                 <v-toolbar flat
@@ -585,7 +588,8 @@
             <!-- FIN INGRESO DE BULTOS -->
 
             <!-- INICIAR REPARTO -->
-            <v-dialog v-model="dialogIniciarReparto" max-width="500px">
+            <v-dialog v-model="dialogIniciarReparto" max-width="500px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
                 <v-toolbar flat
@@ -639,7 +643,8 @@
             <!-- FIN DIALOG INICIAR REPARTO -->
 
             <!-- ARTICULOS DEL REPARTO / PEDIDO -->
-            <v-dialog v-model="dialogRepartoPedidoArticulos" max-width="1200px">
+            <v-dialog v-model="dialogRepartoPedidoArticulos" max-width="1200px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card class="fg" height="700px">
                 <v-toolbar flat
@@ -687,7 +692,8 @@
             <!-- FIN ARTICULOS DEL REPARTO / PEDIDO -->
 
             <!-- SALDOS -->
-            <v-dialog v-model="dialogSaldo" max-width="520px">
+            <v-dialog v-model="dialogSaldo" max-width="520px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card class="fg" height="700px">
                 <v-toolbar flat
@@ -730,7 +736,8 @@
             <!-- FIN SALDOS -->
 
             <!-- STOCKS CONSOLIDADOS -->
-            <v-dialog v-model="dialogStocksConsolidados" max-width="800px" persistent>
+            <v-dialog v-model="dialogStocksConsolidados" max-width="800px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -834,7 +841,8 @@
             <!-- FIN STOCKS CONSOLIDADOS -->
 
             <!-- MOSTRAR MAPA DEL REPARTO -->
-            <v-dialog v-model="dialogMostrarMapaDelReparto" max-width="1100px" persistent>
+            <v-dialog v-model="dialogMostrarMapaDelReparto" max-width="1100px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -867,7 +875,8 @@
 
 
             <!-- OBSERVACION PARA EL CLIENTE -->
-            <v-dialog v-model="dialogObservacion" max-width="800px" persistent>
+            <v-dialog v-model="dialogObservacion" max-width="800px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
               :color="temas.forms_titulo_bg"
@@ -914,7 +923,8 @@
             <!-- FIN OBSERVACION PARA EL CLIENTE -->
 
             <!-- INCLUSION DE NUEVOS CLIENTES AL RECORRIDO -->
-            <v-dialog v-model="dialogClientesNuevos" max-width="900px" persistent>
+            <v-dialog v-model="dialogClientesNuevos" max-width="900px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card class="fg">
                 <v-toolbar flat
@@ -972,7 +982,8 @@
             <!-- FIN INCLUSION DE CLIENTES AL NUEVO RECORRIDO -->
 
             <!-- ADMINISTRACION DE ARTICULOS DEL PEDIDO -->
-            <v-dialog v-model="dialogArticulos" max-width="1200px" persistent>
+            <v-dialog v-model="dialogArticulos" max-width="1200px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -1222,7 +1233,8 @@
 
             <!-- DIALOG DIA Y HORA DE VISITA  -->
             <!--
-            <v-dialog v-model="dialogEditarRecorrido" max-width="600px" persistent>
+            <v-dialog v-model="dialogEditarRecorrido" max-width="600px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -1283,7 +1295,8 @@
             <!-- FIN DIALOG DIA Y HORA DE VISITA  -->
 
             <!-- DIALOG PEDIDOS ANTERIORES  -->
-            <v-dialog v-model="dialogPedidosAnteriores" max-width="1200px" persistent>
+            <v-dialog v-model="dialogPedidosAnteriores" max-width="1200px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -1684,7 +1697,7 @@ export default {
       'pedTransfAVend',
       'descuentos',
       'usaMaletines',
-      'dolar',
+      'dolar', 'transition',
     ]),
 
     promosComputer() {
@@ -2210,6 +2223,7 @@ export default {
     },
 
     guardarViajeHTTP() {
+      debugger
       let pos = this.sucursales.findIndex(x=>x.id=this.sucursal)
       // ordeno los recorridos
       this.clientes.sort(function(a, b) {
@@ -2232,8 +2246,10 @@ export default {
           nro ++
         }
       }
+      debugger
       this.editado.recorrido = this.clientes;
       return HTTP().post('/nuevoviaje', { editado: this.editado }).then(({ data }) => {
+        debugger
         if (data!='error') {
           this.msg.msgTitle = 'Nuevo Viaje'
           let m = '¡Viaje generado correctamente!<br>'
@@ -4154,6 +4170,8 @@ export default {
               say = estaVinculado!=-1?'PPv':'PP'
             } else if (item.tercero.user.tipo=='CO') {
               say = estaVinculado!=-1?'COv':'CO'
+            } else if (item.tercero.user.tipo=='ME') {
+              say = estaVinculado!=-1?'MEv':'ME'
             } else if (item.tercero.user.tipo=='BA') {
               say = estaVinculado!=-1?'BAv':'BA'
             }

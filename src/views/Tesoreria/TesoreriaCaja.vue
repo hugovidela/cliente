@@ -27,7 +27,8 @@
             <v-toolbar-title class="fg white--text">Cajas</v-toolbar-title>
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
-            <v-dialog v-model="dialog" max-width="900px">
+            <v-dialog v-model="dialog" max-width="900px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card>
 
@@ -191,7 +192,8 @@
             </v-dialog>
 
             <!--NUEVO MOVIMIENTO -->
-            <v-dialog v-model="dialogMovimiento" max-width="500px">
+            <v-dialog v-model="dialogMovimiento" max-width="500px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat
@@ -295,7 +297,8 @@
             <!--FIN NUEVO MOVIMIENTO -->
 
             <!--DETALLE DE MOVIMIENTOS -->
-            <v-dialog v-model="dialogMovDet" max-width="900px">
+            <v-dialog v-model="dialogMovDet" max-width="900px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat
@@ -560,7 +563,7 @@ export default {
 
   computed: {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId']),
-    ...mapState(['temas', 'sucursal', 'empresa', 'datosPanel','caja', 'logotipo']),
+    ...mapState(['temas', 'sucursal', 'empresa', 'datosPanel','caja', 'logotipo', 'transition']),
   },
 
   

@@ -87,39 +87,76 @@
 
           </div>
           <div v-else-if="idSel==2"><b>LICENCIAS</b><br><br>
-            En <b>gohu</b> existen cuatro tipos de licencias.<br><br>
+            Hay dos formas de usar <b>gohu</b><br><br>
+            <li>Modo ERP</li>
+
+            ERP (<i>Planificacion de Recursos Empresariales</i>), es lo que se denomina
+            comunmente a aquellos sistemas destinados a la Gestión Comercial.<br>
+            Este modo se divide as su vez en tres, esto para poder adecuarse a cuanta información
+            necesitas gestionar por mes.<br><br>
+
+            <li>Modo PP</li>
+            Este modo habilita solo consultar precios y realizar pedidos.<br>
+            A su vez se divide en dos, <i>Usuarios Exlusivos</i> y
+            <i>Usuarios No Exclusivos</i>.
+            <br><br>
+
+            <b>Detalles de Licencias</b><br>
+            <v-simple-table dense style="width:65%">
+              <template v-slot:default>
+                <thead class="fg">
+                  <tr class="fg">
+                    <th style="width:15px" class="text-left">Licencia</th>
+                    <th style="width:25px" class="text-left">Observaciones</th>
+                    <th style="width:15px" class="text-left">Operaciones</th>
+                    <th style="width:15px" class="text-left">Artículos</th>
+                    <th style="width:15px" class="text-left">Vinculaciones</th>
+                    <th style="width:15px" class="text-left">Precio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="item in licencias" :key="item.id">
+                      <td style="width:15px">{{ item.id }}</td>
+                      <td style="width:25px">{{ item.obsv }}</td>
+                      <td style="width:15px">{{ item.oper }}</td>
+                      <td style="width:15px">{{ item.arts }}</td>
+                      <td style="width:15px">{{ item.vin }}</td>
+                      <td style="text-align:right; width:15px">
+                        ${{ formatoImporte(item.precio) }}
+                      </td>
+                  </tr>
+                </tbody>
+              </template>
+            </v-simple-table>
+            <br><br>
+
             <li><b>gohu ERP Completo (CO)</b><br>
             Esta licencia permite utilizar el sistema en forma completa.</li>
             Los módulos que contiene son Ventas, Compras, Cuentas Corrientes, Stocks, Tesorería
-            , Bancos e Impuestos.<br>
-            El costo actual de esta licencia es de: ${{formatoImporte(preciosLicencias[0].precio)}}
-            /mes.<br>
-            <br>
-            <li><b>gohu ERP Básico (BA)</b></li><br>
-            Igual a la anterior pero con la restricción de poder generar
-            hasta 300 operaciones/mes, esto incluye a Facturas,<br> Notas de Débito,
-            Notas de Crédito, Recibos, Pagos,
-            Remitos, Presupuestos y Pedidos.<br>
-            La segunda y última restricción es que solo podrás crear hasta 1000 artículos.<br>
-            El costo actual de esta licencia es de: ${{formatoImporte(preciosLicencias[1].precio)}}
-            /mes.<br>
+            , Bancos e Impuestos.<br><br>
+
+            <li><b>gohu ERP Medio (ME)</b></li>
+            Igual a la anterior pero con la restricción especificadas en la tabla.<br><br>
+
+            <li><b>gohu ERP Básico (BA)</b></li>
+            Igual a la anterior pero con la restricción especificadas en la tabla.<br><br>
+
             El motivo por el cual implementamos estas restricciónes son los costos de
             internet que son en Dólares y se miden por volúmen y tráfico de información.<br>
-            Revisa cuantas operaciones generas por mes para saber cual de las dos versiones
+            Revisa cuantas operaciones generas por mes para saber cual de las versiones
             se adecúa más a tus necesidades.<br><br>
             <li><b>gohu Precios y Pedidos (PP)</b></li>
             En esta versión podrás realizar todas las tareas referentes a Precios y Pedidos.<br>
             Podrás vincularte con otros usuarios y exponer tus Artículos y Precios a tus Clientes
             , y/o leer los de tus Proveedores.<br>
             También podrás emitir y recibir Pedidos.<br>
-            El costo actual de esta licencia es de: ${{formatoImporte(preciosLicencias[2].precio)}}
-            /mes.<br>
             <br>
             <li><b>gohu Precios y Pedidos *Exclusivo (PPx)</b></li>
-            Los usuarios <b>CO</b>, <b>BA</b> y <b>PP</b> podrán generar cuentas <i>gratuitas</i>
-            para sus Clientes.<br>
+            Los usuarios con licencias <b>ERP</b> podrán generar cuentas
+            <i>gratuitas</i> para sus Clientes.<br>
             Una de las restricciones para estas licencias es que solo podrán ser Clientes del
-            Proveedor que las generó, <br>
+            usuario que las generó, <br>
             es decir, serán <i>Clientes Exclusivos</i> del usuario que los creó y
             <i>no se podrán vincular con otros usuarios.</i><br>
             Esto rompe con el objetivo esencial de <b>gohu</b>, que es que los usuarios
@@ -127,20 +164,23 @@
             Entendimos que debíamos dar esta posibilidad para que los usuarios puedan armar
             su <i>Granja Comercial</i> y evitar que sus Clientes puedan vincularse con otros
             usuarios y posibles competidores. No obstante, sabemos que la competencia siempre
-            es buena, ya que uno compitiendo crece, en todo sentido, optimizando procesos,
+            es buena, compitiendo es cuando una empresa mas crece, optimizando procesos y
             brindando mejor atención.<br>
-            Esta comprobado comercialmente que no todo es el precio, también juegan otros
-            factores y son muy importantes.<br><br>
-            <b>Importante</b><br>
             <i>Estas cuentas serán totalmente independientes al usuario que los creó y solo
-            ellos tendrán la postestad de cambiarlas cuando lo crean conveniente.</i><br>
+            ellos tendrán la postestad de cambiar sus licencias cuando lo crean conveniente.</i><br>
             Y repetimos, las licencias exclusivas <b>PPx</b> no tienen costo.<br><br>
+
+            <b>Importante</b>
+            Nuestros costos se miden por el tráfico que genera <b>gohu</b> en los servidores.
+            Por la cantidad de información que puedas generar y consultar en ellos.<br>
+            Por ello es que decidimos particionar las licencias ERP.
+            <br><br>
 
             <b>Cambiar de Licencia</b><br>
             Podrás cambiar de Licencia las veces que quieras.<br>
             Solo cabe detallar un aspecto:
-            Si eres ERP Completo <b>CO</b> y bajas a <b>BA</b> o a <b>PP</b> y tienes mas de 1000
-            artículos definidos, estos permanecerán,<br>pero no podrás agregar más.<br>
+            Si bajas de ERP tus artículos definidos permanecerán, pero no podrás agregar más
+            si el tope esta excedido.<br>
             Otro aspecto es que aquellos usuarios que sean <b>PPx</b> y migren a otra licencia,
             no podrán volver a ser <b>PPx</b><br>
             <br>
@@ -908,6 +948,13 @@ export default {
   components: {
   },
   data: () => ({
+    licencias: [
+      {id: 'CO',     obsv: 'ERP Completo',                oper: 'Infinitas', arts: 'Infinitos', vin: 'Infinitas', precio: 0},
+      {id: 'ME',     obsv: 'ERP Medio',                   oper: '400',       arts: '1000',      vin: '50',        precio: 0},
+      {id: 'BA',     obsv: 'ERP Básico',                  oper: '200',       arts: '500',       vin: '10',        precio: 0},
+      {id: 'PP',     obsv: 'Precios y Pedidos',           oper: '200',       arts: 'Infinitos', vin: 'Infinitas', precio: 0},
+      {id: 'PP exl', obsv: 'Precios y Pedidos Exclusivo', oper: '200',       arts: 'Infinitos', vin: 'Infinitas', precio: 0},
+    ],
     preciosLicencias: [],
     idSel: 1,
     items: [
@@ -972,6 +1019,15 @@ export default {
     return HTTP().get('/precioslicencias').then(({ data }) => {
       debugger
       for (let i=0; i<=data.length-1; i++) {
+        if (data[i].id==17) {
+          this.licencias[0].precio = data[i].usd*this.$store.state.dolar
+        } else if (data[i].id==18) {
+          this.licencias[1].precio = data[i].usd*this.$store.state.dolar
+        } else if (data[i].id==19) {
+          this.licencias[2].precio = data[i].usd*this.$store.state.dolar
+        } else if (data[i].id==20) {
+          this.licencias[3].precio = data[i].usd*this.$store.state.dolar
+        }
         data[i].precio = data[i].usd*this.$store.state.dolar
       }
       this.preciosLicencias = data

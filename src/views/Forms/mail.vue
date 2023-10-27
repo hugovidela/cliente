@@ -1,5 +1,6 @@
 <template>
-  <v-dialog v-model="visible" persistent max-height="1000" max-width="1000">
+  <v-dialog v-model="visible" persistent max-height="1000" max-width="1000"
+    :transition="transition==null?'false':transition">
     <template v-slot:activator="{}"></template>
     <v-card>
       <v-toolbar flat
@@ -63,10 +64,7 @@ export default {
   data: () => ({
   }),
   computed: {
-    ...mapState([
-      'tema',
-      'temas',
-    ]),
+    ...mapState(['tema','temas','transition']),
   },
   methods: {
     handleClick(op) {

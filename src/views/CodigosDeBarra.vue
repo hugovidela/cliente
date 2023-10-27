@@ -1,7 +1,8 @@
 <template>
   <v-layout align-start>
     <v-flex>
-      <v-dialog v-model="dialog" :fullscreen="true" persistent>
+      <v-dialog v-model="dialog" :fullscreen="true" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-toolbar
           :color="temas.forms_titulo_bg"
@@ -104,7 +105,8 @@
       </v-dialog>
 
       <!-- EDICION DE CODBAR-->
-      <v-dialog v-model="dialogCodBar" max-width="450px" max-height="350px">
+      <v-dialog v-model="dialogCodBar" max-width="450px" max-height="350px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card>
           <v-toolbar text
@@ -221,7 +223,7 @@ export default {
     ...mapGetters('authentication', ['isLoggedIn','userId']),
     ...mapMutations(['alert','closeAlert']),
     ...mapState([
-      'vinculosPadres', 'vinculosPadresLic', 'vinculosHijos', 'empresa', 'temas', 'externo', 'codigooid', 'descuentos'
+      'vinculosPadres', 'vinculosPadresLic', 'vinculosHijos', 'empresa', 'temas', 'externo', 'codigooid', 'descuentos', 'transition'
     ]),
   },
 

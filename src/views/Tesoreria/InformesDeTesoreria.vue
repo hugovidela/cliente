@@ -38,7 +38,8 @@
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <!-- Modal del diálogo para Alta y Edicion -->
-            <v-dialog v-model="dialog" max-width="950px">
+            <v-dialog v-model="dialog" max-width="950px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card>
                 <v-toolbar
@@ -184,12 +185,7 @@ export default {
   }),
   computed: {
     ...mapGetters('authentication', ['isLoggedIn']),
-    ...mapState([
-      'sucursal',
-      'sucursales',      
-      'empresa',
-      'temas',
-    ]),
+    ...mapState(['sucursal','sucursales','empresa','temas', 'transition']),
 //    formTitle () { 
 //      return this.editedIndex === -1 ? 'Nueva Marca' : 'Editar Marca';
 //    },

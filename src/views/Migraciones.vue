@@ -1,7 +1,8 @@
 <template>
   <v-layout align-start class="fg pl-0 pr-0">
     <v-flex>
-      <v-dialog v-model="dialog" :fullscreen="true" persistent>
+      <v-dialog v-model="dialog" :fullscreen="true" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-toolbar flat
           :color="temas.forms_titulo_bg"
@@ -746,9 +747,7 @@ export default {
   computed: {
     ...mapGetters('authentication', ['isLoggedIn','userId']),
     ...mapMutations(['alert','closeAlert']),
-    ...mapState([
-      'vinculosPadres', 'vinculosHijos', 'empresa','temas', 'datosEmpresa'
-    ]),
+    ...mapState(['vinculosPadres', 'vinculosHijos', 'empresa','temas', 'datosEmpresa','transition']),
 
     itemsMarcas () {
       return this.entriesMarcas.map(entry => {

@@ -108,7 +108,7 @@
                       OFERTAS
                       /////////////
                     -->
-                    <v-col cols="5" sm="5" md="5">
+                    <v-col cols="5" sm="5">
                       <v-card flat class="fg ml-0 mt-1 text-center">
                         <v-row class="pt-0">
 
@@ -142,29 +142,29 @@
                                 <v-row justify="start">
                                   <v-col
                                     v-for="(item,i) in ofertas" :key="i"
-                                    :src="item.src">
+                                    :src="item.src" cols="12" md="6">
                                     <div class="contenedor-galeria">
                                       <v-hover v-slot="{ hover}">
                                         <v-card class="mx-auto my-12" max-width="250"
-                                          :elevation="hover ? 12 : 1"
-                                          open-delay="200"
-                                          :class="{ 'on-hover': hover }">
-                                          <template slot="progress"></template>
-                                          <v-btn class="mt-2 ml-2"
-                                            v-if="item.detalles!=null"
-                                            fab x-small icon
-                                            @click="verDetallesDeLaPublicacion(item)">
-                                            <v-icon>mdi-format-align-justify</v-icon>
-                                          </v-btn>
-                                          <v-img v-if="item.fotos.length>0" height="100"
-                                            :eager="true"
-                                            :src=laFoto(item)
-                                            class="galeria__img mt-4 mb-4"
-                                            @click="verFotos(item)">
-                                          </v-img>
-                                          <v-img v-else height="100"
-                                            :src="`/images/Sin Imagen.jpg`">
-                                          </v-img>
+                                        :elevation="hover ? 12 : 1"
+                                        open-delay="200"
+                                        :class="{ 'on-hover': hover }">
+                                        <template slot="progress"></template>
+                                        <v-btn class="mt-2 ml-2"
+                                          v-if="item.detalles!=null"
+                                          fab x-small icon
+                                          @click="verDetallesDeLaPublicacion(item)">
+                                          <v-icon>mdi-format-align-justify</v-icon>
+                                        </v-btn>
+                                        <v-img v-if="item.fotos.length>0" height="100"
+                                          :eager="true"
+                                          :src=laFoto(item)
+                                          class="galeria__img mt-4 mb-4"
+                                          @click="verFotos(item)">
+                                        </v-img>
+                                        <v-img v-else height="100"
+                                          :src="`/images/Sin Imagen.jpg`">
+                                        </v-img>
 
                                           <!--
                                             ///////////////
@@ -556,6 +556,7 @@
 
         <!-- DIALOGO DETALLES DE LA PUBLICACION -->
         <v-dialog v-model="dialogDetalles" max-width="700px" persistent
+          :transition="$store.state.transition==null?'false':$store.state.transition"
           v-show="$store.state.activo">
           <template v-slot:activator="{}"></template>
           <v-toolbar flat dark
@@ -592,6 +593,7 @@
 
         <!-- DIALOGO FOTOS DE LA PUBLICACION -->
         <v-dialog v-model="dialogVerFotos" max-width="700px"
+          :transition="$store.state.transition==null?'false':$store.state.transition"
           v-show="$store.state.activo">
           <template v-slot:activator="{}"></template>
           <v-toolbar flat dark
@@ -602,8 +604,9 @@
               :dark="$store.state.temas.forms_close_dark==true">
               <v-icon>mdi-arrow-left-circle</v-icon>
             </v-btn>
-            <span class="text--right"></span>
+            <span class="fg">
               Fotos de la Publicación
+            </span>
             <v-spacer></v-spacer>
           </v-toolbar>
           <v-card>
@@ -629,7 +632,7 @@
           $store.state.inicial && $store.state.activo && !$store.state.ofertas">
           <v-card flat height="1550" width="1200" class="pt-0">
             <v-card-text class="fg pt-0">
-              <div v-if="$store.state.tipo=='CO'||$store.state.tipo=='BA'">
+              <div v-if="$store.state.tipo=='CO'||$store.state.tipo=='ME'||$store.state.tipo=='BA'">
                 Antes que nada, gracias por confiar en nosotros.<br><br>
                 Ahora tienes que cofigurar tu cuenta, ¡es fácil!.<br><br>
                 <b>gohu</b> ya inicializó algunos datos, creó dos sucursales, una de producción
@@ -771,7 +774,8 @@
 
               </div>
 
-              <div v-if="$store.state.tipo=='PP'||$store.state.tipo=='CO'||$store.state.tipo=='BA'
+              <div v-if="$store.state.tipo=='PP'||$store.state.tipo=='CO'||
+                $store.state.tipo=='ME'||$store.state.tipo=='BA'
                 &&!$store.state.exclusivoDe.id==null">
                 <br>
                 <v-btn tile outlined class="text-none" @click="noVerMasElMensajeInicial()">
@@ -1011,7 +1015,8 @@
 -->
                 </v-row>
 
-                <v-row v-show="$store.state.tipo=='CO'||$store.state.tipo=='BA'">
+                <v-row v-show="$store.state.tipo=='CO'||
+                  $store.state.tipo=='ME'||$store.state.tipo=='BA'">
                   <v-col cols="6" sm="6" md="6" class="pt-0">
                     <span class="fg">
                       <b>Datos de tu Negocio</b><br>
@@ -1022,7 +1027,8 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="$store.state.tipo=='CO'||$store.state.tipo=='BA'">
+                <v-row v-if="$store.state.tipo=='CO'||
+                  $store.state.tipo=='ME'||$store.state.tipo=='BA'">
                   <v-col cols="6" sm="6" md="6" class="pt-0">
                     <v-text-field class="fg"
                       v-model="datosUE.sucursalNombre"
@@ -1061,7 +1067,8 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="$store.state.tipo=='CO'||$store.state.tipo=='BA'">
+                <v-row v-if="$store.state.tipo=='CO'||
+                  $store.state.tipo=='ME'||$store.state.tipo=='BA'">
                   <v-col cols="2" sm="2" md="2" class="pt-0">
                     <v-text-field class="fg"
                       type="date"
@@ -1405,7 +1412,7 @@ export default {
         'temas', 'logotipo', 'notificaciones', 'codigooid', 'caja', 'empresa', 'datosEmpresa',
         'operario', 'level', 'tipo', 'activo', 'datosPanel', 'rubros', 'contadorBloqueado',
         'actPublicacion', 'enCarrito', 'publicarpreciosconiva', 'operarioEsVendedor',
-        'operarioTerceroId','inicial', 'ofertas', 'exclusivoDe', 'administraGOHU'
+        'operarioTerceroId','inicial', 'ofertas', 'exclusivoDe', 'administraGOHU', 'transition'
       ]),
   },
 
@@ -1767,7 +1774,8 @@ export default {
             { this.formOk = false }
         return true
       
-      } else if (this.$store.state.tipo=='CO'||this.$store.state.tipo=='BA') {
+      } else if (
+        this.$store.state.tipo=='CO'||this.$store.state.tipo=='ME'||this.$store.state.tipo=='BA') {
 
         if (this.datosUE.nombre == '' ||
             this.datosUE.razonsocial == '' ||
@@ -1841,12 +1849,19 @@ export default {
         this.datosUE.porRemarcacion = 0
       }
 
+      debugger
       return HTTP().post('/nuevousuario/', { tipo: this.$store.state.tipo, datos: this.datosUE, rubros: rub}).then(({ data }) => {
+
+        debugger
         if (data!='error') {
           return HTTP().get('/user/'+data.creador_id).then(({data}) => {
+            
+            debugger
             let rub = []
-            for (let i=0; i<=data[0].rubros.length-1; i++) {
-              rub.push({id: data[0].rubros[i].id, nombre: data[0].rubros[i].nombre})
+            if (data[0].rubros2!=undefined) {
+              for (let i=0; i<=data[0].rubros2.length-1; i++) {
+                rub.push({id: data[0].rubros2[i].id, nombre: data[0].rubros2[i].nombre})
+              }
             }
             this.$store.commit('setRubros', rub, { root: true })
             this.$store.commit('setTipo', data[0].tipo , { root: true })

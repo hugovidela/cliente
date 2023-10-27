@@ -1,7 +1,8 @@
 <template>
   <v-layout align-start>
     <v-flex class="fg">
-      <v-dialog v-model="dialog" :fullscreen="true" persistent>
+      <v-dialog v-model="dialog" :fullscreen="true" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
 
         <v-toolbar class="fg"
@@ -412,24 +413,9 @@ export default {
   computed: {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId']),
     ...mapMutations(['alert','closeAlert']),
-    ...mapState([
-      'sucursal',
-      'empresa',
-      'tema',
-      'temas',
-      'logotipo',
-      'operarioEsVendedor',
-      'operarioTerceroId',
-      'operarioUserId',
-      'vinculosHijos',
-      'vinculosPadres',
-      'vinculosPadresLic',
-      'vinculosPadresAll',
-      'dolar',
-      'turnoslv',
-      'turnossd',
-      'codigooid',
-      'descuentos'
+    ...mapState(['sucursal','empresa','tema','temas','logotipo','operarioEsVendedor','operarioTerceroId','operarioUserId',
+      'vinculosHijos','vinculosPadres','vinculosPadresLic','vinculosPadresAll','dolar','turnoslv','turnossd','codigooid',
+      'descuentos','transition',
     ]),
 
     itemsTerceros () {

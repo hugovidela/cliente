@@ -108,7 +108,8 @@
             <v-spacer></v-spacer>
 
             <!-- DIALOGO DE FECHAS -->
-            <v-dialog v-model="dialog" max-width="500px" persistent>
+            <v-dialog v-model="dialog" max-width="500px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card class="fg">
                 <v-toolbar flat
@@ -244,7 +245,7 @@ export default {
   computed: {
     ...mapGetters('authentication', ['isLoggedIn']),
     ...mapMutations(['alert','closeAlert']),
-    ...mapState(['sucursal','empresa', 'tema', 'temas', 'logotipo']),
+    ...mapState(['sucursal','empresa', 'tema', 'temas', 'logotipo','transition']),
   },
   watch: {
     '$route.path': function(val, oldVal){

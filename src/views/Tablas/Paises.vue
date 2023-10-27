@@ -46,7 +46,8 @@
             <v-toolbar-title>Paises</v-toolbar-title>
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
-            <v-dialog v-model="dialog" max-width="400px">
+            <v-dialog v-model="dialog" max-width="400px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card class="fg">
                 <v-toolbar
@@ -245,7 +246,7 @@ export default {
   }),
   computed: {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId' ]),    
-    ...mapState(['temas']),
+    ...mapState(['temas','transition']),
     formTitle () {
       return this.editedIndex === -1 ? 'Nuevo Pais' : 'Editar Pais';
     },

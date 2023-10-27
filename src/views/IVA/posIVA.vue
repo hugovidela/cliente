@@ -95,7 +95,8 @@
             }">
             <template v-slot:top>
               <v-toolbar flat color="white">
-                <v-dialog max-width="600px">
+                <v-dialog max-width="600px"
+                  :transition="transition==null?'false':transition">
                   <template v-slot:activator="{ on, attrs }">
                     <v-row class="mt-6 mb-4">
                       <v-col cols="6">
@@ -208,7 +209,8 @@
               prevIcon: 'mdi-arrow-left-drop-circle-outline' }">
             <template v-slot:top>
               <v-toolbar flat color="white">
-                <v-dialog max-width="600px">
+                <v-dialog max-width="600px"
+                  :transition="transition==null?'false':transition">
                   <template v-slot:activator="{ on, attrs }">
                     <v-row class="mt-6 mb-4">
                       <v-col cols="7">
@@ -408,7 +410,8 @@
       </v-tabs>
 
       <!-- DATOS DEL PERIODO -->
-      <v-dialog v-model="dialogMasInfo" max-width="360px" persistent>
+      <v-dialog v-model="dialogMasInfo" max-width="360px" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card>
           <v-toolbar flat
@@ -442,7 +445,8 @@
       <!-- FIN DEL ERROR EN EL PEDIDO -->
 
       <!-- COMPARAR Y GENERAR COMPRAS DESDE AFIP -->
-      <v-dialog v-model="dialogCompararCompras" max-width="1400px" persistent>
+      <v-dialog v-model="dialogCompararCompras" max-width="1400px" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card class="fg">
           <v-toolbar flat
@@ -571,7 +575,8 @@
       <!-- FIN DEL ERROR EN EL PEDIDO -->
 
       <!-- CUIT FALTANTES -->
-      <v-dialog v-model="dialogCUITFaltantes" max-width="960px" persistent>
+      <v-dialog v-model="dialogCUITFaltantes" max-width="960px" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card>
           <v-toolbar flat
@@ -627,7 +632,8 @@
       <!-- FIN CUIT FALTANTES -->
 
       <!-- NUEVA COMPRA -->
-      <v-dialog v-model="dialogNuevaCompra" max-width="450px" persistent>
+      <v-dialog v-model="dialogNuevaCompra" max-width="450px" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card>
           <v-toolbar flat
@@ -906,6 +912,7 @@ export default {
       'datosEmpresa',
       'responsable',
       'cuit',
+      'transition',
     ]),
 
     venPieGravado() { return this.kit.redondear(this.comprasventas[0].det[0].total,2,2) },

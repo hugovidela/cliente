@@ -126,7 +126,8 @@
             </span>
             -->
             <!-- Modal del diálogo para Alta y Edicion -->
-            <v-dialog v-model="dialog" max-width="800px" :fullscreen="true" persistent>
+            <v-dialog v-model="dialog" max-width="800px" :fullscreen="true" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card class="fg">
 
@@ -503,7 +504,8 @@
                             <template v-slot:top>
                               <v-toolbar flat color="white">
 
-                                <v-dialog v-model="dialogDir" max-width="500px">
+                                <v-dialog v-model="dialogDir" max-width="500px"
+                                  :transition="transition==null?'false':transition">
                                   <template v-slot:activator="{ on, attrs }">
                                     <v-btn v-show="puedeEditar"
                                       fab @click="nuevaDireccion"
@@ -671,8 +673,8 @@
                             <template v-slot:top>
 
                               <v-toolbar flat color="white">
-                                <v-dialog v-model="dialogCon" max-width="600px">
-
+                                <v-dialog v-model="dialogCon" max-width="600px"
+                                  :transition="transition==null?'false':transition">
                                   <template v-slot:activator="{ on, attrs }">
                                     <v-btn v-show="puedeEditar"
                                       fab @click="nuevoContacto"
@@ -789,8 +791,8 @@
                               <v-toolbar flat color="white">
 
                                 <!-- CUENTAS -->
-                                <v-dialog v-model="dialogCuenta" max-width="500px">
-
+                                <v-dialog v-model="dialogCuenta" max-width="500px"
+                                  :transition="transition==null?'false':transition">
                                   <template v-slot:activator="{ on, attrs }">
                                     <v-btn v-show="puedeEditar"
                                       fab @click="nuevaCuentaBancaria()"
@@ -898,9 +900,9 @@
                                 <!-- CUENTAS -->
 
                                 <!-- CHEQUERAS -->
-                                <v-dialog v-model="dialogChequera" max-width="900px">
+                                <v-dialog v-model="dialogChequera" max-width="900px"
+                                  :transition="transition==null?'false':transition">
                                   <v-card class="fg">
-
                                     <v-toolbar flat
                                       :color="temas.forms_titulo_bg"
                                       :dark="temas.forms_titulo_dark==true">
@@ -930,7 +932,9 @@
                                               <template v-slot:top>
                                                 <v-toolbar flat color="white">
                                                   <v-dialog
-                                                    v-model="dialogChequeraEdit" max-width="1050px">
+                                                    v-model="dialogChequeraEdit" max-width="1050px"
+                                                    :transition="transition==null
+                                                    ?'false':transition">
                                                     <template v-slot:activator="{ on, attrs }">
                                                       <v-btn v-show="puedeEditar"
                                                         fab @click="nuevaChequera"
@@ -1072,7 +1076,8 @@
                                 <!-- FIN CHEQUERAS -->
 
                                 <!-- TARJETAS -->
-                                <v-dialog v-model="dialogTarjeta" max-width="900px">
+                                <v-dialog v-model="dialogTarjeta" max-width="900px"
+                                  :transition="transition==null?'false':transition">
                                   <v-card class="fg">
 
                                     <v-toolbar flat
@@ -1105,8 +1110,9 @@
                                               <template v-slot:top>
                                                 <v-toolbar flat color="white">
                                                   <v-dialog
-                                                    v-model="dialogTarjetaEdit" max-width="500px">
-
+                                                    v-model="dialogTarjetaEdit" max-width="500px"
+                                                    :transition="transition==null
+                                                    ?'false':transition">
                                                     <template v-slot:activator="{ on, attrs }">
                                                       <v-btn v-show="puedeEditar"
                                                         fab @click="nuevaTarjeta"
@@ -1359,7 +1365,8 @@
                             class="elevation-3">
                             <template v-slot:top>
                               <v-toolbar flat color="white">
-                                <v-dialog v-model="dialogPromo" max-width="700px">
+                                <v-dialog v-model="dialogPromo" max-width="700px"
+                                  :transition="transition==null?'false':transition">
                                   <template v-slot:activator="{ on, attrs }">
                                     <v-btn
                                       fab @click="nuevaPromo"
@@ -1655,7 +1662,8 @@
                             <template v-slot:top>
                               <v-toolbar flat color="white">
                                 <!-- ZONAS -->
-                                <v-dialog v-model="dialogZona" max-width="500px">
+                                <v-dialog v-model="dialogZona" max-width="500px"
+                                  :transition="transition==null?'false':transition">
                                   <template v-slot:activator="{ on, attrs }">
                                     <v-btn v-show="puedeEditar"
                                       fab @click="nuevaZona()"
@@ -1780,7 +1788,8 @@
             </v-dialog>
 
             <!-- LEER MAS SOBRE PRECIOS -->
-            <v-dialog v-model="dialogLeerMasSobrePrecios" max-width="700px">
+            <v-dialog v-model="dialogLeerMasSobrePrecios" max-width="700px"
+              :transition="transition==null?'false':transition">
               <v-card class="fg">
                 <v-toolbar flat
                   :color="temas.forms_titulo_bg"
@@ -1950,7 +1959,8 @@
       </v-data-table>
 
       <!-- INCLUSION DE TERCEROS -->
-      <v-dialog v-model="dialogAgregarTerceros" max-width="900px" persistent>
+      <v-dialog v-model="dialogAgregarTerceros" max-width="900px" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{}"></template>
         <v-card class="fg">
           <v-toolbar flat
@@ -2020,7 +2030,8 @@
       <!-- ASIGNAR TERCEROS -->
 
       <!-- REGISTRAR CLIENTE EN GOHU -->
-      <v-dialog v-model="dialogRegistroEnGohu" max-width="700px" persistent>
+      <v-dialog v-model="dialogRegistroEnGohu" max-width="700px" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{}"></template>
         <v-card class="fg">
           <v-toolbar flat
@@ -2113,7 +2124,8 @@
       <!-- FIN GENERAR CUENTA EN GOHU -->
 
       <!-- CAMBIAR PASSWORD CLIENTE EXCLUSIVO -->
-      <v-dialog v-model="dialogPasswordUserExclusivo" max-width="400px" persistent>
+      <v-dialog v-model="dialogPasswordUserExclusivo" max-width="400px" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{}"></template>
         <v-card class="fg">
           <v-toolbar flat
@@ -2178,7 +2190,8 @@
       <!-- FIN CAMBIAR PASSWORD CLIENTE EXCLUSIVO -->
 
       <!-- INICIO SALDOS ESPEJADOS -->
-      <v-dialog v-model="dialogSaldosEspejados" max-width="390px" persistent>
+      <v-dialog v-model="dialogSaldosEspejados" max-width="390px" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{}"></template>
         <v-card class="fg">
           <v-toolbar flat
@@ -2758,6 +2771,7 @@ export default {
       'vinculosHijos',
       'vinculosPadres',
       'vinculosPadresLic',
+      'transition',
       ]),
 
     formTitle () {
@@ -3650,8 +3664,6 @@ export default {
       let sea = this.search==''?'%%':'%'+this.search+'%'
       return HTTP().get('/indexter/'+this.verCuentasInactivas+'/'+this.cual+'/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/'+sea)
         .then(({data})=>{
-          debugger
-          alert(data.length)
           this.items = data;
           this.itemsAll = data;
       });
@@ -4895,6 +4907,8 @@ export default {
           say = estaVinculado!=-1?'PPv':'PP'
         } else if (item.tercero.user.tipo=='CO') {
           say = estaVinculado!=-1?'COv':'CO'
+        } else if (item.tercero.user.tipo=='ME') {
+          say = estaVinculado!=-1?'MEv':'ME'
         } else if (item.tercero.user.tipo=='BA') {
           say = estaVinculado!=-1?'BAv':'BA'
         }

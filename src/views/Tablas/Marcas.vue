@@ -40,7 +40,8 @@
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <!-- Modal del diálogo para Alta y Edicion -->
-            <v-dialog v-model="dialog" max-width="550px">
+            <v-dialog v-model="dialog" max-width="550px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card class="fg">
 
@@ -205,7 +206,7 @@ export default {
   }),
   computed: {
     ...mapGetters('authentication', ['isLoggedIn']),
-    ...mapState(['temas']),
+    ...mapState(['temas','transition']),
     formTitle () {
       return this.editedIndex === -1 ? 'Nueva Marca' : 'Editar Marca';
     },

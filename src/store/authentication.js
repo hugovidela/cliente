@@ -390,6 +390,11 @@ export default {
             commit('setDolar', data.setDolar, { root: true })
             commit('setUsaMaletines', data.setUsaMaletines, { root: true })
             commit('setAdministraGOHU', data.setAdministraGOHU, {root: true })
+            commit('setTransition', data.setTransition, {root: true})
+            debugger
+            commit('setTopeOperaciones', data.setTopeOperaciones, {root: true})
+            commit('setTopeArticulos', data.setTopeVinculaciones, {root: true})
+            commit('setTopeVinculaciones', data.setTopeVinculaciones, {root: true})
         
             let losProv = []
             if (data.setOperarioEsVendedor==false) {

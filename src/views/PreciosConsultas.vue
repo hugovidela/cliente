@@ -1,7 +1,8 @@
 <template>
   <v-layout align-start>
     <v-flex>
-      <v-dialog v-model="dialog" :fullscreen="true" persistent>
+      <v-dialog v-model="dialog" :fullscreen="true" persistent
+        :transition="transition==null?'false':transition">
 
         <template v-slot:activator="{ on }"></template>
         <v-toolbar
@@ -283,7 +284,7 @@ export default {
     ...mapMutations(['alert','closeAlert']),
     ...mapState([
       'vinculosPadres', 'vinculosPadresLic', 'vinculosPadresAll', 'vinculosHijos', 
-      'empresa', 'tipo', 'temas', 'dolar', 'codigooid', 'cttLoadReg', 'descuentos', 'exclusivoDe'
+      'empresa', 'tipo', 'temas', 'dolar', 'codigooid', 'cttLoadReg', 'descuentos', 'exclusivoDe', 'transition'
     ]),
   },
 

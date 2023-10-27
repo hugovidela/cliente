@@ -75,6 +75,13 @@ export default {
 
   data: () => ({
   }),
+
+  /*
+  computed: {
+    ...mapState(['transition'])
+  },
+  */
+
   methods: {
     handleClick(op) {
       this.$emit('click', op);

@@ -171,7 +171,8 @@
             </v-toolbar-title>
 
             <!-- DIALOGO DE LA CABECERA -->
-            <v-dialog v-model="dialogCab" max-width="550px" :fullscreen="true" transition="false">
+            <v-dialog v-model="dialogCab" max-width="550px" :fullscreen="true"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
 
@@ -553,7 +554,8 @@
             <!--// FIN DE LA CABECERA DE LA COMPRA // -->
 
             <!-- INGRESO DE ITEMS -->
-            <v-dialog v-model="dialogArt" max-width="1350px" persistent transition="false">
+            <v-dialog v-model="dialogArt" max-width="1350px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card>
                 <v-toolbar flat
@@ -861,7 +863,8 @@
             <!-- FIN INGRESO DE ITEMS -->
 
             <!--// IMPORTAR COMPROBANTE DESDE // -->
-            <v-dialog v-model="dialogImportarDesde" :fullscreen="true" transition="false">
+            <v-dialog v-model="dialogImportarDesde" :fullscreen="true"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat dark :color="temas.forms_titulo_bg">
@@ -1060,7 +1063,8 @@
             <!-- FIN IMPORTAR COMPROBANTE DESDE EXCEL -->
 
             <!--// SEGUIMIENTO/RASTREO DE COMPROBANTES // -->
-            <v-dialog v-model="dialogRas" max-width="1260px" transition="false">
+            <v-dialog v-model="dialogRas" max-width="1260px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat dark :color="temas.forms_titulo_bg">
@@ -1098,7 +1102,8 @@
             <!-- FIN DEL RASTREO -->
 
             <!-- ANULACION DE PAGOS // -->
-            <v-dialog v-model="dialogPagAnula" max-width="510px" transition="false">
+            <v-dialog v-model="dialogPagAnula" max-width="510px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat dark :color="temas.forms_titulo_bg">
@@ -1192,7 +1197,8 @@
             <!-- FIN ANULACION DE PAGOS -->
 
             <!--// TIMELINE // -->
-            <v-dialog v-model="dialogTimeLine" max-width="500px" transition="false">
+            <v-dialog v-model="dialogTimeLine" max-width="500px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat
@@ -1237,7 +1243,8 @@
             <!-- FIN DEL TIMELINE -->
 
             <!--// EDITAR PERIODO FISCAL Y VENCIMIENTO // -->
-            <v-dialog v-model="dialogCambiarPeriodoFiscal" max-width="400px" transition="false">
+            <v-dialog v-model="dialogCambiarPeriodoFiscal" max-width="400px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -1301,7 +1308,7 @@
 
             <!--PAGO -->
             <v-dialog v-model="dialogPag" max-width="1300px" persistent
-              transition="false">
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -1383,7 +1390,8 @@
                             dense
                             class="elevation-3">
                             <template v-slot:top>
-                              <v-dialog v-model="dialogPend" max-width="300px" transition="false">
+                              <v-dialog v-model="dialogPend" max-width="300px"
+                                :transition="transition==null?'false':transition">
                                 <template v-slot:activator="{}">
                                   <v-btn small
                                     :color="temas.cen_btns_bg"
@@ -1520,7 +1528,7 @@
                             }">
                             <template v-slot:top>
                               <v-dialog v-model="dialogMed" :max-width="medpagwidth"
-                                transition="false">
+                                :transition="transition==null?'false':transition">
                                 <v-card class="fg">
                                   <v-toolbar flat
                                     :color="temas.forms_titulo_bg"
@@ -2042,7 +2050,8 @@
             <!-- FIN DEL PAGO -->
 
             <!--// ADMINISTRACION DE GASTOS // -->
-            <v-dialog v-model="dialogGas" max-width="1260px" transition="false">
+            <v-dialog v-model="dialogGas" max-width="1260px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-data-table
                 :headers="headersGas"
@@ -2078,7 +2087,8 @@
                     <v-spacer></v-spacer>
 
                     <!-- Modal del diálogo para Alta y Edicion -->
-                    <v-dialog v-model="dialogGasEdit" max-width="600px" transition="false">
+                    <v-dialog v-model="dialogGasEdit" max-width="600px"
+                      :transition="transition==null?'false':transition">
                       <template v-slot:activator="{ on }"></template>
                       <v-card>
 
@@ -2372,7 +2382,8 @@
             <!-- FIN DE GASTOS -->
 
             <!--// ADMINISTRACION DE FALTANTES DE PEDIDOS // -->
-            <v-dialog v-model="dialogFaltantes" max-width="1260px" transition="false">
+            <v-dialog v-model="dialogFaltantes" max-width="1260px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-data-table
                 :headers="headersFaltantes"
@@ -2458,7 +2469,8 @@
             <!-- FIN DE FALTANTES PEDIDOS -->
 
             <!-- ERROR EN EL PEDIDO -->
-            <v-dialog v-model="dialogError" max-width="1200px" persistent transition="false">
+            <v-dialog v-model="dialogError" max-width="1200px" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card class="fg">
                 <v-toolbar flat
@@ -2531,7 +2543,8 @@
             <!-- FIN DEL ERROR EN EL PEDIDO -->
 
             <!--// RECEPCION DE PEDIDOS // -->
-            <v-dialog v-model="dialogRecepcion" max-width="640px" transition="false">
+            <v-dialog v-model="dialogRecepcion" max-width="640px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
 
@@ -3508,7 +3521,8 @@ export default {
       'externo',
       'dolar',
       'codigooid',
-      'descuentos'
+      'descuentos',
+      'transition'
     ]),
 
     itemsTerceros () {
@@ -4007,6 +4021,7 @@ export default {
     } else {
       this.anio = moment().format('YYYY')
       this.leoAnios().then(data => {
+        debugger
         if (this.sucursalDemo) {
           this.comprobantes[0].activo = false
           this.comprobantes[1].activo = false
@@ -4289,7 +4304,8 @@ export default {
 
     rol (i, accion) {
       if (this.tipo=='PP' && accion=='acceder') {
-        return (i==0||i==1||i==2||i==3||i==5||i==7) ? true : false
+        debugger
+        return (i==0||i==1||i==2||i==3||i==5||i==6||i==7) ? true : false
 //      return (i==0||i==1||i==2||(i==3&&this.exclusivoDe.id!=null)||i==5||i==7) ? true : false
       }
       if ((this.sucursalDemo && i<3) || (!this.sucursalDemo && i==3)) { 
@@ -4390,6 +4406,7 @@ export default {
 
 
     selectTipoDeComprobante(cual) {
+      debugger
       this.filtroComprobanteSel = cual
       this.$store.commit("setCentrales", { compras_panel: cual }, { root: true });
       if (cual=='Facturas') {
@@ -5968,8 +5985,10 @@ export default {
         arts.push(item.items[i].articulo_id)
       }
      
+      debugger
       return HTTP().post('/puedeenviarpedido/',{ id: item.id}).then(({data})=>{
 
+        debugger
         if (data == 'En Viaje') {
 
           this.msg.msgTitle = 'Viaje en Proceso'
@@ -5984,6 +6003,7 @@ export default {
 
         } else {
 
+          debugger
           return HTTP().post('/articuloz', {
             search: arts,
             vinculosPadresLic: this.$store.state.vinculosPadresLic,

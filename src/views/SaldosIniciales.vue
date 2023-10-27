@@ -38,7 +38,8 @@
             <v-spacer></v-spacer>
 
             <!--DIALOGO DE DATOS -->
-            <v-dialog v-model="dialog" max-width="900px">
+            <v-dialog v-model="dialog" max-width="900px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -233,10 +234,11 @@ export default {
       activo: true,
     },
   }),
+
   computed: {
     ...mapGetters('authentication', ['isLoggedIn','userId']),
     ...mapMutations(['alert','closeAlert']),
-    ...mapState(['sucursal','sucursalFiscal','empresa', 'tema', 'temas']),
+    ...mapState(['sucursal','sucursalFiscal','empresa', 'tema', 'temas','transition']),
     formTitle () {
       return this.editedIndex === -1 ? 'Nuevo Saldo Inicial' : 'Editar Saldo Inicial';
     },
@@ -246,9 +248,8 @@ export default {
         const nombre = entry.nombre.length > this.descriptionLimit
           ? entry.nombre.slice(0, this.descriptionLimit) + '...' : entry.nombre
         return Object.assign({}, entry, { nombre })
-        })
-      },
-
+      })
+    },
 
   },
   watch: {

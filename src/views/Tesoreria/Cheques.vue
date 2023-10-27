@@ -126,7 +126,8 @@
             <!-- Modal del diálogo para Alta y Edicion -->
 
             <!--CAMBIO DE CHEQUES -->
-            <v-dialog v-model="dialogCambio" max-width="1300px">
+            <v-dialog v-model="dialogCambio" max-width="1300px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="$store.state.temas.forms_titulo_bg"
@@ -262,7 +263,8 @@
             <!-- FIN DEL CAMBIO DE CHEQUES -->
 
             <!--RECHAZO DE CHEQUES -->
-            <v-dialog v-model="dialogCambio" max-width="1300px">
+            <v-dialog v-model="dialogCambio" max-width="1300px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="$store.state.temas.forms_titulo_bg"
@@ -398,7 +400,8 @@
             <!-- FIN DE RECHAZO DE CHEQUES -->
 
             <!--RECHAZO DE CHEQUES -->
-            <v-dialog v-model="dialogRechazo" max-width="600px">
+            <v-dialog v-model="dialogRechazo" max-width="600px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="$store.state.temas.forms_titulo_bg"
@@ -805,7 +808,7 @@ export default {
       'operarioEsVendedor',
       'operarioTerceroId',
       'operarioUserId',
-      'caja']),
+      'caja','transition']),
     formTitle () {
       return this.editedIndex === -1 ? 'Nuevo' : 'Editar';
     },

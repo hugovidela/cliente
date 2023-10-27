@@ -22,7 +22,8 @@
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <!-- Modal del diálogo para Alta y Edicion -->
-            <v-dialog v-model="dialog" max-width="950px">
+            <v-dialog v-model="dialog" max-width="950px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card>
 
@@ -173,17 +174,7 @@ export default {
   }),
   computed: {
     ...mapGetters('authentication', ['isLoggedIn']),
-    ...mapState([
-      'sucursal',
-      'sucursales',
-      'temas',
-      'avatar',
-      'empresa',
-      'logotipo'
-    ]),
-//    formTitle () { 
-//      return this.editedIndex === -1 ? 'Nueva Marca' : 'Editar Marca';
-//    },
+    ...mapState(['sucursal','sucursales','temas','avatar','empresa','logotipo','codigooid','transition']),
   },
   watch: {
     //dialog (val) {
@@ -338,7 +329,7 @@ export default {
             this.rows.push({
               fecha: moment(data.data[i].fecha).format('DD-MM-YYYY'),
               cpr: elCpr,
-              codigo: data.data[i].codigo,
+              codigo: this.codigooid=='C'?data.data[i].codigo:data.data[i].articulo_id,
               descripcion: data.data[i].descripcion,
               cantidad: data.data[i].cantidad,
               precio: '$'+this.formatoImporte(data.data[i].precio),
@@ -360,7 +351,7 @@ export default {
           this.rows = []
           for (let i=0; i<=data.data.length-1; i++) {
             this.rows.push({
-              codigo: data.data[i].codigo, 
+              codigo: this.codigooid=='C'?data.data[i].codigo:data.data[i].articulo_id,
               nombre: data.data[i].nombre,
               cantidad: this.formatoImporte(data.data[i].cantidad)
             })
@@ -470,21 +461,21 @@ export default {
       } else if (informeTitulo=='VENTAS DETALLADAS POR COMPROBANTES') {
         doc.text ( 'Fecha', 40, 115 )
         doc.text ( 'Comprobante', 100, 115 ) //40 
-        doc.text ( 'Código', 205, 115 ) //150
+        doc.text ( this.codigooid=='C'?'Código':'ID', 205, 115 ) //150
         doc.text ( 'Descripción', 280, 115 )  // 250
         doc.text ( 'Cantidad', 570, 115 )
         doc.text ( 'Precio', 675, 115 )
         doc.text ( 'Total', 780, 115 )
         doc.line( 40, 121, 800, 121)
       } else if (informeTitulo=='VENTAS TOTALES POR ARTICULOS') {
-        doc.text ( 'Código', 40, 115 )
+        doc.text ( this.codigooid=='C'?'Código':'ID', 40, 115 )
         doc.text ( 'Nombre', 140, 115 )
         doc.text ( 'Cantidad', 532, 115 )
         doc.line( 40, 121, 570, 121)
       } else if (this.informeTitulo=='VENTAS TOTALES POR CLIENTES') {
-        doc.text ( 'Código', 40, 115 )
+        doc.text ( this.codigooid=='C'?'Código':'ID', 40, 115 )
         doc.text ( 'Nombre', 120, 115 )
-        doc.text ( 'Total', 532, 115 )
+        doc.text ( 'Total', 550, 115 )
         doc.line( 40, 121, 570, 121)
       } else if (this.informeTitulo=='RENTABILIDAD BRUTA') {
         doc.text ( 'Fecha', 40, 115 )
@@ -523,21 +514,22 @@ export default {
         } else if (informeTitulo=='VENTAS DETALLADAS POR COMPROBANTES') {
           doc.text ( this.rows[i].fecha, 40, f )  //40
           doc.text ( this.rows[i].cpr, 100, f )  //40
-          doc.text ( this.rows[i].codigo, 205, f )  //155
+          debugger
+          doc.text (this.rows[i].codigo.toString(), 205, f )  //155
           doc.text (this.rows[i].descripcion, 280, f) //250
           doc.text (this.rows[i].cantidad.toString(), 605, f, 'right' )
           doc.text (this.rows[i].precio.toString(), 700, f, 'right' )
           doc.text (this.rows[i].totalitem.toString(), 800, f, 'right' )
         } else if (informeTitulo=='VENTAS TOTALES POR ARTICULOS') {
-          doc.text ( this.rows[i].codigo, 40, f )
-          doc.text ( this.rows[i].nombre, 140, f )
+          doc.text (this.rows[i].codigo.toString(), 40, f )
+          doc.text (this.rows[i].nombre, 140, f )
           doc.text (this.rows[i].cantidad.toString(), 570, f, 'right' )
         } else if (this.informeTitulo=='VENTAS TOTALES POR CLIENTES') {
-          doc.text ( this.rows[i].codigo.toString(), 40, f )
-          doc.text ( this.rows[i].nombre, 120, f )
+          doc.text (this.rows[i].codigo.toString(), 40, f )
+          doc.text (this.rows[i].nombre, 120, f )
           doc.text (this.rows[i].total.toString(), 570, f, 'right' )
         } else if (this.informeTitulo=='RENTABILIDAD BRUTA') {
-          doc.text ( this.rows[i].fecha, 40, f )
+          doc.text (this.rows[i].fecha, 40, f )
           doc.text (this.rows[i].rentabilidad.toString(), 570, f, 'right' )
         }
         f+=15

@@ -1,7 +1,8 @@
 <template>
   <v-layout align-start>
     <v-flex>
-      <v-dialog v-model="dialog" :fullscreen="true" persistent>
+      <v-dialog v-model="dialog" :fullscreen="true" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-toolbar flat
           :color="temas.forms_titulo_bg"
@@ -537,7 +538,8 @@
       </v-dialog>
 
       <!-- EDITAR PRECIO -->
-      <v-dialog v-model="dialogEditarPrecio" max-width="400px">
+      <v-dialog v-model="dialogEditarPrecio" max-width="400px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card class="fg">
           <v-toolbar flat
@@ -651,7 +653,8 @@
       <!-- FIN EDITAR PRECIO -->
 
       <!-- NUEVA COPIA -->
-      <v-dialog v-model="dialogNuevaCopia" max-width="600px">
+      <v-dialog v-model="dialogNuevaCopia" max-width="600px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card class="fg">
           <v-toolbar flat
@@ -693,7 +696,8 @@
       </v-dialog>
 
       <!-- SELECCION DE GRUPOS-->
-      <v-dialog v-model="dialogGrupos" max-width="600px" max-height="600px">
+      <v-dialog v-model="dialogGrupos" max-width="600px" max-height="600px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card class="fg">
           <v-toolbar text
@@ -857,7 +861,7 @@ export default {
     ...mapMutations(['alert','closeAlert']),
     ...mapState([
       'vinculosPadres', 'vinculosPadresLic', 'vinculosPadresLic', 'vinculosHijos', 'empresa', 'temas', 'dolar', 'externo', 'tipo',
-      'codigooid', 'cttLoadReg', 'descuentos'
+      'codigooid', 'cttLoadReg', 'descuentos', 'transition'
     ]),
 
     itemsMarcasFil () {

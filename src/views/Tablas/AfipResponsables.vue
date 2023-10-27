@@ -46,7 +46,8 @@
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <!-- Modal del diálogo para Alta y Edicion -->
-            <v-dialog v-model="dialog" max-width="500px">
+            <v-dialog v-model="dialog" max-width="500px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card class="fg">
                 <v-toolbar
@@ -231,7 +232,7 @@ export default {
   }),
   computed: {
     ...mapGetters('authentication', ['isLoggedIn', 'userId']),
-    ...mapState(['temas']),
+    ...mapState(['temas','transition']),
     formTitle () {
       return this.editedIndex === -1 ? 'Nuevo Tipo de Responsable' : 'Editar Tipo de Responsable';
     },

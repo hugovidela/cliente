@@ -186,7 +186,8 @@
             <!-- Modal del diálogo para Alta y Edicion -->
 
             <!--NUEVO MOVIMIENTO -->
-            <v-dialog v-model="dialogMovimiento" max-width="1200px">
+            <v-dialog v-model="dialogMovimiento" max-width="1200px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat
@@ -359,7 +360,8 @@
 
 
             <!--NUEVO SALDO BANCARIO -->
-            <v-dialog v-model="dialogSaldoBancario" max-width="400px">
+            <v-dialog v-model="dialogSaldoBancario" max-width="400px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat

@@ -47,7 +47,8 @@
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <!-- Modal del diálogo para Alta y Edicion -->
-            <v-dialog v-model="dialog" max-width="400px">
+            <v-dialog v-model="dialog" max-width="400px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card class="fg">
 
@@ -234,7 +235,7 @@ export default {
   }),
   computed: {
     ...mapGetters('authentication', ['isLoggedIn','userId']),
-    ...mapState(['temas']),
+    ...mapState(['temas','transition']),
     formTitle () {
       return this.editedIndex === -1 ? 'Nuevo Codigo AFIP' : 'Editar codigo AFIP';
     },

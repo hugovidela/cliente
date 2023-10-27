@@ -79,7 +79,7 @@
             <template v-slot:top>
 
               <v-toolbar flat color="white">
-                <v-dialog max-width="600px">
+                <v-dialog max-width="600px" :transition="transition==null?'false':transition">
 
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn v-show="puedeEditar"
@@ -544,7 +544,7 @@
       </v-row>
 
       <!-- DATOS DEL PERIODO -->
-      <v-dialog v-model="dialogMasInfo" max-width="450px" persistent>
+      <v-dialog v-model="dialogMasInfo" max-width="450px" persistent :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card>
           <v-toolbar flat

@@ -52,7 +52,8 @@
             <v-spacer></v-spacer>
 
             <!-- Modal del diálogo para Alta y Edicion -->
-            <v-dialog v-model="dialog" max-width="700px">
+            <v-dialog v-model="dialog" max-width="700px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card class="fg">
                 <v-toolbar
@@ -223,7 +224,7 @@ export default {
   }),
   computed: {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId']),    
-    ...mapState(['temas']),
+    ...mapState(['temas','transition']),
     formTitle () {
       return this.editedIndex === -1 ? 'Nuevo Comprobante' : 'Editar Comprobante';
     },

@@ -1,7 +1,8 @@
 <template>
   <v-layout align-start>
     <v-flex>
-      <v-dialog v-model="dialog" :fullscreen="true" persistent>
+      <v-dialog v-model="dialog" :fullscreen="true" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
 
         <v-toolbar flat
@@ -220,7 +221,8 @@
       </v-dialog>
 
       <!-- SELECCION DE GRUPOS-->
-      <v-dialog v-model="dialogGrupos" max-width="600px" max-height="600px">
+      <v-dialog v-model="dialogGrupos" max-width="600px" max-height="600px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card class="fg">
           <v-toolbar text
@@ -271,7 +273,8 @@
       </v-dialog>
 
       <!-- SELECCION DE GRUPOS ASIGNACION -->
-      <v-dialog v-model="dialogGruposAsigna" max-width="600px" max-height="600px">
+      <v-dialog v-model="dialogGruposAsigna" max-width="600px" max-height="600px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card class="fg">
           <v-toolbar text
@@ -312,7 +315,8 @@
       </v-dialog>
 
       <!-- MARCAS POR ARTICULO -->
-      <v-dialog v-model="dialogMarcasXArt" max-width="600px" max-height="300px">
+      <v-dialog v-model="dialogMarcasXArt" max-width="600px" max-height="300px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card class="fg">
           <v-toolbar text
@@ -340,7 +344,8 @@
       <!-- FINALIZA LA EDICION DE PRESENTACIONES-->
 
       <!-- GRUPOS POR ARTICULO -->
-      <v-dialog v-model="dialogGruposXArt" max-width="600px" max-height="300px">
+      <v-dialog v-model="dialogGruposXArt" max-width="600px" max-height="300px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card class="fg">
           <v-toolbar text
@@ -496,7 +501,8 @@ export default {
     ...mapGetters('authentication', ['isLoggedIn','userId']),
     ...mapMutations(['alert','closeAlert']),
     ...mapState([
-      'vinculosPadres', 'vinculosPadresLic', 'vinculosHijos', 'vinculosPadresAll', 'empresa', 'temas', 'externo', 'codigooid', 'descuentos'
+      'vinculosPadres', 'vinculosPadresLic', 'vinculosHijos', 'vinculosPadresAll',
+      'empresa', 'temas', 'externo', 'codigooid', 'descuentos', 'transition'
     ]),
 
     itemsMarcasFil () {

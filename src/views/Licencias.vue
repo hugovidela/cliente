@@ -14,7 +14,7 @@
             </v-app-bar>
             <v-container>
               <v-row dense>
-                <v-col cols="12" class="fg">
+                <v-col cols="12" class="fg75">
                   $ {{ formatoImporte(cbt.total) }} ({{ cbt.ctt }})
                 </v-col>
               </v-row>
@@ -225,7 +225,8 @@
       </v-data-table>
 
       <!--FACTURAR-->
-      <v-dialog v-model="dialog" max-width="350px">
+      <v-dialog v-model="dialog" max-width="350px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{}"></template>
 
         <v-toolbar flat
@@ -238,7 +239,7 @@
             <v-icon>mdi-arrow-left-circle</v-icon>
           </v-btn>
           <span class="text--right">
-            {{empresa}} - FACTURAR
+            Facturar
           </span>
           <v-spacer></v-spacer>
           <v-btn
@@ -255,55 +256,37 @@
             <v-card-text>
               <v-container>
                 <v-row>
-                  <v-col cols="6" sm="6" md="6" class="pt-0 pd-0">
-                    <v-text-field
-                      disabled
-                      :color="temas.forms_titulo_bg"
-                      v-model="editado.perfiscal"
-                      label="Per Fiscal">
-                    </v-text-field>
+                  <v-col cols="12" sm="6" class="pt-0 pd-0">
+                    <span class="fg">
+                      Per.Fiscal<br><b>{{ editado.perfiscal }}</b>
+                    </span>
                   </v-col>
-                  <v-col cols="6" sm="6" md="6" class="pt-0 pd-0">
-                    <v-text-field
-                      disabled
-                      :color="temas.forms_titulo_bg"
-                      v-model="editado.cuota"
-                      label="Cuota">
-                    </v-text-field>
+                  <v-col cols="12" sm="6" class="pt-0 pd-0">
+                    <span class="fg">
+                      Cuota<br><b>${{ formatoImporte(editado.cuota) }}</b>
+                    </span>
                   </v-col>
-                  <v-col cols="6" sm="6" md="6" class="pt-0 pd-0">
-                    <v-text-field
-                      disabled
-                      :color="temas.forms_titulo_bg"
-                      v-model="editado.importedescuento"
-                      label="Comisiones">
-                    </v-text-field>
+                  <v-col cols="12" sm="6" class="pt-0 pd-0">
+                    <span class="fg">
+                      Imp.Desc.<br><b>${{ formatoImporte(editado.importedescuento) }}</b>
+                    </span>
                   </v-col>
-                  <v-col cols="6" sm="6" md="6" class="pt-0 pd-0">
-                    <v-text-field
-                      disabled
-                      :color="temas.forms_titulo_bg"
-                      v-model="editado.gravado"
-                      label="Gravado">
-                    </v-text-field>
+                  <v-col cols="12" sm="6" class="pt-0 pd-0">
+                    <span class="fg">
+                      Gravado<br><b>${{ formatoImporte(editado.gravado) }}</b>
+                    </span>
                   </v-col>
                 </v-row>
                 <v-row>
-                  <v-col cols="6" sm="6" md="6" class="pt-0 pd-0">
-                    <v-text-field
-                      disabled
-                      :color="temas.forms_titulo_bg"
-                      v-model="editado.iva"
-                      label="IVA">
-                    </v-text-field>
+                  <v-col cols="12" sm="6" class="pt-0 pd-0">
+                    <span class="fg">
+                      IVA<br><b>${{ formatoImporte(editado.iva) }}</b>
+                    </span>
                   </v-col>
-                  <v-col cols="6" sm="6" md="6" class="pt-0 pd-0">
-                    <v-text-field
-                      disabled
-                      :color="temas.forms_titulo_bg"
-                      v-model="editado.total"
-                      label="Total">
-                    </v-text-field>
+                  <v-col cols="12" sm="6" class="pt-0 pd-0">
+                    <span class="fg">
+                      TOTAL<br><b>${{ formatoImporte(editado.total) }}</b>
+                    </span>
                   </v-col>
                 </v-row>
               </v-container>
@@ -368,9 +351,11 @@ export default {
 
     comprobantes: [
       { nombre: 'Usuarios CO', total: 0, ctt: 0, bg: '', dark: '', activo: true },
+      { nombre: 'Usuarios ME', total: 0, ctt: 0, bg: '', dark: '', activo: true },
       { nombre: 'Usuarios BA', total: 0, ctt: 0, bg: '', dark: '', activo: true },
       { nombre: 'Usuarios PP', total: 0, ctt: 0, bg: '', dark: '', activo: true },
       { nombre: 'Totales CO',  total: 0, ctt: 0, bg: '', dark: '', activo: true },
+      { nombre: 'Totales ME',  total: 0, ctt: 0, bg: '', dark: '', activo: true },
       { nombre: 'Totales BA',  total: 0, ctt: 0, bg: '', dark: '', activo: true },
       { nombre: 'Totales PP',  total: 0, ctt: 0, bg: '', dark: '', activo: true },
       { nombre: 'Total',       total: 0, ctt: 0, bg: '', dark: '', activo: true },
@@ -409,6 +394,7 @@ export default {
       { text:'DF', value:'user.diadefacturacion', align:'left', width: 100},
       { text:'Clase', value:'tipo', align:'left', width: 100},
       { text:'CO', value:'co_ctt', align:'end', width: 100},
+      { text:'ME', value:'me_ctt', align:'end', width: 100},
       { text:'BA', value:'ba_ctt', align:'end', width: 100},
       { text:'PP', value:'pp_ctt', align:'end', width: 100},
       { text:'CUOTA', value:'importe', align:'end', width: 150},
@@ -450,45 +436,22 @@ export default {
       estado: '',
       observaciones: '',
     },
-
     descriptionLimit: 80,
     entriesTerceros: [],
-    
     filtrosEstados: [],
     filtroEstadoSel: 'Todos',
-
   }),
 
 
   computed: {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId']),
-    ...mapState([
-      'dolar',
-      'sucursal',
-      'sucursales',
-      'sucursalDemo',
-      'sucursalFiscal',
-      'tema',
-      'temas',
-      'centrales',
-      'notificaciones',
-      'caja',
-      'vinculosPadres', 
-      'vinculosHijos',
-      'empresa',
-      'datosEmpresa',
-      'responsable',
-      'cuit',
-      'level',
-    ]),
-
-
+    ...mapState(['dolar','sucursal','sucursales','sucursalDemo','sucursalFiscal','tema','temas','centrales',
+      'notificaciones','caja','vinculosPadres','vinculosHijos','empresa','datosEmpresa','responsable','cuit','level','transition',]),
   },
 
   search(val) {
     this.listarHTTP(false)
   },
-
 
   mounted () {
     this.$store.commit('closeAlert')
@@ -507,6 +470,8 @@ export default {
             this.comprobantes[4].activo = true
             this.comprobantes[5].activo = true
             this.comprobantes[6].activo = true
+            this.comprobantes[7].activo = true
+            this.comprobantes[8].activo = true
             this.anio = moment().format('YYYY')
 //          this.centrales.ventas_panel = 'MI Externos'
             this.selectTipoDeComprobante('CO')
@@ -516,9 +481,8 @@ export default {
     })
   },
 
-
   created () {
-    for (let i=0; i<=6; i++) {
+    for (let i=0; i<=8; i++) {
       this.comprobantes[i].bg    = this.$store.state.temas.cen_panelcpr_bg
       this.comprobantes[i].dark  = this.$store.state.temas.cen_panelcpr_dark
     }
@@ -555,7 +519,6 @@ export default {
     })
   },
 
-
   methods: {
     ...mapMutations([
       'alert',
@@ -571,7 +534,6 @@ export default {
       'setVinculasHijos',
       'setEmpresa',
     ]),
-
 
     /////////////////////////
     // METODOS DE CABECERA //
@@ -705,7 +667,6 @@ export default {
       this.electronica = !this.sucursalDemo
     },
 
-
     listarHTTP(refrescoMeses){
       let perfiscal = ''
       let p = this.losMeses.indexOf(this.elMes)
@@ -718,12 +679,10 @@ export default {
       let s = this.search.length>0 ? this.search : 'all'
 
       return HTTP().post('/'+this.modelo, { perfiscal: perfiscal }).then(({ data }) => {
-
         for (let i=0; i<=this.comprobantes.length-1; i++) {
           this.comprobantes[i].total = 0
           this.comprobantes[i].ctt = 0
         }
-
         this.filtrosEstados = []
         for (let i=0; i<=data.length-1; i++) {
 
@@ -759,21 +718,26 @@ export default {
           if (data[i].tipo=='CO') {
             this.comprobantes[0].ctt   += 1
             this.comprobantes[0].total += data[i].total*1.21
-            this.comprobantes[3].ctt   += 1
-            this.comprobantes[3].total += data[i].total*1.21
-          } else if (data[i].tipo=='BA') {
-            this.comprobantes[1].ctt   += 1
-            this.comprobantes[1].total += data[i].total*1.21
             this.comprobantes[4].ctt   += 1
             this.comprobantes[4].total += data[i].total*1.21
-          } else if (data[i].tipo=='PP') {
-            this.comprobantes[2].ctt   += 1
-            this.comprobantes[2].total += data[i].total*1.21
+          } else if (data[i].tipo=='ME') {
+            this.comprobantes[1].ctt   += 1
+            this.comprobantes[1].total += data[i].total*1.21
             this.comprobantes[5].ctt   += 1
             this.comprobantes[5].total += data[i].total*1.21
+          } else if (data[i].tipo=='BA') {
+            this.comprobantes[2].ctt   += 1
+            this.comprobantes[2].total += data[i].total*1.21
+            this.comprobantes[6].ctt   += 1
+            this.comprobantes[6].total += data[i].total*1.21
+          } else if (data[i].tipo=='PP') {
+            this.comprobantes[3].ctt   += 1
+            this.comprobantes[3].total += data[i].total*1.21
+            this.comprobantes[7].ctt   += 1
+            this.comprobantes[7].total += data[i].total*1.21
           }
-          this.comprobantes[6].ctt   += 1
-          this.comprobantes[6].total += data[i].total*1.21
+          this.comprobantes[8].ctt   += 1
+          this.comprobantes[8].total += data[i].total*1.21
         }
         this.itemsAll = data
         this.items = data
@@ -879,18 +843,22 @@ export default {
         articulo_id = 17
         codigo = '17@1'
         nombre = 'LICENCIA ERP COMPLETO'
-      } else if (this.itemActual.user.tipo=='BA') {
+      } else if (this.itemActual.user.tipo=='ME') {
         articulo_id = 18
         codigo = '18@1'
+        nombre = 'LICENCIA ERP MEDIO'
+      } else if (this.itemActual.user.tipo=='BA') {
+        articulo_id = 18
+        codigo = '19@1'
         nombre = 'LICENCIA ERP BASICO'
       } else if (this.itemActual.user.tipo=='PP') {
         articulo_id = 19
-        codigo = '19@1'
-        nombre = 'LICENCIA PRECIOS Y PEDIDOS'
-      } else if (this.itemActual.user.tipo=='TI') {
-        articulo_id = 20
         codigo = '20@1'
-        nombre = 'LICENCIA TIENDA'
+        nombre = 'LICENCIA PRECIOS Y PEDIDOS'
+//    } else if (this.itemActual.user.tipo=='TI') {
+//      articulo_id = 20
+//      codigo = '20@1'
+//      nombre = 'LICENCIA TIENDA'
       }
 
       this.articulos.push({
@@ -1063,6 +1031,14 @@ export default {
   .fg {
     font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: 100%;
+  }
+  .fg75 {
+    font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 75%;
+  }
+  .fg80 {
+    font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 80%;
   }
   .fg85 {
     font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;

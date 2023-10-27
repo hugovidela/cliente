@@ -231,7 +231,8 @@
             </v-toolbar-title>
 
             <!-- Modal del diálogo para Alta y Edicion -->
-            <v-dialog v-model="dialog" max-width="550px" :fullscreen="true" persistent>
+            <v-dialog v-model="dialog" max-width="550px" :fullscreen="true" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card>
 
@@ -910,7 +911,7 @@
             </v-dialog>
 
             <!--// MODIFICACION DE PEDIDOS // -->
-            <v-dialog v-model="dialogPed" max-width="550px" :fullscreen="true">
+            <v-dialog v-model="dialogPed" max-width="550px" :fullscreen="true" :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
                 <v-toolbar flat
@@ -1003,7 +1004,7 @@
             <!--// FIN DEL PROCESAMIENTO DE PEDIDOS // -->
 
             <!--TRANSFERENCIA DE PEDIDO A OTRA SUCURSAL -->
-            <v-dialog v-model="dialogTransferirPedido" max-width="1080px">
+            <v-dialog v-model="dialogTransferirPedido" max-width="1080px" :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card class="fg">
                 <v-toolbar flat
@@ -1123,7 +1124,8 @@
                               </v-tooltip>
                             </template>
                             <template v-slot:top>
-                              <v-dialog v-model="dialogTransferirItem" max-width="250px">
+                              <v-dialog v-model="dialogTransferirItem" max-width="250px"
+                                :transition="transition==null?'false':transition">
                                 <v-card>
                                   <v-card-title>
                                     <span class="headline">A Transferir</span>
@@ -1174,7 +1176,7 @@
             <!-- FIN DE TRANSFERENCIA DE PEDIDO -->
 
             <!--// SEGUIMIENTO/RASTREO DE COMPROBANTES // -->
-            <v-dialog v-model="dialogRas" max-width="1260px">
+            <v-dialog v-model="dialogRas" max-width="1260px" :transition="transition==null?'false':transition">
               <v-card class="fg">
                 <template v-slot:activator="{}"></template>
                 <v-toolbar flat
@@ -1214,7 +1216,7 @@
             <!-- FIN DEL RASTREO -->
 
             <!--// TIMELINE // -->
-            <v-dialog v-model="dialogTimeLine" max-width="500px">
+            <v-dialog v-model="dialogTimeLine" max-width="500px" :transition="transition==null?'false':transition">
               <v-card class="fg">
                 <template v-slot:activator="{}"></template>
                 <v-toolbar flat
@@ -1254,7 +1256,7 @@
             <!-- FIN DEL TIMELINE -->
 
             <!--// ANOTACIONES DE VENTAS // -->
-            <v-dialog v-model="dialogNot" max-width="1250px" persistent>
+            <v-dialog v-model="dialogNot" max-width="1250px" persistent :transition="transition==null?'false':transition">
               <v-card>
                 <v-toolbar flat
                   :color="$store.state.temas.forms_titulo_bg"
@@ -1477,7 +1479,7 @@
             <!-- FIN DE ANOTACIONES DE VENTAS -->
 
              <!--// ENVIOS // -->
-            <v-dialog v-model="dialogEnvios" max-width="700px">
+            <v-dialog v-model="dialogEnvios" max-width="700px" :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
                 <v-toolbar flat
@@ -1703,7 +1705,7 @@
             <!-- FIN DE ENVIOS -->
 
             <!-- BULTOS DEL PEDIDO -->
-            <v-dialog v-model="dialogBultos" max-width="400px">
+            <v-dialog v-model="dialogBultos" max-width="400px" :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
                 <v-toolbar flat
@@ -1748,7 +1750,8 @@
             <!-- FIN INGRESO DE BULTOS -->
 
             <!-- RETIROS DE MERCADERIA YA FACTURADA -->
-            <v-dialog v-model="dialogRetiro" max-width="700px">
+            <v-dialog v-model="dialogRetiro" max-width="700px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
 
@@ -1756,20 +1759,20 @@
                   :color="temas.forms_titulo_bg"
                   :dark="temas.forms_titulo_dark==true">
                   <v-btn
-                    icon @click="dialogRetiroMerc=false"
+                    icon @click="dialogRetiro=false"
                     :color="temas.forms_close_bg"
                     :dark="temas.forms_close_dark==true">
                     <v-icon>mdi-arrow-left-circle</v-icon>
                   </v-btn>
                   <span class="text--right">
-                    {{empresa}} - Retiro de Mercadería
+                    {{empresa}} - Retiro de Mercaderíax
                   </span>
                   <v-spacer></v-spacer>
                   <v-btn
                     :color="temas.barra_principal_bg"
                     :dark="temas.barra_principal_dark"
                     class="ma-2 white--text" @click="confirmarRetiroMerc()">
-                    Guardar Retiro
+                    Guardar Retirox
                   </v-btn>
                 </v-toolbar>
 
@@ -1828,7 +1831,8 @@
             <!-- FIN DE RETIROS -->
 
             <!--// ADMINISTRACION DE PEDIDOS // -->
-            <v-dialog v-model="dialogAdministracionPedidos" :fullscreen="true" persistent>
+            <v-dialog v-model="dialogAdministracionPedidos" :fullscreen="true" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card class="fg" height="700px">
                 <v-toolbar flat
@@ -2300,6 +2304,7 @@
                           </template>
 
                           <!-- CPR RECIBO -->
+                          <!--v-if="r.cpr.substring(0,3)=='REC'"-->
                           <template v-slot:item.cprsA.recibo.cpr="{ item }">
                             <v-row class="pt-0 pb-0">
                               <v-col cols="12">
@@ -2311,7 +2316,7 @@
                                         <div class="fg" :color="temas.forms_btn_xls_bg">
                                           <div class="width:300px">
                                             <span class="izq pr-2 pt-1 mt-1"><b>{{r.cpr}}</b></span>
-                                            <v-btn icon
+                                            <v-btn icon v-if="r.cpr.substring(0,2)=='RC'"
                                               @click="print(r)">
                                               <v-icon>mdi-printer</v-icon>
                                             </v-btn>
@@ -2349,12 +2354,12 @@
                                         class="pt-0 pb-0 pr-2 pl-2">
                                         <div class="fg" :color="temas.forms_btn_xls_bg">
                                           <div class="width:300px">
-                                            <span class="izq pr-2 pt-1 mt-1"><b>{{r.cpr}}</b></span>
-                                            <v-btn icon
+                                            <span class="izq pr-2 pt-0 mt-0"><b>{{r.cpr}}</b></span>
+                                            <v-btn icon v-if="r.cpr.substring(0,2)=='RC'"
                                               @click="print(r)">
                                               <v-icon>mdi-printer</v-icon>
                                             </v-btn>
-                                            <span class="der pt-1 mt-1" :style="{ color: (
+                                            <span class="der pt-0 mt-0" :style="{ color: (
                                               roundTo(item.cprsB.factura.total+item.cprsB.ndd.total+item.cprsB.ndc.total,2)!=
                                               r.total)?'red':'green' }">
                                               ${{kit.redondear(r.total,2,2)}}
@@ -2393,7 +2398,7 @@
             </v-dialog>
 
             <!-- ARTICULOS DEL PEDIDO -->
-            <v-dialog v-model="dialogPedidoArticulos" max-width="1200px">
+            <v-dialog v-model="dialogPedidoArticulos" max-width="1200px" :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card class="fg" height="700px">
                 <v-toolbar flat
@@ -2441,7 +2446,7 @@
             <!-- FIN ARTICULOS DEL PEDIDO -->
 
             <!-- ANULAR PEDIDO -->
-            <v-dialog v-model="dialogAnularPedido" max-width="700px">
+            <v-dialog v-model="dialogAnularPedido" max-width="700px" :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
 
@@ -2491,7 +2496,7 @@
             <!-- FIN ANULAR PEDIDO -->
 
             <!--REMITO DE UNA FACTURA -->
-            <v-dialog v-model="dialogRem" max-width="800px">
+            <v-dialog v-model="dialogRem" max-width="800px" :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat
@@ -2563,7 +2568,7 @@
             <!-- FIN DE REMITO DE UNA FACTURA -->
 
             <!-- DIALOG DE REMITO PARA VARIAS FACTURAS  -->
-            <v-dialog v-model="dialogSelFacturas" max-width="700px">
+            <v-dialog v-model="dialogSelFacturas" max-width="700px" :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat
@@ -2622,7 +2627,7 @@
             <!-- FIN DIALOG DE REMITO PARA VARIAS FACTURAS  -->
 
             <!-- DIALOG VER MALETINES -->
-            <v-dialog v-model="dialogVerSelMaletines" max-width="1000px">
+            <v-dialog v-model="dialogVerSelMaletines" max-width="1000px" :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat
@@ -2674,7 +2679,7 @@
             <!-- FIN DIALOG VER MALETINES -->
 
             <!-- DIALOG DE TURNOS A FACTURAR -->
-            <v-dialog v-model="dialogSelTurnos" max-width="1100px">
+            <v-dialog v-model="dialogSelTurnos" max-width="1100px" :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat
@@ -2730,7 +2735,7 @@
             <!-- FIN DIALOG DE REMITO PARA VARIAS FACTURAS  -->
 
             <!--NDC DE UNA FACTURA/PRESUPUESTO -->
-            <v-dialog v-model="dialogNdcFac" max-width="1200px">
+            <v-dialog v-model="dialogNdcFac" max-width="1200px" :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat
@@ -2867,7 +2872,7 @@
             <!-- FIN DE NDC DE UNA FACTURA -->
 
             <!--NDD DE UNA FACTURA -->
-            <v-dialog v-model="dialogNddFac" max-width="1200px">
+            <v-dialog v-model="dialogNddFac" max-width="1200px" :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat
@@ -2980,7 +2985,7 @@
             <!-- FIN DE NDD DE UNA FACTURA -->
 
             <!--RECIBO -->
-            <v-dialog v-model="dialogRec" max-width="1300px" persistent>
+            <v-dialog v-model="dialogRec" max-width="1300px" persistent :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -3082,7 +3087,7 @@
                           <template v-slot:top>
 
                             <!-- A CANCELAR -->
-                            <v-dialog v-model="dialogPend" max-width="300px">
+                            <v-dialog v-model="dialogPend" max-width="300px" :transition="transition==null?'false':transition">
 
                               <template v-slot:activator="{}"></template>
                               <v-toolbar flat
@@ -3252,7 +3257,8 @@
                           hide-default-footer>
                           <template v-slot:top>
 
-                            <v-dialog v-model="dialogMed" :max-width="medpagwidth"> <!--1100">-->
+                            <v-dialog v-model="dialogMed" :max-width="medpagwidth"
+                              :transition="transition==null?'false':transition">
                               <v-card>
                                 <v-toolbar flat
                                   :color="temas.forms_titulo_bg"
@@ -3598,7 +3604,7 @@
             <!-- FIN DEL RECIBO -->
 
             <!--RETIROS DE MERCADERIA A FACTURAR -->
-            <v-dialog v-model="dialogRetiroMerc" max-width="1000px" persistent>
+            <v-dialog v-model="dialogRetiroMerc" max-width="1000px" persistent :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
 
               <v-toolbar flat
@@ -3610,7 +3616,7 @@
                   :dark="temas.forms_close_dark==true">
                   <v-icon>mdi-arrow-left-circle</v-icon>
                 </v-btn>
-                <span class="fg pl-2 headdline">{{ formTitle }}</span>
+                <span class="fg pl-2 headdline">{{ formTitle }}xxx</span>
                 <v-spacer></v-spacer>
                 <v-btn v-if="editado.tercero_id!=''&&articulos.length>0 && !yaEnviado"
                   :color="temas.barra_principal_bg"
@@ -3761,7 +3767,7 @@
             <!-- FIN DE RETIROS DE MERCADERIA -->
 
             <!-- ERROR EN EL PEDIDO -->
-            <v-dialog v-model="dialogError" max-width="1200px" persistent>
+            <v-dialog v-model="dialogError" max-width="1200px" persistent :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card>
                 <v-toolbar flat
@@ -4869,6 +4875,7 @@ export default {
       'vinculosPadres', 
       'vinculosPadresAll',
       'vinculosPadresLic',
+      'transition',
     ]),
 
     mediosFiltrado() {
@@ -5417,7 +5424,9 @@ export default {
           this.headersTransfPed[0].text = this.$store.state.codigooid   == 'C'?'Código':'ID'
           this.headersTransfPed[0].value = this.$store.state.codigooid   == 'C'?'codigo':'articulo_id'
           this.headersNdcxDev[0].text = this.$store.state.codigooid   == 'C'?'Código':'ID'
-          this.headersNdcxDev[0].value = this.$store.state.codigooid   == 'C'?'cpdigo':'articulo_id'
+          this.headersNdcxDev[0].value = this.$store.state.codigooid   == 'C'?'codigo':'articulo_id'
+          this.headersRetirosMerc[0].text = this.$store.state.codigooid   == 'C'?'Código':'ID'
+          this.headersRetirosMerc[0].value = this.$store.state.codigooid   == 'C'?'codigo':'articulo_id'
           // hev021
         })
       }
@@ -7109,23 +7118,24 @@ export default {
       } else {
 
         return HTTP().post('comprobante', { id: this.itemActual.id }).then(({ data }) => {
-          this.itemActual = data.c
-          this.editedIndexRetiroMer = this.items.findIndex(x => x.id == item.id)
-          this.editado.id = data.id
-          this.editado.cpr = data.cpr
-          this.editado.fecha = data.fecha
 
           debugger
-          this.editado.tercero_id = data.tercero_id
-          this.editado.nombre = data.tercero.nombre
-          this.editado.comprobante_id = data.comprobante_id
-          this.editado.documento_id = data.tercero.documento_id
+          this.itemActual = data.c
+          this.editedIndexRetiroMer = this.items.findIndex(x => x.id == item.id)
+          this.editado.id = data.c.id
+          this.editado.cpr = data.c.cpr
+          this.editado.fecha = data.c.fecha
+
+          this.editado.tercero_id = data.c.tercero_id
+          this.editado.nombre = data.c.tercero.nombre
+          this.editado.comprobante_id = data.c.comprobante_id
+          this.editado.documento_id = data.c.tercero.documento_id
           this.editado.documentoCodigo = ''
-          this.editado.mediodepago_id = data.mediodepago_id
-          this.editado.deposito_id = data.deposito_id
+          this.editado.mediodepago_id = data.c.mediodepago_id
+          this.editado.deposito_id = data.c.deposito_id
           this.editado.vendedor = {id: null, nombre: 'MOSTRADOR'},
-          this.editado.moneda_id = data.moneda_id
-          this.editado.direccion_id = data.tercero.direcciones[0].id
+          this.editado.moneda_id = data.c.moneda_id
+          this.editado.direccion_id = data.c.tercero.direcciones[0].id
           this.editado.documento = ''
           this.editado.documentoNumero = ''
           this.editado.responsableAbrev = ''
@@ -7138,22 +7148,22 @@ export default {
           this.editado.iva = 0
           this.editado.total = 0
           this.editado.rentabilidad = 0
-          this.editado.texto = data.texto
-          this.editado.estado = data.estado
-          this.editado.observaciones = data.observaciones
+          this.editado.texto = data.c.texto
+          this.editado.estado = data.c.estado
+          this.editado.observaciones = data.c.observaciones
   
-          for (let i=0; i<=data.items.length-1; i++) {
+          for (let i=0; i<=data.c.items.length-1; i++) {
             this.articulos.push({ 
-              id: data.items[i].id, articulo_id: data.items[i].articulo_id, codigo: data.items[i].articulo.codigo, codbar: data.items[i].articulo.codbar,
-              nombre: data.items[i].articulo.nombre, deposito_id: data.items[i].deposito_id, unidad_id: data.items[i].articulo.unidad_id,
-              moneda_id: data.items[i].articulo.moneda_id, iva_id: data.items[i].articulo.iva_id, cantidad: Number(data.items[i].cantidad),
-              cantidadoriginal: Number(data.items[i].cantidad), stock: Number(data.items[i].cantidad)*-1, undstock: data.items[i].articulo.undstock,
-              sinstock: data.items[i].sinstock, costo: data.items[i].costo, precio: data.items[i].precio, preciooriginal: data.items[i].precio,
-              tasadescuento: data.items[i].tasadescuento, importedescuento: data.items[i].importedescuento, tasaproprecargo: 0,
-              total: data.items[i].total, texto: data.items[i].texto, vencimiento: data.items[i].vencimiento, adevolver: 0, padre_id: null,
-              undenvase: data.items[i].articulo.undenvase, escombo: data.items[i].articulo.escombo, ofeprecio: 0, ofetasdes: 0,
-              ofeenvio: 0, ofeunidades: 0, ofeestado: '', turno_id: null, decimales: data.items[i].articulo.precios[0].decimales,
-              preciomediocobro: false, loTengo: data.items[i].loTengo,
+              id: data.c.items[i].id, articulo_id: data.c.items[i].articulo_id, codigo: data.c.items[i].articulo.codigo, codbar: data.c.items[i].articulo.codbar,
+              nombre: data.c.items[i].articulo.nombre, deposito_id: data.c.items[i].deposito_id, unidad_id: data.c.items[i].articulo.unidad_id,
+              moneda_id: data.c.items[i].articulo.moneda_id, iva_id: data.c.items[i].articulo.iva_id, cantidad: Number(data.c.items[i].cantidad),
+              cantidadoriginal: Number(data.c.items[i].cantidad), stock: Number(data.c.items[i].cantidad)*-1, undstock: data.c.items[i].articulo.undstock,
+              sinstock: data.c.items[i].sinstock, costo: data.c.items[i].costo, precio: data.c.items[i].precio, preciooriginal: data.c.items[i].precio,
+              tasadescuento: data.c.items[i].tasadescuento, importedescuento: data.c.items[i].importedescuento, tasaproprecargo: 0,
+              total: data.c.items[i].total, texto: data.c.items[i].texto, vencimiento: data.c.items[i].vencimiento, adevolver: 0, padre_id: null,
+              undenvase: data.c.items[i].articulo.undenvase, escombo: data.c.items[i].articulo.escombo, ofeprecio: 0, ofetasdes: 0,
+              ofeenvio: 0, ofeunidades: 0, ofeestado: '', turno_id: null, decimales: data.c.items[i].articulo.precios[0].decimales,
+              preciomediocobro: false, loTengo: data.c.items[i].loTengo,
             })
           }
         })
@@ -8372,6 +8382,8 @@ export default {
         m += '<br><b>Comprobantes Emitidos</b><br>'
         m += '<b>'+data.ped+'</b> pedidos, <b>'+data.ped+'</b> facturas, <b>'+data.ndd+'</b> Notas de Débito, '
         m += '<b>'+data.ndc+'</b> Notas de Crédito y <b>'+data.rem+'</b> Remitos.<br><br>'
+
+        /*
         if (data.ped>data.fac) {
           m += '<b>¡Hay Pedidos sin Facturar!</b><br>'
           m += '<b>ATENCION<br>¡Si no has facturado todos los pedidos podrás hacerlo mas tarde.<br>'
@@ -8399,7 +8411,7 @@ export default {
           m += '<b>¡Faltan Remitos!</b><br>'
           faltan = true
         }
-
+        */
         if (faltan) {
           m += '<br><b>ATENCION<br></b>¡Faltan comprobantes!.<br>'
           m += 'Es necesario que estén todos los comprobantes emitidos, el repartidor necesitará de ellos para iniciar el viaje.<br>'
@@ -8409,10 +8421,10 @@ export default {
           m += '<b>¡Hay descuentos no aplicados!</b><br>'
           //faltan = true
           if (data.lis==1) {
-            m += data.lis+' cliente tiene descuentos asignados por lista de precios,<br>'
+            m += data.lis+' operaciones tiene descuentos asignados por lista de precios,<br>'
             m += 'pero no hay NDC emitidas.'
           } else {
-            m += data.lis+' clientes tienen listas asignadas con descuentos.<br>'
+            m += data.lis+' operaciones tienen listas asignadas con descuentos.<br>'
             if (data.ndc<1) {
               m += 'Pero no hay NDCs emitidas.'
             } else {
@@ -10089,6 +10101,8 @@ export default {
     },
 
     cprBalanceado() {
+
+      debugger
       if (this.editado.cpr.substring(0,3)=='REM') {
         return this.articulos.length==0?false:true
       }
@@ -11931,6 +11945,8 @@ export default {
             say = estaVinculado!=-1?'PPv':'PP'
           } else if (item.tercero.user.tipo=='CO') {
             say = estaVinculado!=-1?'COv':'CO'
+          } else if (item.tercero.user.tipo=='ME') {
+            say = estaVinculado!=-1?'MEv':'ME'
           } else if (item.tercero.user.tipo=='BA') {
             say = estaVinculado!=-1?'BAv':'BA'
           }
@@ -12085,6 +12101,7 @@ export default {
           }
           this.headers[5].text = 'PEDIDO POR'
           this.headers[5].value = 'observaciones'
+          this.headers[5].align = 'left'
         }
       }
     },

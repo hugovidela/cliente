@@ -3,7 +3,8 @@
     <v-flex class="fg">
 
       <!-- Modal del diálogo para Alta y Edicion -->
-      <v-dialog v-model="dialog" max-width="800px" :fullscreen="true" persistent>
+      <v-dialog v-model="dialog" max-width="800px" :fullscreen="true" persistent
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card class="fg">
 
@@ -64,9 +65,9 @@
                   <!--
                     TAB GENERAL
                   -->
-                  <v-tab-item value="general">
+                  <v-tab-item value="general" class="mt-4 pt-4">
                     <v-row>
-                      <v-col cols="6" sm="6" md="6">
+                      <v-col cols="12" sm="6">
                         <v-text-field
                           ref="username"
                           disabled
@@ -77,7 +78,7 @@
                           :maxlength="80">
                         </v-text-field>
                       </v-col>
-                      <v-col cols="6" sm="6" md="6">
+                      <v-col cols="12" sm="6">
                         <v-text-field
                           v-model="editado.email"
                           label="Correo Electrónico"
@@ -88,8 +89,8 @@
                       </v-col>
                     </v-row>
 
-                    <v-row align="center">
-                      <v-col cols="8" sm="8">
+                    <v-row>
+                      <v-col cols="12" sm="8">
                         <v-select
                           v-model="rubValue"
                           :color="temas.forms_titulo_bg"
@@ -104,7 +105,7 @@
                         </v-select>
                       </v-col>
 
-                      <v-col cols="3" sm="3" align="center" class="pt-6 md-6">
+                      <v-col cols="12" sm="3" class="pt-6 md-6">
                         <v-file-input
                           v-model="logotipo1"
                           outlined
@@ -126,7 +127,7 @@
                     </v-row>
 
                     <v-row>
-                      <v-col cols="4" sx="4" mx="4">
+                      <v-col cols="4" sm="4">
                         <v-autocomplete
                           v-model="editado.tercero_id"
                           :color="temas.forms_titulo_bg"
@@ -142,7 +143,7 @@
                         </v-autocomplete>
                       </v-col>
 
-                      <v-col cols="4" sx="4" mx="4">
+                      <v-col cols="4" sm="4">
                         <v-select
                           v-model="editado.tipo"
                           :color="temas.forms_titulo_bg"
@@ -155,6 +156,7 @@
                           outlined>
                         </v-select>
                       </v-col>
+
                       <v-col cols="3" sm="3" align="center" class="md-6">
                         <v-file-input
                           v-model="logotipo2"
@@ -169,6 +171,7 @@
                         </v-file-input>
                       </v-col>
                     </v-row>
+
                     <v-row>
                       <v-col cols="2" sm="2" md="2">
                         <v-text-field v-if="!externo"
@@ -577,8 +580,30 @@
                       </v-col>
                     </v-row>
 
+                    <v-row class="pt-0 pb-0 pl-3" v-show="tipo!='PP'">
+                      <v-col cols="12" sm="3" class="pt-0 pb-0">
+                        <v-select
+                          v-model="editado.transition"
+                          :color="temas.forms_titulo_bg"
+                          :item-color="temas.forms_titulo_bg"
+                          :items="transiciones"
+                          item-value="nombre"
+                          item-text="nombre"
+                          label="Tipo de Transición en Formularios"
+                          outlined>
+                        </v-select>
+                        <!-- <v-switch
+                          label=
+                          "Activar Transition en formularios"
+                          :color="temas.cen_btns_bg"
+                          v-model="editado.transition">
+                        </v-switch> -->
+                      </v-col>
+                    </v-row>
+
                     <v-row class="pt-0">
-                      <v-dialog v-model="dialogPreciosSugeridos" max-width="800px">
+                      <v-dialog v-model="dialogPreciosSugeridos" max-width="800px"
+                        :transition="transition==null?'false':transition">
                         <v-card class="fg">
                           <v-toolbar flat
                             :color="temas.forms_titulo_bg"
@@ -631,7 +656,8 @@
                     </v-row>
 
                     <v-row class="pt-0">
-                      <v-dialog v-model="dialogSoloArtConPrecios" max-width="800px">
+                      <v-dialog v-model="dialogSoloArtConPrecios" max-width="800px"
+                        :transition="transition==null?'false':transition">
                         <v-card class="fg">
                           <v-toolbar flat
                             :color="temas.forms_titulo_bg"
@@ -691,7 +717,8 @@
                     </v-row>
 
                     <v-row class="pt-0">
-                      <v-dialog v-model="dialogCostosBonificados" max-width="800px">
+                      <v-dialog v-model="dialogCostosBonificados" max-width="800px"
+                        :transition="transition==null?'false':transition">
                         <v-card class="fg">
                           <v-toolbar flat
                             :color="temas.forms_titulo_bg"
@@ -733,7 +760,8 @@
                     </v-row>
 
                     <v-row class="pt-0">
-                      <v-dialog v-model="dialogAnclarUsd" max-width="800px">
+                      <v-dialog v-model="dialogAnclarUsd" max-width="800px"
+                        :transition="transition==null?'false':transition">
                         <v-card class="fg">
                           <v-toolbar flat
                             :color="temas.forms_titulo_bg"
@@ -800,7 +828,8 @@
                     </v-row>
 
                     <v-row class="pt-0">
-                      <v-dialog v-model="dialogActCertificado" max-width="800px">
+                      <v-dialog v-model="dialogActCertificado" max-width="800px"
+                        :transition="transition==null?'false':transition">
                         <v-card class="fg">
                           <v-toolbar flat
                             :color="temas.forms_titulo_bg"
@@ -888,7 +917,7 @@
                   -->
                   <v-tab-item value="operario">
                     <v-row>
-                      <v-col cols="6" sm="6" md="6">
+                      <v-col cols="12" sm="6">
                         <v-text-field
                           ref="username"
                           disabled
@@ -899,7 +928,7 @@
                           :maxlength="80">
                         </v-text-field>
                       </v-col>
-                      <v-col cols="6" sm="6" md="6">
+                      <v-col cols="12" sm="6">
                         <v-text-field
                           v-model="editado.email"
                           label="Correo Electrónico"
@@ -910,8 +939,8 @@
                       </v-col>
                     </v-row>
 
-                    <v-row align="center">
-                      <v-col cols="6" sx="6" mx="6">
+                    <v-row>
+                      <v-col cols="12" sm="6">
                         <v-autocomplete
                           v-model="editado.tercero_id"
                           disabled
@@ -926,7 +955,7 @@
                           prepend-icon="mdi-database-search">
                         </v-autocomplete>
                       </v-col>
-                      <v-col cols="3" sm="3" align="center" class="md-6">
+                      <v-col cols="12" sm="3" class="md-6">
                         <v-file-input
                           v-model="logotipo1"
                           outlined
@@ -939,13 +968,29 @@
                           </template>
                         </v-file-input>
                       </v-col>
-                      <v-col cols="1" sm="1" align="center">
+                      <v-col cols="12" sm="1">
                         <v-avatar size="60px" class="mt-0">
                           <img alt="Avatar"
                           :src="`/images/${logotipo1.name}`">
                         </v-avatar>
                       </v-col>
                     </v-row>
+
+                    <v-row class="pt-0 pb-0 pl-3" v-show="tipo!='PP'">
+                      <v-col cols="12" sm="3" class="pt-0 pb-0">
+                        <v-select
+                          v-model="editado.transition"
+                          :color="temas.forms_titulo_bg"
+                          :item-color="temas.forms_titulo_bg"
+                          :items="transiciones"
+                          item-value="nombre"
+                          item-text="nombre"
+                          label="Tipo de Transición en Formularios"
+                          outlined>
+                        </v-select>
+                      </v-col>
+                    </v-row>
+
                   </v-tab-item>
                   <!--
                     TAB SUCURSALES
@@ -960,7 +1005,8 @@
                         <v-toolbar flat
                           :color="temas.forms_titulo_bg"
                           :dark="temas.forms_titulo_dark==true">
-                          <v-dialog v-model="dialogSuc" max-width="800px">
+                          <v-dialog v-model="dialogSuc" max-width="800px"
+                            :transition="transition==null?'false':transition">
                             <template v-slot:activator="{ on, attrs }">
                               <v-btn fab x-small
                                 :color="temas.cen_btns_bg"
@@ -1069,7 +1115,8 @@
                                           <v-toolbar flat
                                             :color="temas.forms_titulo_bg"
                                             :dark="temas.forms_titulo_dark==true">
-                                            <v-dialog v-model="dialogDep" max-width="450px">
+                                            <v-dialog v-model="dialogDep" max-width="450px"
+                                              :transition="transition==null?'false':transition">
                                               <template v-slot:activator="{ on, attrs }">
                                                 <v-btn fab x-small
                                                   :color="temas.cen_btns_bg"
@@ -1213,7 +1260,8 @@
                         <v-toolbar flat
                           :color="temas.forms_titulo_bg"
                           :dark="temas.forms_titulo_dark==true">
-                          <v-dialog v-model="dialogUsr" max-width="700px">
+                          <v-dialog v-model="dialogUsr" max-width="700px"
+                            :transition="transition==null?'false':transition">
                             <template v-slot:activator="{ on, attrs }">
                               <v-btn fab x-small
                                 :color="temas.cen_btns_bg"
@@ -1357,7 +1405,8 @@
                           :color="temas.forms_titulo_bg"
                           :dark="temas.forms_titulo_dark==true">
 
-                          <v-dialog v-model="dialogTarjetaCobro" max-width="700px">
+                          <v-dialog v-model="dialogTarjetaCobro" max-width="700px"
+                            :transition="transition==null?'false':transition">
                             <template v-slot:activator="{ on, attrs }">
                               <v-btn fab x-small
                                 :color="temas.cen_btns_bg"
@@ -1517,7 +1566,8 @@
                       </v-col>
                     </v-row>
                     <v-row>
-                      <v-dialog v-model="dialogPassword" max-width="400px">
+                      <v-dialog v-model="dialogPassword" max-width="400px"
+                        :transition="transition==null?'false':transition">
                         <v-card class="fg">
                           <v-toolbar flat
                             :color="temas.forms_titulo_bg"
@@ -1652,7 +1702,8 @@
                             <v-toolbar flat
                               :color="temas.forms_titulo_bg"
                               :dark="temas.forms_titulo_dark==true">
-                              <v-dialog v-model="dialogJSONArt" max-width="800px">
+                              <v-dialog v-model="dialogJSONArt" max-width="800px"
+                                :transition="transition==null?'false':transition">
                                 <template v-slot:activator="{ on, attrs }">
                                   <v-btn fab x-small
                                     :color="temas.cen_btns_bg"
@@ -1946,9 +1997,18 @@ export default {
     registros: 0,
     tipLicencia: [
       {id:'CO', nombre:'ERP completo'},
-      {id:'BA', nombre:'ERP basico'},
+      {id:'ME', nombre:'ERP medio'},
+      {id:'BA', nombre:'ERP básico'},
       {id:'PP', nombre:'Precios y Pedidos'},
       {id:'TI', nombre:'Tienda'}
+    ],
+    transiciones: [
+      {nombre: 'Sin transición'},
+      {nombre: 'fab-transition'},
+      {nombre: 'fade-transition'},
+      {nombre: 'dialog-bottom-transition'},
+      {nombre: 'dialog-top-transition'},
+      {nombre: 'dialog-left-transition'}
     ],
     niveles: [
       {level: 2, nombre: 'Administrativo'},
@@ -2082,6 +2142,7 @@ export default {
       comprobantesm: false,
       administragohu: false,
       usamaletines: false,
+      transition: false,
     },
     editadoUsr: {
       id: null,
@@ -2218,7 +2279,8 @@ export default {
       'tercero',
       'level',
       'porRem',
-      'timeoutRefresh'
+      'timeoutRefresh',
+      'transition',
     ]),    
 
     formTitle () {
@@ -2305,7 +2367,6 @@ export default {
       return HTTP().get('/user/'+this.userId).then(({ data }) => {
 
         debugger
-
         this.editado = data[0]
         this.editado.turnoslv = this.editado.turnoslv ? this.editado.turnoslv.split('-') : ''
         this.editado.turnossd = this.editado.turnossd ? this.editado.turnossd.split('-') : ''
@@ -2457,6 +2518,7 @@ export default {
       'setTimeoutRefresh',
       'setProveedor',
       'setProveedores',
+      'setTransition',
     ]),
     
     closeForm() {
@@ -2646,7 +2708,13 @@ export default {
       this.$store.commit('setSoloArtComprados',         data.soloartcomprados, { root: true })
       this.$store.commit('setCodigoOID',                data.codigooid, { root: true })
       this.$store.commit('setPorRev',                   porRev, { root: true })
+
       debugger
+      if (data.transition=='Sin transición') {
+        data.transition=null
+      }
+
+      this.$store.commit('setTransition',               data.transition, { root: true} )
       this.$store.commit('setCttLoadReg',               data.cttloadreg, { root: true })
       let profile = data
       profile.avatar   = this.logotipo1.name

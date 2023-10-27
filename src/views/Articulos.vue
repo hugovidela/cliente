@@ -132,7 +132,8 @@
             <v-spacer></v-spacer>
 
             <!--  Modal del diálogo para Alta y Edicion    -->
-            <v-dialog v-model="dialog" :fullscreen="true" persistent>
+            <v-dialog v-model="dialog" :fullscreen="true" persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card>
                 <!-- para el EDICION-->
@@ -1065,7 +1066,8 @@
             </v-dialog>
 
             <!-- EDICION DE PRESENTACIONES-->
-            <v-dialog v-model="dialogPresentacion" :fullscreen="true">
+            <v-dialog v-model="dialogPresentacion" :fullscreen="true"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card class="fg">
                 <v-toolbar text
@@ -1190,6 +1192,7 @@
                                       @mouseover="ayuda(1)">
                                     </v-text-field>
                                   </v-col>
+                                  <!--
                                   <v-col cols="6" sm="6" md="6">
                                     <v-text-field
                                       type="number"
@@ -1200,6 +1203,7 @@
                                       @mouseover="ayuda(1)">
                                     </v-text-field>
                                   </v-col>
+                                  -->
                                 </v-row>
                                 <v-row>
                                   <v-col cols="8" sx="8" mx="8">
@@ -1301,7 +1305,8 @@
             </v-dialog>
 
             <!-- EDICION CODIGO PROPIO -->
-            <v-dialog v-model="dialogCodigoPropio" max-width="800px" max-height="300px">
+            <v-dialog v-model="dialogCodigoPropio" max-width="800px" max-height="300px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card>
                 <v-toolbar text
@@ -1565,7 +1570,8 @@
       </v-data-table>
 
       <!-- EDICION DE FOTOS-->
-      <v-dialog v-model="dialogFotos" max-width="1000px" max-height="600px">
+      <v-dialog v-model="dialogFotos" max-width="1000px" max-height="600px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card>
           <!-- para el EDICION-->
@@ -1642,7 +1648,8 @@
       <!-- FIN EDICION DE FOTOS -->
 
       <!-- EDICION DE GRUPOS-->
-      <v-dialog v-model="dialogGrupos" max-width="600px" max-height="600px">
+      <v-dialog v-model="dialogGrupos" max-width="600px" max-height="600px"
+        :transition="transition==null?'false':transition">
         <template v-slot:activator="{ on }"></template>
         <v-card>
           <!-- para el EDICION-->
@@ -2099,7 +2106,7 @@ export default {
     ...mapMutations(['alert','closeAlert','setTerceros']),
     ...mapState([
       'vinculosPadres', 'vinculosHijos', 'vinculosPadresLic', 'vinculosPadresAll', 'temas', 'sucursalDemo', 'externo',
-      'tipo', 'porrev', 'dolar', 'anclarCostos', 'desanclarAutomaticamente', 'codigooid', 'cttLoadReg', 'descuentos'
+      'tipo', 'porrev', 'dolar', 'anclarCostos', 'desanclarAutomaticamente', 'codigooid', 'cttLoadReg', 'descuentos','transition'
     ]),
 
     filter () {
@@ -2360,9 +2367,9 @@ export default {
       if (item.padre_id==null) {
         this.acciones.push({nombre: 'Crear Presentación', icon: 'mdi-dice-multiple'})
       }
-      if (item.creador_id!=this.userId && item.loTengo) {
-        this.acciones.push({nombre: 'Asignar/Editar Código Propio', icon: 'mdi-vector-difference-ba'})
-      }
+//    if (item.creador_id!=this.userId && item.loTengo) {
+//      this.acciones.push({nombre: 'Asignar/Editar Código Propio', icon: 'mdi-vector-difference-ba'})
+//    }
       this.acciones.push({nombre: 'Stock', icon: 'mdi-table-column'})
     },
 
@@ -2391,8 +2398,8 @@ export default {
         this.presentacion(this.itemActual)
       } else if (item.nombre=='Stock') {
         this.verStock(this.itemActual)
-      } else if (item.nombre=='Asignar/Editar Código Propio') {
-        this.editarCodigoPropio()
+//    } else if (item.nombre=='Asignar/Editar Código Propio') {
+//      this.editarCodigoPropio()
       }
     },
 
