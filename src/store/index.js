@@ -15,12 +15,15 @@ export default new Vuex.Store({
   /* eslint-disable */
   strict: true,
   state: {
+    distribuidor: false,
     transition: 'Sin transicion',
+    dark: false,
     usaMaletines: false,
     dolar: 0,
     anclarCostos: false,
     descuentos: [],
     soloArtComprados: true,
+    verSoloArtComprados: true,
     desanclarAutomaticamente: 0,
     operaciones: 0,
     topeOperaciones: 9999999,
@@ -340,6 +343,10 @@ export default new Vuex.Store({
       state.soloArtComprados = payload;
     },
 
+    setVerSoloArtComprados(state, payload) {
+      state.verSoloArtComprados = payload;
+    },
+
     setOperaciones(state, payload) {
       state.operaciones = payload;
     },
@@ -358,12 +365,6 @@ export default new Vuex.Store({
 
     setDesanclarAutomaticamente(state, payload) {
       state.desanclarAutomaticamente = payload;
-    },
-
-    setPorRev(state, payload) {
-      state.porrev[0] = payload[0];
-      state.porrev[1] = payload[1];
-      state.porrev[2] = payload[2];
     },
 
     setNovedadesCprs(state, payload) {
@@ -614,6 +615,14 @@ export default new Vuex.Store({
 
     setTransition(state, payload) {
       state.transition = payload
+    },
+
+    setDark(state, payload) {
+      state.dark = payload
+    },
+
+    setDistribuidor(state, payload) {
+      state.distribuidor = payload
     },
 
     setExclusivoDe(state, payload ) {

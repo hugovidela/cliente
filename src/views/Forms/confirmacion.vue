@@ -56,6 +56,13 @@
             @click="handleClick('Cerrar')">
             Cerrar
           </v-btn>
+          <v-btn
+            v-show="buttons.indexOf('Reintentar')>=0"
+            color="black" dark
+            class="fg85"
+            @click="handleClick('Reintentar')">
+            Reintentar
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

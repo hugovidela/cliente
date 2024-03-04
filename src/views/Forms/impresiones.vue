@@ -177,6 +177,7 @@ export default {
       let tipcpr = item.cpr.substr(0,3)
       var doc = new jsPDF();
 
+      debugger
       if (tipcpr=='FAC' || tipcpr=='NDD' || tipcpr == 'NDC' || tipcpr == 'PRE'|| tipcpr == 'RTV') {
 
         doc.setFontSize(20);
@@ -194,6 +195,7 @@ export default {
         doc.text ( 'Direccion', 10, f ); f += 5
         doc.text ( 'Documento                                                   Cond.IVA', 10, f ); f += 5
         doc.text ( 'Stock?                           Depósito', 10, f ); f +=  10
+
         doc.text ( 'Total Comprob.                                            TRN', 10, f ); f += 5
         doc.text ( 'Descuento                                                   % Descuento                                  %Recargo', 10, f ); f += 5
 
@@ -219,11 +221,17 @@ export default {
         doc.text ( item.cpr, 40, f ); f += 5
         doc.text ( fec, 40, f ); f += 5
         doc.text ( item.tercero.nombre+' ('+item.tercero.id+')', 40, f ); f += 5
-        doc.text ( item.tercero.direcciones[0].direccion+' ('+
-                   item.tercero.direcciones[0].postal.codigo+ '-' +
-                   item.tercero.direcciones[0].postal.nombre+ ')-' +
-                   item.tercero.direcciones[0].postal.provincia.nombre+ '-' +
-                   item.tercero.direcciones[0].postal.provincia.pais.nombre, 40, f ); f += 5
+
+        if (item.tercero.direcciones.length>0) {
+          doc.text ( item.tercero.direcciones[0].direccion+' ('+
+                     item.tercero.direcciones[0].postal.codigo+ '-' +
+                     item.tercero.direcciones[0].postal.nombre+ ')-' +
+                     item.tercero.direcciones[0].postal.provincia.nombre+ '-' +
+                     item.tercero.direcciones[0].postal.provincia.pais.nombre, 40, f ); f += 5
+        } else {
+          doc.text ( 'Sin dirección', 40, f ); f += 5
+        }
+
         doc.text ( item.tercero.documento.nombre+' '+item.tercero.cuit , 40, f ); 
         doc.text ( item.tercero.responsable.nombre , 95, f ); f += 5
         if (item.regstk==1) {
@@ -245,6 +253,7 @@ export default {
           doc.text ( '$'+this.formatMoney(item.retgan), 40, f ); f += 5
           doc.text ( '$'+this.formatMoney(item.retib), 40, f ); f += 5
         }
+
         doc.text ( '$'+this.formatMoney(item.gravado), 40, f );
         doc.text ( '$'+this.formatMoney(item.exento), 105, f );
         doc.text ( '$'+this.formatMoney(item.iva), 160, f ); f += 5
@@ -295,6 +304,7 @@ export default {
           f += 5
         }
 
+        /*
         f += 15
         doc.setFontSize(12);
         doc.setFont(undefined,"bold");
@@ -325,6 +335,7 @@ export default {
           doc.line( 100, f, 196,  f); f += 5
           doc.text (this.formatMoney(totCancelado), 196, f, 'right')
         }
+        */
 
       } else if (tipcpr=='PED') {
 
@@ -359,11 +370,17 @@ export default {
         doc.text ( item.cpr, 40, f ); f += 5
         doc.text ( fec, 40, f ); f += 5
         doc.text ( item.tercero.nombre+' ('+item.tercero.id+')', 40, f ); f += 5
-        doc.text ( item.tercero.direcciones[0].direccion+' ('+
-                   item.tercero.direcciones[0].postal.codigo+ '-' +
-                   item.tercero.direcciones[0].postal.nombre+ ')-' +
-                   item.tercero.direcciones[0].postal.provincia.nombre+ '-' +
-                   item.tercero.direcciones[0].postal.provincia.pais.nombre, 40, f ); f += 5
+
+        if (item.tercero.direcciones.length>0) {
+          doc.text ( item.tercero.direcciones[0].direccion+' ('+
+                     item.tercero.direcciones[0].postal.codigo+ '-' +
+                     item.tercero.direcciones[0].postal.nombre+ ')-' +
+                     item.tercero.direcciones[0].postal.provincia.nombre+ '-' +
+                     item.tercero.direcciones[0].postal.provincia.pais.nombre, 40, f ); f += 5
+        } else {
+          doc.text ( 'Sin dirección', 40, f ); f += 5
+        }
+
         doc.text ( item.tercero.documento.nombre+' '+item.tercero.cuit , 40, f ); 
         doc.text ( item.tercero.responsable.nombre , 95, f ); f += 5
         doc.text ( '$'+this.formatMoney(item.total), 40, f ); f += 5
@@ -422,11 +439,17 @@ export default {
         doc.text ( item.cpr, 40, f ); f += 5
         doc.text ( fec, 40, f ); f += 5
         doc.text ( item.tercero.nombre+' ('+item.tercero.id+')', 40, f ); f += 5
-        doc.text ( item.tercero.direcciones[0].direccion+' ('+
-                   item.tercero.direcciones[0].postal.codigo+ '-' +
-                   item.tercero.direcciones[0].postal.nombre+ ')-' +
-                   item.tercero.direcciones[0].postal.provincia.nombre+ '-' +
-                   item.tercero.direcciones[0].postal.provincia.pais.nombre, 40, f ); f += 5
+
+        if (item.tercero.direcciones.length>0) {
+          doc.text ( item.tercero.direcciones[0].direccion+' ('+
+                     item.tercero.direcciones[0].postal.codigo+ '-' +
+                     item.tercero.direcciones[0].postal.nombre+ ')-' +
+                     item.tercero.direcciones[0].postal.provincia.nombre+ '-' +
+                     item.tercero.direcciones[0].postal.provincia.pais.nombre, 40, f ); f += 5
+        } else {
+          doc.text ( 'Sin dirección', 40, f ); f += 5
+        }
+
         doc.text ( item.tercero.documento.nombre+' '+item.tercero.cuit , 40, f ); 
         doc.text ( item.tercero.responsable.nombre , 95, f ); f += 5
 
@@ -441,15 +464,17 @@ export default {
         doc.line( 10, f+2, 196,  f+2);     // linea vertical 1
         f += 6
         doc.setFontSize(8);
-        debugger
         for (let i = 0; i<=item.valoresIngresos.length-1; i++) {
           doc.text (item.valoresIngresos[i].medio.abrev, 10, f )
-          doc.text (item.valoresIngresos[i].nrovalor.toString(), 27, f )
+          if (item.valoresIngresos[i].nrovalor!=null) {
+            doc.text (item.valoresIngresos[i].nrovalor.toString(), 27, f )
+          }
           doc.text (item.valoresIngresos[i].observ, 38, f )
           doc.text (this.formatMoney(item.valoresIngresos[i].importe), 196, f, 'right')
           f += 5
         }
 
+        /*
         f += 15
         doc.setFontSize(12);
         doc.setFont(undefined,"bold");
@@ -472,6 +497,7 @@ export default {
         }
         doc.line( 10, f, 105.5,  f); f += 4
         doc.text (this.formatMoney(totCancelado), 105, f, 'right')
+        */
 
       }
 
@@ -486,8 +512,7 @@ export default {
       let tipcpr = ''
       var doc = new jsPDF();
       var img = new Image();
-      
-      debugger
+     
       let datos = {
         cpr: null,
         tipcpr: null,
@@ -680,7 +705,6 @@ export default {
 
     comprasPrintDetalles(item) {
 
-      debugger
       let tipcpr = item.cpr.substr(0,3)
       var doc = new jsPDF();
 
@@ -709,8 +733,17 @@ export default {
           doc.text ( 'Ret.IVA                                                                  Ret.GAN                                                 Ret.IB', 10, f ); f += 5
         }
 
-        doc.text ( 'Tasas de IVA', 10, f )
-        f+=10
+        doc.text ( 'Tasas de IVA', 10, f ); f += 5
+        doc.text ( 'Cuenta Corriente:', 10, f );
+        if (item.ctacte) {
+          doc.text ( 'Vencimiento:', 50, f );
+          doc.setFont(undefined,"bold");
+          doc.text ( moment(item.vencimiento).format('DD-MM-YYYY'), 72, f );
+        }
+        doc.setFont(undefined,"bold");
+        doc.text ( item.ctacte?'Sí':'No', 40, f ); f += 5
+
+        f+=5
         doc.setFontSize(12);
         doc.setFont(undefined,"bold");
         doc.text ( 'Items', 10, f ); f += 5
@@ -724,11 +757,17 @@ export default {
         doc.text ( item.cpr, 40, f ); f += 5
         doc.text ( fec, 40, f ); f += 5
         doc.text ( item.tercero.nombre+' ('+item.tercero.id+')', 40, f ); f += 5
-        doc.text ( item.tercero.direcciones[0].direccion+' ('+
-                   item.tercero.direcciones[0].postal.codigo+ '-' +
-                   item.tercero.direcciones[0].postal.nombre+ ')-' +
-                   item.tercero.direcciones[0].postal.provincia.nombre+ '-' +
-                   item.tercero.direcciones[0].postal.provincia.pais.nombre, 40, f ); f += 5
+
+        if (item.tercero.direcciones.length>0) {
+          doc.text ( item.tercero.direcciones[0].direccion+' ('+
+                     item.tercero.direcciones[0].postal.codigo+ '-' +
+                     item.tercero.direcciones[0].postal.nombre+ ')-' +
+                     item.tercero.direcciones[0].postal.provincia.nombre+ '-' +
+                     item.tercero.direcciones[0].postal.provincia.pais.nombre, 40, f ); f += 5
+        } else {
+          doc.text ( 'Sin dirección', 40, f ); f += 5
+        }
+
         doc.text ( item.tercero.documento.nombre+' '+item.tercero.cuit , 40, f ); 
         doc.text ( item.tercero.responsable.nombre , 95, f ); f += 5
         if (item.regstk==1) {
@@ -737,8 +776,9 @@ export default {
           doc.text ( 'No', 40, f );
         }
         if (item.deposito_id!=null) {
-          doc.text ( item.deposito_id.toString(), 65, f ); f += 5
+          doc.text ( item.deposito_id.toString(), 65, f ); 
         }
+        f += 5;
         if (item.observaciones!=null) {
           doc.text ( item.observaciones , 40, f ); f += 5
         } else {
@@ -754,30 +794,28 @@ export default {
           doc.text ( '$'+this.formatMoney(item.retgan), 119, f ); //f += 5
           doc.text ( '$'+this.formatMoney(item.retib), 170, f ); f += 5
         }
-//        doc.text ( '$'+this.formatMoney(item.gravado), 40, f );
-//        doc.text ( '$'+this.formatMoney(item.exento), 130, f );
-//        doc.text ( '$'+this.formatMoney(item.iva), 178, f ); f += 5
 
-//        f+=5
-        for (let j=0; j<=item.afipiva.length-1; j++) {
-          doc.setFontundefined,("bold");
-          doc.text ( item.afipiva[j].afipiva.nombre, 40, f );
-          doc.setFontundefined,("normal");
-          doc.text ( 'Gravado', 87, f );
-          doc.setFont(undefined,"bold");
-          doc.text ( '$'+this.formatMoney(item.afipiva[j].base), 119, f );
-          doc.setFont(undefined,"normal");
-          doc.text ( 'IVA', 149, f );
-          doc.setFont(undefined,"bold");
-          doc.text ( '$'+this.formatMoney(item.afipiva[j].iva), 170, f );
-          f+=5
+        if (item.afipiva!=null) {
+          for (let j=0; j<=item.afipiva.length-1; j++) {
+            doc.setFont(undefined,"bold");
+            doc.text ( item.afipiva[j].afipiva.nombre, 40, f );
+            doc.setFont(undefined,"normal");
+            doc.text ( 'Gravado', 87, f );
+            doc.setFont(undefined,"bold");
+            doc.text ( '$'+this.formatMoney(item.afipiva[j].base), 119, f );
+            doc.setFont(undefined,"normal");
+            doc.text ( 'IVA', 149, f );
+            doc.setFont(undefined,"bold");
+            doc.text ( '$'+this.formatMoney(item.afipiva[j].iva), 170, f );
+            f+=5
+          }
         }
 
         doc.setFont(undefined,"normal");
         doc.setFontSize(8);
         f += 12
-        doc.line( 10, f+5, 196,  f+5);     // linea vertical 1
-        f += 9
+        doc.line( 10, f+10, 196,  f+10);     // linea vertical 1
+        f += 14
         for (let i = 0; i<=item.items.length-1; i++) {
 
           //doc.text (item.items[i].articulo.codigo, 10, f )
@@ -809,20 +847,20 @@ export default {
         f += 6
 
         doc.setFontSize(8);
-        for (let i = 0; i<=item.valoresEgresos.length-1; i++) {
-          fec = moment(item.valoresEgresos[i].fechasalida).format('DD/MM/YYYY')
-          doc.text (item.valoresEgresos[i].medio.abrev, 10, f )
-          doc.text (item.valoresEgresos[i].nrovalor.toString(), 29, f, 'right' )
-          doc.text (fec, 38, f )
-          doc.text (item.valoresEgresos[i].observ, 68, f )
-          doc.text (this.formatMoney(item.valoresEgresos[i].importe), 196, f, 'right')
-          f += 5
+        if (item.valoresEgresos!=null) {
+          for (let i = 0; i<=item.valoresEgresos.length-1; i++) {
+            fec = moment(item.valoresEgresos[i].fechasalida).format('DD/MM/YYYY')
+            doc.text (item.valoresEgresos[i].medio.abrev, 10, f )
+            doc.text (item.valoresEgresos[i].nrovalor.toString(), 29, f, 'right' )
+            doc.text (fec, 38, f )
+            doc.text (item.valoresEgresos[i].observ, 68, f )
+            doc.text (this.formatMoney(item.valoresEgresos[i].importe), 196, f, 'right')
+            f += 5
+          }
         }
 
+        /*
         f += 15
-        doc.setFontSize(12);
-        doc.setFont(undefined,"bold");
-        doc.text ( 'Pendiente en Cta.Cte.                                        Cancelaciones', 10, f ); f += 5
         doc.setFont(undefined,"normal");
         doc.setFontSize(10);
         doc.text ( 'Fecha Vencimiento     Importe                   Pendiente         Fecha      Cpr.Cancelador      Observaciones              Importe', 10, f );
@@ -849,6 +887,7 @@ export default {
           doc.line( 100, f, 196,  f); f += 5
           doc.text (this.formatMoney(totCancelado), 196, f, 'right')
         }
+        */
       
       } else if (tipcpr=='PAG') {
 
@@ -879,11 +918,17 @@ export default {
 
         doc.text ( fec, 40, f ); f += 5
         doc.text ( item.tercero.nombre+' ('+item.tercero.id+')', 40, f ); f += 5
-        doc.text ( item.tercero.direcciones[0].direccion+' ('+
-                   item.tercero.direcciones[0].postal.codigo+ '-' +
-                   item.tercero.direcciones[0].postal.nombre+ ')-' +
-                   item.tercero.direcciones[0].postal.provincia.nombre+ '-' +
-                   item.tercero.direcciones[0].postal.provincia.pais.nombre, 40, f ); f += 5
+
+        if (item.tercero.direcciones.length>0) {
+          doc.text ( item.tercero.direcciones[0].direccion+' ('+
+                     item.tercero.direcciones[0].postal.codigo+ '-' +
+                     item.tercero.direcciones[0].postal.nombre+ ')-' +
+                     item.tercero.direcciones[0].postal.provincia.nombre+ '-' +
+                     item.tercero.direcciones[0].postal.provincia.pais.nombre, 40, f ); f += 5
+        } else {
+          doc.text ( 'Sin dirección', 40, f ); f += 5
+        }
+
         doc.text ( item.tercero.documento.nombre+' '+item.tercero.cuit , 40, f ); 
         doc.text ( item.tercero.responsable.nombre , 95, f ); f += 5
         if (item.observaciones!=null) {
@@ -920,6 +965,7 @@ export default {
           f += 5
         }
 
+        /*
         f += 15
         doc.setFontSize(12);
         doc.setFont(undefined,"bold");
@@ -938,6 +984,7 @@ export default {
           doc.text (this.formatMoney(item.cancelaciones[i].cancelado.pendiente), 130, f, 'right')
           f += 5
         }
+        */
 
       } else if (tipcpr=='PED') {
 
@@ -1060,8 +1107,10 @@ export default {
         if (possuc>=0 && datos.sucursales[possuc].logotipo!= null) {
           file = datos.sucursales[possuc].logotipo
         }
-        img.src = path + datos.logotipo // file
-        doc.addImage(img, 'jpg', 10, 20, 52, 25)
+        if (datos.logotipo) {
+          img.src = path + datos.logotipo // file
+          doc.addImage(img, 'jpg', 10, 20, 52, 25)
+        }
 
         // CODIGO QR, SOLO PARA COMPROBANTES FISCALES
         if (datos.tipcpr == 'FAC' || datos.tipcpr == 'NDD' || datos.tipcpr == 'NDC') {
@@ -1221,8 +1270,6 @@ export default {
     detalles(datos, doc, rangos, pagina) {
 
       let h = 280
-
-      debugger
       if (datos.tipcpr == 'FAC' || datos.tipcpr == 'NDD' || datos.tipcpr == 'NDC' ||
           datos.tipcpr == 'PED' || datos.tipcpr == 'REM' || datos.tipcpr == 'PRE') {
 
@@ -1278,6 +1325,7 @@ export default {
 
         let cancelaciones = []
         let valores = []
+        /*
         for (let i=0; i<=datos.cancelaciones.length-1; i++) {
           cancelaciones.push({ 
             fec: datos.cancelaciones[i].cancelado.vencimiento,
@@ -1287,6 +1335,7 @@ export default {
             cancelado: datos.cancelaciones[i].importe,
           })
         }
+        */
 
         for (let i=0; i<=datos.valoresIngresos.length-1; i++) {
           valores.push({ 
@@ -1312,6 +1361,7 @@ export default {
 
         f = this.cp(f, 6, 10, h, doc)
 
+        /*
         let totCancelado = 0
         for (let i = 0; i<=cancelaciones.length-1; i++) {
           let fec = moment(cancelaciones[i].fec).format('DD/MM/YYYY')
@@ -1325,6 +1375,7 @@ export default {
         }
         doc.line( 10, f, 156,  f); f += 4
         doc.text (this.formatMoney(totCancelado), 155, f, 'right')
+        */
 
         f = this.cp(f, 5, 10, h, doc)
 
@@ -1361,9 +1412,9 @@ export default {
 
       } else if (datos.tipcpr=='PAG') {
 
-        let cancelaciones = []
         let valores = []
-
+        /*
+        let cancelaciones = []
         for (let i=0; i<=datos.cancelaciones.length-1; i++) {
           cancelaciones.push({ 
             fec: datos.cancelaciones[i].cancelado.vencimiento,
@@ -1373,6 +1424,7 @@ export default {
             cancelado: datos.cancelaciones[i].importe,
           })
         }
+        */
 
         for (let i=0; i<=datos.valoresEgresos.length-1; i++) {
           valores.push({ 
@@ -1383,6 +1435,7 @@ export default {
           })
         }
           
+        /*
         let f = 115
         doc.setFontSize(12);
         doc.setFont(undefined,"bold");
@@ -1393,9 +1446,8 @@ export default {
         doc.line( 10, f+2, 156,  f+2);     // linea vertical 1
         doc.setFontSize(8);
 
-        f = this.cp(f, 6, 10, h, doc)
-
         let totCancelado = 0
+        f = this.cp(f, 6, 10, h, doc)
         for (let i = 0; i<=cancelaciones.length-1; i++) {
           let fec = moment(cancelaciones[i].fec).format('DD/MM/YYYY')
           doc.text (fec, 10, f )
@@ -1411,6 +1463,7 @@ export default {
         doc.text (this.formatMoney(totCancelado), 155, f, 'right')
         f = this.cp(f, 5, 10, h, doc)
         doc.setFontSize(12);
+        */
         doc.setFont(undefined,"bold");
         doc.text ( 'Valores', 10, f );
         f = this.cp(f, 5, 10, h, doc)
@@ -1536,10 +1589,7 @@ export default {
       let mat = []
       f = 153
       doc.setFontSize(9);
-
-      debugger
       for (let i = 0; i<=viaje.recorrido.length-1; i++) {
-
         let cprs = {
           ped: { cpr: '', tot: 0},
           rem: { cpr: '', tot: 0},
@@ -1588,8 +1638,6 @@ export default {
                               maletin = viaje.recorrido[i].pedido.vinculoPadre[j].hijos[k].hijo.valoresIngresos[l].maletinitem.maletin.cobrador.username
                             }
                           }
-
-                          debugger
                           cprs.recA[p].val.push({
                             id: viaje.recorrido[i].pedido.vinculoPadre[j].hijos[k].hijo.valoresIngresos[l].id,
                             medio: viaje.recorrido[i].pedido.vinculoPadre[j].hijos[k].hijo.valoresIngresos[l].medio.nombre,
@@ -1669,8 +1717,7 @@ export default {
                               maletin = viaje.recorrido[i].pedidob.vinculoPadre[j].hijos[k].hijo.valoresIngresos[l].maletinitem.maletin.cobrador.username
                             }
                           }
-                          
-                          debugger
+                         
                           cprs.recB[p].val.push({
                             id: viaje.recorrido[i].pedidob.vinculoPadre[j].hijos[k].hijo.valoresIngresos[l].id,
                             medio: viaje.recorrido[i].pedidob.vinculoPadre[j].hijos[k].hijo.valoresIngresos[l].medio.nombre,
@@ -1861,8 +1908,6 @@ export default {
       f += 20
       doc.setFont(undefined,"normal");
       doc.setFontSize(9);
-
-      debugger
       let totEfe = 0, totTar = 0, totChe = 0, totTra = 0, totOtr = 0
       for (let i = 0; i<=mat.length-1; i++) {
         doc.text (mat[i].user, 15, f );
@@ -1918,8 +1963,6 @@ export default {
 
 
     viajestock(viaje,dat,ctt) {
-
-      debugger
       var doc = new jsPDF('l', 'pt')  // 'p' normal 'l' horizontal ( landscape )
       doc.setFontSize(20);
       doc.text ( 'Planilla de Stock Pedidos', 15, 30 )
@@ -1944,8 +1987,6 @@ export default {
 
       f = 93
       doc.setFontSize(9);
-
-      debugger
       f += 15
       doc.setFont(undefined,"bold");
       doc.setFontSize(10);
@@ -1961,8 +2002,6 @@ export default {
       f += 20
       doc.setFont(undefined,"normal");
       doc.setFontSize(9);
-
-      debugger
       for (let i = 0; i<=ctt.length-1; i++) {
         doc.text (ctt[i].articulo_id.toString(), 15, f );
         doc.text (ctt[i].codigo, 88, f );
@@ -1980,7 +2019,6 @@ export default {
 
 
     planillaDeRecaudacion(item,tipo) {
-      debugger
       var doc = new jsPDF('l')  // 'p' normal 'l' horizontal ( landscape )
 
       if (tipo=='M') {
@@ -1999,7 +2037,6 @@ export default {
         doc.setFont(undefined,"normal");
         doc.setFontSize(10);
         doc.text ( 'Número: '+item.id, 10, f ); f += 5;
-        debugger
         doc.text ( 'Equipo: '+item.cobrador.username, 10, f ); f += 5;
         //doc.text ( 'Zona: '+viaje.zona.nombre, 10, f ); f += 5;
         doc.text ( 'Fecha: '+moment(item.fecha).format('LLLL'), 10, f ); f += 8;
@@ -2009,6 +2046,8 @@ export default {
         f = 55
         let valores = []
         doc.setFontSize(9);
+
+        debugger
         for (let i = 0; i<=item.clientes.length-1; i++) {
           doc.text ( item.clientes[i].cliente.nombre, 10, f )
           doc.text ( item.clientes[i].sucursal.id.toString(), 82, f )
@@ -2021,6 +2060,7 @@ export default {
             doc.text ('$'+this.formatMoney(item.clientes[i].valor.importe), 280, f, 'right')
           } else {
             doc.text ( 'PENDIENTE', 103, f )
+            doc.text ( item.clientes[i].medio.nombre+' '+item.clientes[i].observ, 144, f )
             doc.text ('$'+this.formatMoney(item.clientes[i].importe), 280, f, 'right')
           }
           doc.text ( item.clientes[i].medio.abrev, 132, f )
@@ -2037,7 +2077,6 @@ export default {
           }
           t += importe
           f = this.cp(f, 5, 10, h, doc)
-
         }
         doc.setFontSize(10);
         doc.line( 10, f-2, 280, f-2);
@@ -2064,7 +2103,6 @@ export default {
         
       } else if (tipo=='P') {
 
-        debugger
         // PLANILLA DE UN PERIODO
         doc.setFontSize(20);
 
@@ -2132,7 +2170,6 @@ export default {
               valores[pos].total += importe
             }
 
-            debugger
             pos = equipo.findIndex(x=>x.id == item[i].cobrador.id)
             if (pos==-1) {
               equipo.push({
@@ -2188,10 +2225,7 @@ export default {
         f = this.cp(f, 10, 10, h, doc)
 
       }
-
       doc.output ('dataurlnewwindow');
-      
-      debugger
     },
 
     cp(f, s, i, t, d) {

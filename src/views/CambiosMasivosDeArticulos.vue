@@ -200,10 +200,15 @@
             @toggle-select-all="selectAll"
             :single-select="false"
             item-key="codigo"
-            show-select
-            dense
+            show-select dense
             class="pl-3 pr-3 elevation-3"
-            :footer-props="footerProps">
+            :footer-props="{
+              itemsPerPageOptions: [10],
+              showFirstLastPage: true,
+              showCurrentPage: true,
+              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+            }">
             <template v-slot:item.codigo="{ item }">
               <span class="mini-font">{{ item.codigo }}</span>
             </template>
@@ -337,7 +342,13 @@
             item-key="id"
             dense
             class="pl-3 pr-3 elevation-3"
-            :footer-props="footerProps">
+            :footer-props="{
+              itemsPerPageOptions: [10],
+              showFirstLastPage: true,
+              showCurrentPage: true,
+              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+            }">
           </v-data-table>
         </v-card>
       </v-dialog>
@@ -366,7 +377,13 @@
             item-key="id"
             dense
             class="pl-3 pr-3 elevation-3"
-            :footer-props="footerProps">
+            :footer-props="{
+              itemsPerPageOptions: [10],
+              showFirstLastPage: true,
+              showCurrentPage: true,
+              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+            }">
           </v-data-table>
         </v-card>
       </v-dialog>
@@ -466,7 +483,6 @@ export default {
     ],
     opcion: 1,
     mios: [],
-    footerProps: {'items-per-page-options': [12 ]},
     search: '',
     dialog: false,
     items: [],
@@ -612,7 +628,6 @@ export default {
         }
         return HTTP().get('/gruposrubros/'+this.rubItems[0].id).then(({ data }) => {
           let aux = [];
-          debugger
           for(let i in data[0]) {
             aux.push({
               id: Number(data[0][i].id),
@@ -703,17 +718,14 @@ export default {
     leo_marcasXArt() {
       this.marcasXArt = []
       return HTTP().get('/marcasporarticulos').then(({ data }) => {
-        debugger
         this.marcasXArt = data
         this.dialogMarcasXArt = true
       })
     },
 
     leo_gruposXArt() {
-      debugger
       this.gruposXArt = []
       return HTTP().get('/gruposporarticulos').then(({ data }) => {
-        debugger
         this.gruposXArt = data
         this.dialogGruposXArt = true
       })
@@ -724,8 +736,6 @@ export default {
     },
 
     filtrar() {
-
-      debugger
       let grusel = []
       for (let i=0; i<=this.selection.length-1; i++) {
         grusel.push(this.selection[i].id)
@@ -738,15 +748,13 @@ export default {
       }
       this.selected = []
       this.headers = [
-        { text: 'CODIGO', value: 'codigo', width: 120, align: 'left' },
+        { text: 'CODIGO', value: 'codigo', width: 140, align: 'left' },
         { text: 'NOMBRE', value: 'nombre', width: 500, align: 'left' },
         { text: 'MARCA',  value: 'nommar', width: 120, align: 'left' },
         { text: 'GRUPO',  value: 'nomgru', width: 120, align: 'left' },
       ]
-
       this.headers[0].text = this.$store.state.codigooid == 'C'?'Código':'ID'
       this.headers[0].value = this.$store.state.codigooid == 'C'?'codigo':'id'
-
       this.marca = this.marca | '';
       if (grusel.length==0) grusel = ''
       this.progress = true
@@ -756,18 +764,6 @@ export default {
         vinculosPadresAll: this.$store.state.vinculosPadresAll,
         proveedor: 0, stockProv: false, grupo: grusel, marca: this.marca, userex: null, soloArtComprados: true, descuentos: this.descuentos,
         dolar: this.$store.state.dolar, activos: true, limit: this.limit }).then(({ data })=>{
-        debugger
-
-      /*
-      return HTTP().post('/articulosx', {
-        search: s, vinculos: v,
-        vinculosPadresLic: this.$store.state.vinculosPadresLic,
-        vinculosPadresAll: this.$store.state.vinculosPadresAll,
-        estricto: null, codigooid: this.$store.state.codigooid, userex: null, dolar: this.$store.state.dolar, ambiente: 'ventas', tipo:t,
-        rubro: this.rubro.id, marca: this.marca, grupo: grusel, proveedor: 0, ancla: '', saySoloArtsPropios: false, activos: true,
-        limit: this.limit, descuentos:this.descuentos}).then(({ data }) => {
-      */
-
         this.progress = false
         this.items = []
         if (data.length) {
@@ -781,7 +777,6 @@ export default {
               nommar: data[i].precios[0].nommar,
             })
           }
-          debugger
         }
       })
       .catch(err => {
@@ -822,7 +817,6 @@ export default {
     },
 
     aceptarGruposAsigna(value) {
-      debugger
       const deepSearch = (data, value, key = 'title', sub = 'children', tempObj = {}) => {
         if (value && data) {
           data.find((node) => {
@@ -838,7 +832,6 @@ export default {
         }
         return false;
       }
-      debugger
       let ret = deepSearch(this.itemsTreeGrupos, value, 'id', 'children');
       if (ret.children) {
         this.mensaje('¡Grupo con Hijos, debes seleccionar un Hijo!', this.temas.forms_titulo_bg, 2500)

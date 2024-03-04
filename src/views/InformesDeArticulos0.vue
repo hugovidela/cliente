@@ -293,20 +293,17 @@ export default {
     this.gruItems = [{id: 0, nombre: 'Todos'}]
 
     return HTTP().get('/usersrubros').then(({ data }) => {
-      debugger
       for (let i=0; i<=data.length-1; i++) {
         this.rubItems.push(data[i].rubro)
       }
       this.rubro = this.rubItems[0]
       this.rubro_id = this.rubro.id                    // ver, puede tener mas rubros
       return HTTP().get('/marcasbus').then(({ data }) => {
-        debugger
         for (let i=0; i<=data.length-1; i++) {
           this.marItems.push(data[i])
         }
         this.marca = this.marItems[0].id
         return HTTP().get('/grupos').then(({ data }) => {
-          debugger
           for (let i=0; i<=data.length-1; i++) {
             this.gruItems.push(data[i])
           }
@@ -318,7 +315,6 @@ export default {
           }
           this.prov = this.provItems[0].id;
           return HTTP().get('/gruposrubros/'+this.rubItems[0].id).then(({ data }) => {
-            debugger
             let aux = [];
             for(let i in data[0]) {
               aux.push({
@@ -387,10 +383,8 @@ export default {
     },
 
     async fetchGrupos(item) {
-        debugger
         this.rubro_id = item.id
         return HTTP().get('/gruposrubros/'+item.id).then(response => {
-          debugger
           let aux = [];
           for(var i in response.data[0]) {
             aux.push({
@@ -440,13 +434,7 @@ export default {
       if (this.informeTitulo=='Artículos Datos Principales') {
         //this.sayInf = true
         let v = this.$store.state.vinculosPadres
-
-        debugger
-
         return HTTP().post('/infart_datosprincipales', { vinculos: v }).then((data) => {
-
-          debugger
-
           this.rows = []
           for (let i=0; i<=data.data.length-1; i++) {
             this.rows.push({
@@ -467,7 +455,6 @@ export default {
         }
 
         return HTTP().post('/infart_porgrupos', { vinculos: v, grupos: g }).then((data) => {
-          debugger
           this.rows = []
           for (let i=0; i<=data.data.length-1; i++) {
             this.rows.push({
@@ -591,9 +578,7 @@ export default {
           }
         }
 
-        debugger
         let newTree = JSON.parse(JSON.stringify(this.selection))
-
         function asignoNombresArbol(nodo, nivel = 0, nombre = '') {
           let sep = nivel == 0?'':' > '
           nombre+=sep+nodo.name
@@ -607,9 +592,7 @@ export default {
 
         asignoNombresArbol(newTree, 0, '');
 
-        debugger
         let r = this.rows;
-
         f = 155
         let pag = 1
         let coi = this.codigooid
@@ -617,10 +600,7 @@ export default {
         function imprimirArbol(nodo, nivel = 0, doc, coi, sel, rows) {
 
           let s = sel.findIndex(x=>x.id == nodo.id)
-          debugger
           if (s!=-1||nodo.padre==0) {
-
-            debugger
             if (nodo.padre!=0) {
               f +=15
             }
@@ -638,7 +618,6 @@ export default {
                 doc.text ( artsGrupo[i].nommar, 415, f )
                 f += 15
                 if (f>790) {
-                  debugger
                   doc.addPage()
                   pag ++
                   doc.text ( 'GRUPO', 40, 40 )
@@ -652,7 +631,6 @@ export default {
             }
   
             if (f>790) {
-              debugger
               doc.addPage()
               pag ++
               doc.text ( 'GRUPO', 40, 40 )

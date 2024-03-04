@@ -8,7 +8,13 @@
         sort-by="id"
         dense
         class="elevation-3"
-        :footer-props="footerProps">
+        :footer-props="{
+          itemsPerPageOptions: [9],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }">
         <template v-slot:top>
           <v-toolbar
             :color="temas.forms_titulo_bg"
@@ -80,7 +86,6 @@
                         <v-col cols="2" sm="2" md="2">
                           <v-text-field
                             ref="abrev"
-                            :disabled="!(editedIndex===-1)"
                             :autofocus="(editedIndex===-1)"
                             v-model="editado.abrev"
                             :color="temas.forms_titulo_bg"
@@ -97,7 +102,6 @@
                         <v-col cols="12" sm="12" md="12">
                           <v-text-field
                             ref="nombre"
-                            :disabled="!(editedIndex===-1)"
                             :autofocus="(editedIndex===-1)"
                             v-model="editado.nombre"
                             :color="temas.forms_titulo_bg"
@@ -126,7 +130,7 @@
               </v-card>
             </v-dialog>
           </v-toolbar>
-          <v-col cols="12" sm="12">  <!-- Barra de búsqueda  -->
+          <v-col cols="12" sm="12">
             <v-text-field
               v-model="search"
               :color="temas.forms_titulo_bg"
@@ -220,7 +224,6 @@ export default {
       (v) => !!v || 'El nombre es requerido',
       (v) => v.length <= 40 || 'Ingrese hasta 40 caracteres'
     ],      
-    footerProps: {'items-per-page-options': [9, 12, 15, 100]},
     search: '', // para el cuadro de búsqueda de datatables  
     dialog: false, // para que la ventana de dialogo o modal no aparezca automáticamente      
     // definimos los headers de la datatables
@@ -328,43 +331,41 @@ export default {
       });
     },
     listarHTTP:function() {
-      return HTTP().get('/'+this.modelo)
-        .then(({ data }) => {
-          this.items = data;
+      return HTTP().get('/'+this.modelo).then(({ data }) => {
+        this.items = data;
       });
     },
     altaHTTP:function() {
-      return HTTP().post('/'+this.modelo, {
-        abrev: this.abrev,
-        nombre: this.nombre,
-        activo: true,
-        }).then(({ data }) => {
-          this.listarHTTP();
-        });
+      return HTTP().post('/'+this.modelo, { abrev: this.abrev, nombre: this.nombre, activo: true }).then(({ data }) => {
+        if (data.data=='ok') {
+          this.mensaje('¡Alta Exitosa!', this.temas.forms_titulo_bg, 2500)
+        } else {
+          this.mensaje('¡Opps, se ha producido un error!', this.temas.snack_error_bg, 2500)
+        }
+        this.listarHTTP();
+      });
     },
     editarHTTP:function(data) {
       return HTTP().patch(`${this.modelo}/${data.id}`, data).then(() => {
         if (data=='error') {
-          this.mensaje('¡Opps, se ha producido un error!', this.temas.forms_titulo_bg, 1500)
+          this.mensaje('¡Opps, se ha producido un error!', this.temas.snack_error_bg, 2500)
         } else {
-          this.mensaje('¡Actualización Exitosa!', this.temas.forms_titulo_bg, 1500)
+          this.mensaje('¡Actualización Exitosa!', this.temas.forms_titulo_bg, 2500)
         }
         this.listarHTTP();
       });       
     },
     borrarHTTP:function(id) {
-      return HTTP().delete(`/${this.modelo}/${id}`).then(() => {
+      return HTTP().delete(`/mediosdepago/${item.id}`).then((data) => {
+        if (data.data=='error') {
+          this.mensaje('¡Opps, se ha producido un error!', this.temas.snack_error_bg, 2500)
+        } else {
+          this.mensaje('¡Se ha eliminado el medio de pago correctamente!', this.temas.forms_titulo_bg, 2500)
+        }
         this.listarHTTP();
-      });
-    },
-    preguntoBorrar (item) {
-      // este viene del form y activa el componente confirmacion, luego este va a msgRespuesta con lo confirmado
-      this.msg.msgTitle = 'Borrar'
-      this.msg.msgBody = 'Confirma borrar '+item.nombre
-      this.msg.msgVisible = true
-      this.msg.msgAccion = 'borrar medio de pago'
-      this.msg.msgButtons = ['Aceptar','Cancelar']
-      this.itemActual = item;
+      }).catch((err)=>{
+        this.mensaje('¡Opps, se ha producido un error al intentar eliminar este registro!', this.temas.snack_error_bg, 2500) 
+      })
     },
     exportarAPDF () {
       // este viene del form y activa el componente confirmacion, luego este va a msgRespuesta con lo confirmado
@@ -387,17 +388,27 @@ export default {
       this.editado = Object.assign({}, item);
       this.dialog = true;
     },
+    preguntoBorrar (item) {
+      debugger
+      return HTTP().get(`/mediosdepagopuedoborrar/${item.id}`).then((data) => {
+        debugger
+        this.msg.msgTitle = 'Borrar'
+        this.msg.msgVisible = true
+        if (data.data=='ok') {
+          this.msg.msgBody = 'Confirma borrar '+item.nombre
+          this.msg.msgAccion = 'borrar item'
+          this.msg.msgButtons = ['Aceptar','Cancelar']
+        } else {
+          this.msg.msgBody = 'No se puede borrar este medio de pago, esta siendo utilizado por otros usuarios.'
+          this.msg.msgAccion = 'error al borrar item'
+          this.msg.msgButtons = ['Cancelar']
+        }
+        this.itemActual = item;
+      })
+    },
     borrar (item) {
       const index = this.items.indexOf(item);
-      var r = confirm('¿Está seguro de borrar el registro?');
-      if (r === true) {
-        this.borrarHttp(this.items[index].id);
-        this.snackbar = true;
-        this.textSnack = 'Se eliminó el registro.';
-      } else {
-        this.snackbar = true;
-        this.textSnack = 'Operación cancelada.';
-      }
+      this.borrarHttp(this.items[index].id);
     },
     cancelar() {
       this.dialog = false;

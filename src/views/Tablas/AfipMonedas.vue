@@ -8,7 +8,13 @@
         sort-by="id"
         dense
         class="elevation-3"
-        :footer-props="footerProps">
+        :footer-props="{
+          itemsPerPageOptions: [9],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }">
         <template v-slot:top>
           <v-toolbar
             :color="temas.forms_titulo_bg"
@@ -90,6 +96,7 @@
                         <v-col cols="12" sm="12" md="12">
                           <v-text-field
                             :autofocus="!(editedIndex===-1)"
+                            v-model="editado.nombre"
                             :color="temas.forms_titulo_bg"
                             label="Nombre">
                           </v-text-field>
@@ -206,34 +213,22 @@ export default {
     // definimos los headers de la datatables
     items: [],
     headers: [
-      { text: 'NID', value: 'id' },
-      { text: 'CODIGO', value:'codigo'},
-      { text: 'NOMBRE', value:'nombre'},
-      { text: 'SIMBOLO', value:'simbolo'},
-      { text: 'ACTIVO', value:'activo'},
-      { text: 'ACCIONES', value: 'accion', sortable: false },
+      { text: 'NID', value: 'id', align: 'end', width: 100 },
+      { text: 'CODIGO', value:'codigo', align: 'end', width: 100},
+      { text: 'NOMBRE', value:'nombre', align: 'left', width: 250 },
+      { text: 'SIMBOLO', value:'simbolo', align: 'left', width: 80 },
+      { text: 'ACTIVO', value:'activo', align: 'left', width: 90 },
+      { text: 'ACCIONES', value: 'accion', align: 'left', width: 130, sortable: false },
     ],
     editedIndex: -1,
-    editado: {
-      id: '',
-      codigo: '',
-      nombre: '',
-      simbolo: '',
-      activo: true,
-    },
-    defaultItem: {
-      id: '',
-      codigo: '',
-      nombre: '',
-      simbolo: '',
-      activo: true,
-    },
+    editado: { id: '', codigo: '', nombre: '', simbolo: '', activo: true },
+    defaultItem: { id: '', codigo: '', nombre: '', simbolo: '', activo: true },
   }),
   computed: {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId']),
     ...mapState(['temas','transition']),
     formTitle () {
-      return this.editedIndex === -1 ? 'Nuevo Documentos' : 'Editar Documento';
+      return this.editedIndex === -1 ? 'Nueva Moneda' : 'Editar Moneda';
     },
   },
   watch: {
@@ -302,16 +297,33 @@ export default {
     },
     altaHTTP:function() {
       return HTTP().post('/'+this.modelo, {codigo:this.codigo,nombre:this.nombre,simbolo:this.simbolo,activo:true}).then(({ data }) => {
+        if (data.data=='ok') {
+          this.mensaje('¡Alta Exitosa!', this.temas.forms_titulo_bg, 2500) 
+        } else {
+          this.mensaje('¡Opps, se ha producido un error!', this.temas.snack_error_bg, 2500)           
+        }
         this.listarHTTP();
       });
     },
     editarHTTP:function(data) {
-      return HTTP().patch(`${this.modelo}/${data.id}`, data).then(() => {
+      debugger
+      return HTTP().patch(`${this.modelo}/${data.id}`, data).then((data) => {
+        debugger
+        if (data.data=='ok') {
+          this.mensaje('¡Los cambios se han realizado!', this.temas.forms_titulo_bg, 2500) 
+        } else {
+          this.mensaje('¡Opps, se ha producido un error!', this.temas.snack_error_bg, 2500)           
+        }
         this.listarHTTP();
       });       
     },
     borrarHTTP:function(id) {
       return HTTP().delete(`/${this.modelo}/${id}`).then(() => {
+        if (data.data=='ok') {
+          this.mensaje('¡El registro se ha eliminado!', this.temas.forms_titulo_bg, 2000) 
+        } else {
+          this.mensaje('¡Opps, se ha producido un error!', this.temas.snack_error_bg, 2500)           
+        }
         this.listarHTTP();
       });
     },
@@ -321,13 +333,22 @@ export default {
       this.dialog = true;
     },
     preguntoBorrar (item) {
-      // este viene del form y activa el componente confirmacion, luego este va a msgRespuesta con lo confirmado
-      this.msg.msgTitle = 'Borrar'
-      this.msg.msgBody = 'Confirma borrar '+item.nombre
-      this.msg.msgVisible = true
-      this.msg.msgAccion = 'borrar item'
-      this.msg.msgButtons = ['Aceptar','Cancelar']
-      this.itemActual = item;
+      debugger
+      return HTTP().get(`/afipmonedapuedoborrar/${item.id}`).then((data) => {
+        debugger
+        this.msg.msgTitle = 'Borrar'
+        if (data.data=='ok') {
+          this.msg.msgBody = 'Confirma borrar '+item.nombre
+          this.msg.msgAccion = 'borrar item'
+          this.msg.msgButtons = ['Aceptar','Cancelar']
+        } else {
+          this.msg.msgBody = 'No se puede borrar esta Moneda, esta siendo utilizada por otros usuarios.'
+          this.msg.msgAccion = 'error al borrar item'
+          this.msg.msgButtons = ['Cancelar']
+        }
+        this.msg.msgVisible = true
+        this.itemActual = item;
+      })
     },
     exportarAPDF () {
       // este viene del form y activa el componente confirmacion, luego este va a msgRespuesta con lo confirmado
@@ -348,7 +369,6 @@ export default {
     borrar (item) {
       const index = this.items.indexOf(item);
       this.borrarHTTP(this.items[index].id);
-      this.mensaje('¡Se eliminó el registro.!', 'black', 1500) 
     },
     cancelar() {
       this.dialog = false;
@@ -369,7 +389,6 @@ export default {
         this.mensaje('¡Actualización Exitosa!', 'black', 1500) 
         this.editarHTTP(this.editado);
       } else {
-        this.mensaje('¡Alta Exitosa!', 'blue', 1500) 
         this.altaHTTP();
       }
       this.cancelar();

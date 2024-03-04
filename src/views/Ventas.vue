@@ -1,6 +1,6 @@
 <template>
   <!-- eslint-disable max-len -->
-  <v-layout align-start class="ma-0">
+  <v-layout align-start>
     <v-flex>
       <v-row class="pb-3">
         <v-col v-for="(cbt, idx) in comprobantes" v-bind:key="idx">
@@ -24,7 +24,7 @@
             <v-container>
               <v-row class="pt-0 pb-0" dense v-if="cbt.nombre!='Viajes'">
                 <v-col cols="12" class="fg78">
-                  ${{formatMoney(cbt.total)}}
+                  ${{formatoImporte(cbt.total)}}
                 </v-col>
               </v-row>
               <v-row class="pt-0 pb-0" dense>
@@ -32,7 +32,6 @@
                   {{cbt.ctt==0?'Sin':cbt.ctt}} Movs.
                 </v-col>
               </v-row>
-
               <v-row>
                 <v-col v-if="cbt.nombre=='Facturas'">
                   <v-tooltip bottom>
@@ -45,9 +44,9 @@
                     </template>
                     <span>Nuevo</span>
                   </v-tooltip>
-                  <v-tooltip bottom>
+                  <v-tooltip bottom v-if="!$store.state.sucursalDemo">
                     <template v-slot:activator="{ on }">
-                      <v-btn v-if="operarioEsVendedor==false" class="ml-1"
+                      <v-btn
                         icon small outlined
                         :color="getEstadoAnotador($store.state.anotaciones)"
                         @click="nuevoArtNot()" v-on="on">
@@ -58,12 +57,15 @@
                             : 'mdi-18px mdi-message-text-outline'
                           }}
                         </v-icon>
+                        <v-badge v-if="$store.state.anotaciones!=0"
+                          :content="$store.state.anotaciones"
+                          color="green">
+                        </v-badge>
                       </v-btn>
                     </template>
-                    <span>Anotaciones de Ventas{{$store.state.anotaciones}}</span>
+                    <span>Anotaciones de Ventas</span>
                   </v-tooltip>
                 </v-col>
-
                 <v-col v-else-if="cbt.nombre=='Presupuestos'">
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on }">
@@ -75,8 +77,28 @@
                     </template>
                     <span>Nuevo</span>
                   </v-tooltip>
+                  <v-tooltip bottom v-if="$store.state.sucursalDemo">
+                    <template v-slot:activator="{ on }">
+                      <v-btn
+                        icon small outlined
+                        :color="getEstadoAnotador($store.state.anotaciones)"
+                        @click="nuevoArtNot()" v-on="on">
+                        <v-icon
+                          :color="getEstadoAnotador($store.state.anotaciones)">
+                          {{ $store.state.anotaciones==0
+                            ? 'mdi-18px mdi-view-headline'
+                            : 'mdi-18px mdi-message-text-outline'
+                          }}
+                        </v-icon>
+                        <v-badge v-if="$store.state.anotaciones!=0"
+                          :content="$store.state.anotaciones"
+                          color="green">
+                        </v-badge>
+                      </v-btn>
+                    </template>
+                    <span>Anotaciones de Ventas</span>
+                  </v-tooltip>
                 </v-col>
-
                 <v-col v-else-if="cbt.nombre=='Remitos'">
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on }">
@@ -89,7 +111,6 @@
                     <span>Nuevo</span>
                   </v-tooltip>
                 </v-col>
-
                 <v-col v-else-if="cbt.nombre=='Pedidos'">
                   <v-tooltip bottom v-if="operarioEsVendedor">
                     <template v-slot:activator="{ on }">
@@ -102,7 +123,6 @@
                     <span>Nuevo</span>
                   </v-tooltip>
                 </v-col>
-
                 <v-col v-else-if="cbt.nombre=='Recibos'">
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on }">
@@ -112,9 +132,8 @@
                         <v-icon>mdi-18px mdi-plus</v-icon>
                       </v-btn>
                     </template>
-                      <span>Nuevo</span>
+                    <span>Nuevo</span>
                   </v-tooltip>
-
                   <v-tooltip bottom v-if="totMaletines.length>0">
                     <template v-slot:activator="{ on }">
                       <v-badge
@@ -130,7 +149,6 @@
                     <span>Ver Maletines Pendientes</span>
                   </v-tooltip>
                 </v-col>
-
                 <v-col v-else-if="cbt.nombre=='Retiros'">
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on }">
@@ -143,28 +161,11 @@
                     <span>Retiros de Mercadería</span>
                   </v-tooltip>
                 </v-col>
-
               </v-row>
             </v-container>
           </v-card>
         </v-col>
       </v-row>
-
-      <!--
-      <v-row v-if="!sayGrilla" class="pt-6">
-        <v-col cols="5"></v-col>
-        <v-col cols="3">
-          <v-progress-circular
-            class="text-center"
-            :size="70"
-            :width="12"
-            :color="$store.state.temas.cen_panelcpr_bg"
-            indeterminate>
-          </v-progress-circular>
-        </v-col>
-      </v-row>
-      -->
-
       <v-data-table
         :headers="headers"
         :items="items"
@@ -172,19 +173,11 @@
         :single-expand="false"
         :expanded.sync="expanded"
         :show-expand="this.filtroComprobanteSel!='Viajes'"
-        dense
-        class="elevation-3 fg"
-        :footer-props="{
-          itemsPerPageOptions: [6],
-          showFirstLastPage: true,
-          showCurrentPage: true,
-          nextIcon: 'mdi-arrow-right-drop-circle-outline',
-          prevIcon: 'mdi-arrow-left-drop-circle-outline',
-        }"
+        dense class="elevation-1 fg"
+        :footer-props="footProps(6)"
         @item-expanded="cargoItemsComprobante"
         @click:row="selVjeClick">
         <template v-slot:top>
-
           <v-toolbar flat
             :color="temas.forms_titulo_bg"
             :dark="temas.forms_titulo_dark==true">
@@ -194,7 +187,6 @@
               icon @click="closeForm">
               <v-icon>mdi-arrow-left-circle</v-icon>
             </v-btn>
-
             <v-toolbar-title
               :color="temas.forms_titulo_bg"
               :dark="temas.forms_titulo_dark==true"
@@ -231,11 +223,13 @@
             </v-toolbar-title>
 
             <!-- Modal del diálogo para Alta y Edicion -->
-            <v-dialog v-model="dialog" max-width="550px" :fullscreen="true" persistent
+            <v-dialog
+              v-model="dialog"
+              max-width="550px"
+              :fullscreen="true" persistent
               :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card>
-
                 <v-toolbar flat
                   :dark="temas.forms_titulo_dark==true"
                   :color="temas.forms_titulo_bg">
@@ -246,7 +240,7 @@
                     :dark="temas.forms_close_dark==true">
                     <v-icon>mdi-arrow-left-circle</v-icon>
                   </v-btn>
-                  <span class="fg pl-2 headdline">{{ formTitle }}</span>
+                  <span class="fg pl-2 headdline">{{ formTitle }}X1</span>
                   <span class="fg100b pl-2 headdline" v-if="clienteVinculado">Cliente Vinculado</span>
                   <v-spacer></v-spacer>
                   <v-btn
@@ -262,648 +256,585 @@
                 <!-- CABECERA DEL COMRPOBANTE -->
                 <v-form ref="form" class="pl-0">
                   <v-card-text>
-<!--                <v-container>-->
-                      <v-row>
-                        <v-col cols="12" sm="2"
-                          class="fg pt-0">
-                          <!--<v-container fluid class="pt-0 pb-0">-->
-                            <v-switch class="pt-0 pb-0"
+                    <v-row>
+                      <v-col cols="12" sm="1" class="fg pt-0">
+                        <v-switch class="pt-0 pb-0"
+                          :color="temas.forms_titulo_bg"
+                          :disabled="editado.cpr=='REM'||editado.cpr=='PRE'||editado.cpr=='PED'"
+                          v-model="esManual"
+                          label="Manual">
+                        </v-switch>
+                      </v-col>
+                      <v-col cols="12" sm="5" class="fg pt-0">
+                        <v-row v-if="!encontroElCliente">
+                          <v-col cols="12" sm="12" class="fg pt-3">
+                            <v-text-field
+                              ref="codigocliente"
+                              v-model="editado.tercero_id"
                               :color="temas.forms_titulo_bg"
-                              :disabled="editado.cpr=='REM'||editado.cpr=='PRE'||editado.cpr=='PED'"
-                              v-model="esManual"
-                              label="Manual">
-                            </v-switch>
-                          <!--</v-container>-->
-                        </v-col>
-<!--
-                        <v-col cols="1" sm="1" md="1" class="fg pt-3 text-center">
-                          <v-tooltip bottom>
-                            <template v-slot:activator="{ on }">
-                              <v-btn
-                                class="pl-0 pr-1"
-                                fab small
-                                :color="temas.forms_titulo_bg"
-                                :dark="temas.forms_titulo_dark==true"
-                                @click="editarArt(item)" v-on="on">
-                                <v-icon>mdi-account-plus</v-icon>
-                              </v-btn>
-                            </template>
-                            <span>Nuevo Cliente</span>
-                          </v-tooltip>
-                        </v-col>
-                      -->
+                              label="Ingresa el Código, el Nombre o el CUIT. Utiliza el caracter % para buscar por parecido."
+                              :disabled="editedIndex!=-1"
+                              autofocus
+                              v-on:blur="buscarCliente()">
+                            </v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-row v-else>
+                          <v-col cols="12" sm="2" class="pt-6 pl-2 fg">
+                            <v-btn
+                              :color="temas.cen_btns_bg"
+                              :dark="temas.cen_btns_dark==true"
+                              class="mt-0 mr-2 text-capitalize"
+                              @click="encontroElCliente=false"
+                              :disabled="basadoEnCpr">
+                              Buscar
+                            </v-btn>
+                          </v-col>
+                          <v-col cols="12" sm="2" class="pt-3 fg">
+                            <v-text-field
+                              ref="codigocliente"
+                              v-model="editado.tercero_id"
+                              label="Código"
+                              disabled>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="8" class="pt-3 fg">
+                            <v-text-field
+                              v-model="editado.nombre"
+                              label="Nombre del Cliente"
+                              disabled>
+                            </v-text-field>
+                          </v-col>
+                        </v-row>
+                      </v-col>
+                      <v-col cols="12" sm="1" class="fd pt-0 pb-0">
+                        <v-text-field
+                          disabled
+                          v-model="editado.letra"
+                          label="Letra">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="1" class="pt-0 pb-0">
+                        <v-text-field class="fg"
+                          disabled
+                          v-model="editado.responsableAbrev"
+                          label="Cond.Fiscal">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="1" md="1" class="pt-0 pb-0">
+                        <v-text-field class="fg"
+                          disabled
+                          v-model="editado.documento"
+                          label="Documento">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="1" class="pt-0 pb-0">
+                        <v-text-field class="fg85"
+                          disabled
+                          v-model="editado.documentoNumero"
+                          label="Numero">
+                        </v-text-field>
+                      </v-col>
+                    </v-row>
+                    <v-row class="pa-0 ma-0 ml-3">
+                      <v-col cols="12" sm="6" class="fg pt-0 pb-0">
+                        <v-select v-if="editedIndex==-1"
+                          label='Direccion'
+                          :disabled="facRet!=0"
+                          :color="temas.forms_titulo_bg"
+                          v-model="editado.direccion_id"
+                          :items="dirItems"
+                          item-value="id"
+                          :item-text="dirItems=>
+                            `
+                            ${dirItems.direccion} (
+                            ${dirItems.postal.nombre} ) -
+                            ${dirItems.postal.provincia.nombre} -
+                            ${dirItems.postal.provincia.pais.nombre}
+                            `">
+                        </v-select>
+                        <v-text-field v-else
+                          v-model="laDireccion"
+                          disabled>
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="1" class="fg pt-0 pb-0 ml-0 mr-0">
+                        <v-select
+                          label="Moneda"
+                          v-model="editado.moneda_id"
+                          :disabled="editedIndex!=-1 || facRet!=0"
+                          :color="temas.forms_titulo_bg"
+                          :items="monItems" item-value="id" item-text="simbolo" return-object>
+                        </v-select>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="fg pt-0 pb-0 ml-0 mr-0">
+                        <v-text-field
+                          disabled
+                          v-model="editado.vendedor.nombre"
+                          label="Vendedor">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="1" class="fg pt-0 pb-0 ml-0 mr-0">
+                        <v-select
+                          :color="temas.forms_titulo_bg"
+                          :disabled=
+                          "(editado.cpr=='REM' || (editado.cpr=='PRE' && !sucursalDemo)) ||
+                          editedIndex!=-1 || facRet!=0"
+                          label="Depósito" v-model="editado.deposito_id"
+                          :items="depItems" item-value="id" item-text="id" return-object>
+                        </v-select>
+                      </v-col>
+                    </v-row>
 
-                        <v-col cols="12" sm="1" class="fg pt-0">
-                          <v-text-field
-                            ref="codigocliente"
-                            v-model="editado.tercero_id"
+                    <!-- BOTON SELECCION DE FACTURAS SOLO PARA REMITOS -->
+                    <v-row class="fg pt-0 pb-0">
+                      <v-col cols="12" sm="3" class="pt-0 pb-5">
+                        <v-btn
+                          v-if="editado.cpr=='REM' && editado.tercero_id!=''"
+                          small
+                          :color="temas.cen_btns_bg"
+                          :dark="temas.cen_btns_dark==true"
+                          class="mt-0 mr-2 text-capitalize"
+                          @click="buscarFacturasParaRemito">
+                          Seleccionar Facturas
+                        </v-btn>
+                      </v-col>
+                      <v-col cols="12" sm="1" class="pt-0 pb-0">
+                        <v-text-field v-if="esManual"
+                          v-model="sucManual"
+                          @change="setSucManual()"
+                          label="Sucursal">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="pt-0 pb-0">
+                        <v-text-field v-if="esManual"
+                          v-model="nroManual"
+                          @change="setNroManual()"
+                          @blur="busManual()"
+                          label="Número">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="pt-0 pb-0">
+                        <v-text-field v-if="esManual"
+                          type="date"
+                          v-model="editado.fecha"
+                          label="Fecha">
+                        </v-text-field>
+                      </v-col>
+                    </v-row>
+                    <!-- FIN DE SELECCION DE FACTURAS SOLO PARA REMITOS -->
+
+                    <!-- ITEMS DEL COMPROBANTE -->
+                    <div class="fg150b">
+                      Items
+                      <v-chip outlined v-show="editadoArt.pubunidades>0">
+                        {{promosComputer}}
+                      </v-chip>
+                    </div>
+
+                    <!-- ITEMS DEL FACTURADOR -->
+                    <v-row>
+                      <!-- CODIGO -->
+                      <v-col cols="12" sm="1" class="mt-3 pt-0 pl-3 pr-0">
+                        <v-text-field
+                          class="fg" filled dense
+                          :label="$store.state.codigooid=='C'?'Código':'ID'"
+                          :disabled="editedIndexArt>-1||facRet>0"
+                          hint="Código, Desc, TEXTO"
+                          :color="temas.forms_titulo_bg"
+                          ref="buscar"
+                          v-model="busArt"
+                          @keyup.esc="cancelaLinea()"
+                          @focus="$event.target.select()"
+                          @blur="buscarArt(false)">
+                        </v-text-field>
+                      </v-col>
+
+                      <!-- TEXTO O DESCRIPCION -->
+                      <v-col cols="12" sm="5" class="fg mt-3 pt-0 pl-1 pr-0">
+                        <v-text-field v-if="esTexto==true"
+                          ref="txt" filled dense label="Texto"
+                          :color="temas.forms_titulo_bg"
+                          v-model="editadoArt.texto">
+                        </v-text-field>
+                        <v-text-field v-else
+                          filled dense label="Descripción" disabled
+                          :color="temas.forms_titulo_bg"
+                          v-model="editadoArt.nombre">
+                        </v-text-field>
+                      </v-col>
+
+                      <!-- PRECIO -->
+                      <v-col cols="12" sm="1" class="mt-0 pt-3 pl-1 pr-0">
+                        <v-text-field
+                          filled dense label="Precio" ref="precio"
+                          :color="temas.forms_titulo_bg"
+                          v-model="editadoArt.precio"
+                          :disabled="editadoArt.codigo!='TEXTO'||facRet>0"
+                          type="number">
+                        </v-text-field>
+                      </v-col>
+
+                      <!-- CANTIDAD -->
+                      <v-col cols="12" md="1" class="mt-0 pt-3 pl-1 pr-0">
+                        <v-badge
+                          :content="editadoArtStock(editadoArt.stock)"
+                          :color="temas.forms_btn_add_bg"
+                          :dark="temas.forms_btn_add_bg==true">
+                          <v-text-field v-if="editado.cpr.substr(0,3)=='PED'"
+                            filled dense label="Cantidad" class="fg"
                             :color="temas.forms_titulo_bg"
-                            label="Código"
-                            :disabled="editedIndex!=-1"
-                            autofocus
-                            @change="buscarCliente">
+                            v-model="editadoArt.cantidad"
+                            type="number" ref="cantidad"
+                            @focus="$event.target.select()"
+                            @change="cantidadItem()"
+                            @blur="guardarItem('cantidad')"
+                            @keyup.esc="cancelaLinea()">
                           </v-text-field>
-                        </v-col>
-                        <v-col v-show="basadoEnCpr==false" cols="12" sm="4"
-                          class="fg pt-0 pb-0">
-                          <v-autocomplete
-                            ref="cliente"
-                            v-model="editado.tercero_id"
-                            :items="itemsTerceros"
-                            :loading="isLoadingTerceros"
-                            :search-input.sync="searchTerceros"
-                            item-text="razon_social"
-                            item-value="id"
-                            label="Nombre del Cliente"
-                            :color="temas.forms_titulo_bg"
-                            placeholder="Escriba para buscar"
-                            prepend-icon="mdi-database-search"
-                            auto-select-first
-                            :disabled="editedIndex!=-1"
-                            v-on:blur="buscoSiElTerceroEstaVinculado()">
-                          </v-autocomplete>
-                        </v-col>
-                        <v-col v-show="basadoEnCpr==true" cols="12" sm="4"
-                          class="fg pt-0 pb-0">
-                          <v-text-field
-                            disabled
-                            v-model="editado.nombre"
-                            label="Cliente">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="1" class="fd pt-0 pb-0">
-                          <v-text-field
-                            disabled
-                            v-model="editado.letra"
-                            label="Letra">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="1" class="pt-0 pb-0">
-                          <v-text-field class="fg"
-                            disabled
-                            v-model="editado.responsableAbrev"
-                            label="Cond.Fiscal">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="1" md="1" class="pt-0 pb-0">
-                          <v-text-field class="fg"
-                            disabled
-                            v-model="editado.documento"
-                            label="Documento">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="1" class="pt-0 pb-0">
-                          <v-text-field class="fg85"
-                            disabled
-                            v-model="editado.documentoNumero"
-                            label="Numero">
-                          </v-text-field>
-                        </v-col>
-                      </v-row>
-                      <v-row class="pa-0 ma-0 ml-3">
-                        <v-col cols="12" sm="6" class="fg pt-0 pb-0">
-                          <v-select v-if="editedIndex==-1"
-                            label='Direccion'
+                          <v-text-field v-else
+                            filled dense label="Cantidad" class="fg"
                             :disabled="facRet!=0"
                             :color="temas.forms_titulo_bg"
-                            v-model="editado.direccion_id"
-                            :items="dirItems"
-                            item-value="id"
-                            :item-text="dirItems=>
-                              `
-                              ${dirItems.direccion} (
-                              ${dirItems.postal.nombre} ) -
-                              ${dirItems.postal.provincia.nombre} -
-                              ${dirItems.postal.provincia.pais.nombre}
-                              `">
-                          </v-select>
-                          <v-text-field v-else
-                            v-model="laDireccion"
-                            disabled>
+                            v-model.number="editadoArt.cantidad"
+                            ref="cantidad"
+                            @change="cantidadItem()"
+                            @blur="guardarItem('cantidad')"
+                            @keyup.esc="cancelaLinea()">
                           </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="1" class="fg pt-0 pb-0 ml-0 mr-0">
-                          <v-select
-                            label="Moneda"
-                            v-model="editado.moneda_id"
-                            :disabled="editedIndex!=-1 || facRet!=0"
-                            :color="temas.forms_titulo_bg"
-                            :items="monItems" item-value="id" item-text="simbolo" return-object>
-                          </v-select>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="fg pt-0 pb-0 ml-0 mr-0">
+                        </v-badge>
+                      </v-col>
+
+                      <!-- DESCUENTO -->
+                      <v-col cols="12" md="1" class="mt-0 pt-3 pl-1 pr-0">
+                        <v-badge v-if="editadoArt.preciomediocobro"
+                          content="pmc"
+                          :color="temas.forms_btn_add_bg"
+                          :dark="temas.forms_btn_add_bg==true">
                           <v-text-field
-                            disabled
-                            v-model="editado.vendedor.nombre"
-                            label="Vendedor">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="1" class="fg pt-0 pb-0 ml-0 mr-0">
-                          <v-select
-                            :color="temas.forms_titulo_bg"
-                            :disabled=
-                            "(editado.cpr=='REM' || (editado.cpr=='PRE' && !sucursalDemo)) ||
-                            editedIndex!=-1 || facRet!=0"
-                            label="Depósito" v-model="editado.deposito_id"
-                            :items="depItems" item-value="id" item-text="id" return-object>
-                          </v-select>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="fg pt-0 pb-0">
-                          <v-text-field
-                            disabled
-                            label="TRN"
-                            :color="temas.forms_titulo_bg"
-                            v-model="rentabilidad">
-                          </v-text-field>
-                        </v-col>
-                      </v-row>
-
-                      <!-- BOTON SELECCION DE FACTURAS SOLO PARA REMITOS -->
-                      <v-row class="fg pt-0 pb-0">
-                        <v-col cols="12" sm="3" class="pt-0 pb-5">
-                          <v-btn
-                            v-if="editado.cpr=='REM' && editado.tercero_id!=''"
-                            small
-                            :color="temas.cen_btns_bg"
-                            :dark="temas.cen_btns_dark==true"
-                            class="mt-0 mr-2 text-capitalize"
-                            @click="buscarFacturasParaRemito">
-                            Seleccionar Facturas
-                          </v-btn>
-                        </v-col>
-                        <v-col cols="12" sm="1" class="pt-0 pb-0">
-                          <v-text-field v-if="esManual"
-                            v-model="sucManual"
-                            @change="setSucManual()"
-                            label="Sucursal">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="pt-0 pb-0">
-                          <v-text-field v-if="esManual"
-                            v-model="nroManual"
-                            @change="setNroManual()"
-                            @blur="busManual()"
-                            label="Número">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="pt-0 pb-0">
-                          <v-text-field v-if="esManual"
-                            type="date"
-                            v-model="editado.fecha"
-                            label="Fecha">
-                          </v-text-field>
-                        </v-col>
-                      </v-row>
-                      <!-- FIN DE SELECCION DE FACTURAS SOLO PARA REMITOS -->
-
-                      <!-- ITEMS DEL COMPROBANTE -->
-                      <div class="fg150b">
-                        Items
-                        <v-chip outlined v-show="editadoArt.pubunidades>0">
-                          {{promosComputer}}
-                        </v-chip>
-                      </div>
-
-                      <v-row>
-
-                        <!-- CODIGO -->
-                        <v-col cols="12" sm="1" class="mt-3 pt-0 pl-3 pr-0">
-                          <v-text-field
-                            filled
-                            dense
-                            :label="$store.state.codigooid=='C'?'Código':'ID'"
-                            class="fg text-input-blue"
-                            :disabled="editedIndexArt>-1||facRet>0"
-                            hint="Código, Desc, TEXTO"
-                            :color="temas.forms_titulo_bg"
-                            ref="buscar"
-                            v-model="busArt"
-                            @keyup.esc="cancelaLinea()"
-                            @focus="$event.target.select()"
-                            @blur="buscarArt(false)">
-                          </v-text-field>
-                        </v-col>
-
-                        <!-- TEXTO O DESCRIPCION -->
-                        <v-col cols="12" sm="5" class="fg mt-3 pt-0 pl-1 pr-0">
-                          <v-text-field v-if="esTexto==true"
-                            ref="txt"
-                            filled
-                            dense
-                            label="Texto"
-                            :color="temas.forms_titulo_bg"
-                            v-model="editadoArt.texto">
-                          </v-text-field>
-                          <v-text-field v-else
-                            filled
-                            dense
-                            label="Descripción"
-                            disabled
-                            :color="temas.forms_titulo_bg"
-                            v-model="editadoArt.nombre">
-                          </v-text-field>
-                        </v-col>
-
-                        <!-- PRECIO -->
-                        <v-col cols="12" sm="1" class="mt-0 pt-3 pl-1 pr-0">
-                          <v-text-field
-                            filled
-                            dense
-                            label="Precio"
-                            ref="precio"
-                            :color="temas.forms_titulo_bg"
-                            v-model="editadoArt.precio"
-                            :disabled="editadoArt.codigo!='TEXTO'||facRet>0"
-                            type="number">
-                          </v-text-field>
-                        </v-col>
-
-                        <!-- CANTIDAD -->
-                        <v-col cols="12" md="1" class="mt-0 pt-3 pl-1 pr-0">
-                          <v-badge
-                            :content="editadoArtStock(editadoArt.stock)"
-                            :color="temas.forms_btn_add_bg"
-                            :dark="temas.forms_btn_add_bg==true">
-                            <v-text-field v-if="editado.cpr.substr(0,3)=='PED'"
-                              filled dense label="Cantidad" class="fg"
-                              :color="temas.forms_titulo_bg"
-                              v-model="editadoArt.cantidad"
-                              type="number" ref="cantidad"
-                              @focus="$event.target.select()"
-                              @change="cantidadItem()"
-                              @blur="guardarItem('cantidad')"
-                              @keyup.esc="cancelaLinea()">
-                            </v-text-field>
-                            <v-text-field v-else
-                              filled dense label="Cantidad" class="fg"
-                              :disabled="facRet!=0"
-                              :color="temas.forms_titulo_bg"
-                              v-model.number="editadoArt.cantidad"
-                              ref="cantidad"
-                              @change="cantidadItem()"
-                              @blur="guardarItem('cantidad')"
-                              @keyup.esc="cancelaLinea()">
-                            </v-text-field>
-                          </v-badge>
-                        </v-col>
-
-                        <!-- DESCUENTO -->
-                        <v-col cols="12" md="1" class="mt-0 pt-3 pl-1 pr-0">
-                          <v-badge v-if="editadoArt.preciomediocobro"
-                            content="pmc"
-                            :color="temas.forms_btn_add_bg"
-                            :dark="temas.forms_btn_add_bg==true">
-                            <v-text-field
-                              filled
-                              dense
-                              label="%Desc."
-                              class="fg"
-                              :color="temas.forms_titulo_bg"
-                              v-model="editadoArt.tasadescuento"
-                              :disabled="precioOrigen!='Lista'"
-                              type="number"
-                              ref="tasadescuento"
-                              @focus="$event.target.select()"
-                              @change="tasaDescuento()">
-                            </v-text-field>
-                          </v-badge>
-                          <v-text-field v-else
-                            filled
-                            dense
-                            label="%Desc."
-                            class="fg"
+                            filled dense label="%Desc." class="fg"
                             :color="temas.forms_titulo_bg"
                             v-model="editadoArt.tasadescuento"
-                            :disabled="precioOrigen!='Lista'||facRet>0"
+                            :disabled="precioOrigen!='Lista'"
                             type="number"
                             ref="tasadescuento"
                             @focus="$event.target.select()"
                             @change="tasaDescuento()">
                           </v-text-field>
-                        </v-col>
-                        <v-col cols="12" md="1" class="mt-0 pt-3 pl-1 pr-0">
-                          <v-select
-                            filled
-                            dense
-                            label="IVA"
-                            class="fg70"
-                            :disabled="facRet!=0"
-                            :color="temas.forms_titulo_bg"
-                            v-model="editadoArt.iva_id"
-                            :items="ivaTasas"
-                            item-value="id"
-                            item-text="nombre"
-                            @blur="guardarItem('tasadeiva')">
-                          </v-select>
-                        </v-col>
-                        <v-col cols="12" md="2" class="mt-0 pt-3 pl-1 pr-3 pr-0">
-                          <v-text-field
-                            filled dense label="TOTAL"
-                            :color="temas.forms_titulo_bg"
-                            disabled
-                            type="number"
-                            v-model="editadoArt.total">
-                          </v-text-field>
-                        </v-col>
-                      </v-row>
+                        </v-badge>
+                        <v-text-field v-else
+                          filled dense label="%Desc." class="fg"
+                          :color="temas.forms_titulo_bg"
+                          v-model="editadoArt.tasadescuento"
+                          :disabled="precioOrigen!='Lista'||facRet>0"
+                          type="number"
+                          ref="tasadescuento"
+                          @focus="$event.target.select()"
+                          @change="tasaDescuento()">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" md="1" class="mt-0 pt-3 pl-1 pr-0">
+                        <v-select
+                          filled dense label="IVA" class="fg70"
+                          :disabled="facRet!=0"
+                          :color="temas.forms_titulo_bg"
+                          v-model="editadoArt.iva_id"
+                          :items="ivaTasas"
+                          item-value="id"
+                          item-text="nombre"
+                          @blur="guardarItem('tasadeiva')">
+                        </v-select>
+                      </v-col>
+                      <v-col cols="12" md="2" class="mt-0 pt-3 pl-1 pr-3 pr-0">
+                        <v-text-field
+                          filled dense label="TOTAL"
+                          :color="temas.forms_titulo_bg"
+                          disabled
+                          type="number"
+                          v-model="editadoArt.total">
+                        </v-text-field>
+                      </v-col>
+                    </v-row>
 
-                      <v-row>
-                        <v-col v-show="seleccionarArticulo == true"
-                          cols="12" sm="12" md="12">
-                          <v-data-table
-                            :headers="headersSelArt"
-                            :color="$store.state.temas.forms_titulo_bg"
-                            :items="selArt" dense class="elevation-1"
-                            single-select
-                            @click:row="selArtClick"
-                            :footer-props="footerProps10">
-                            <template v-slot:item.precio="{ item }">
-                              <span>${{ formatoImporteDec(item.precio,3) }}</span>
-                            </template>
-                          </v-data-table>
-                        </v-col>
-                      </v-row>
+                    <v-row>
+                      <v-col v-show="seleccionarArticulo == true"
+                        cols="12" sm="12" md="12">
+                        <v-data-table
+                          :headers="headersSelArt"
+                          :color="$store.state.temas.forms_titulo_bg"
+                          :items="selArt" dense class="elevation-1"
+                          single-select
+                          @click:row="selArtClick"
+                          :footer-props="footProps(10)">
+                          <template v-slot:item.precio="{ item }">
+                            <span>${{ formatoImporteDec(item.precio,3) }}</span>
+                          </template>
+                        </v-data-table>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col cols="12" sm="12" class="pt-0 pb-0">
+                        <v-data-table
+                          :headers="headersArt"
+                          :items="articulos"
+                          dense class="elevation-1 pr-0 ml-0"
+                          @click:row="editarArt"
+                          :footer-props="footProps(10)">
+                          <template v-slot:item.activo="{ item }">
+                            <v-chip
+                              :color="getColor(item.activo)"
+                              dark>{{item.activo?'Sí':'No'}}
+                            </v-chip>
+                          </template>
+                          <template v-slot:item.codigo="{ item }">
+                            <span class="fg85">{{ item.codigo }}</span>
+                            <v-badge
+                              inline
+                              :content="itemIvaTasa(item.iva_id)"
+                              :color="temas.forms_btn_add_bg"
+                              :dark="temas.forms_btn_add_bg==true" left>
+                            </v-badge>
+                          </template>
+                          <template v-slot:item.id="{ item }">
+                            <span class="fg85">{{ item.id }}</span>
+                            <v-badge
+                              inline
+                              :content="itemIvaTasa(item.iva_id)"
+                              :color="temas.forms_btn_add_bg"
+                              :dark="temas.forms_btn_add_bg==true" left>
+                            </v-badge>
+                          </template>
+                          <template v-slot:item.nombre="{ item }">
+                            <span class="fg85">{{ item.nombre }}</span>
+                            <v-badge v-if="!item.loTengo"
+                              inline
+                              content="nlt"
+                              :color="temas.forms_btn_add_bg"
+                              :dark="temas.forms_btn_add_bg==true" left>
+                            </v-badge>
+                          </template>
+                          <template v-slot:item.cantidad="{ item }">
+                            <span
+                              class="fg85">{{ formatoImporte(item.cantidad) }}
+                            </span>
+                          </template>
+                          <template v-slot:item.precio="{ item }">
+                            <span
+                              class="fg85">${{ formatoImporteDec(item.precio,3) }}
+                            </span>
+                          </template>
+                          <template v-slot:item.tasadescuento="{ item }">
+                            <v-badge v-if="item.texto=='Promocion'"
+                              class="pt-5 pl-0 pr-0"
+                              overlap
+                              content="pub"
+                              :color="temas.forms_btn_add_bg"
+                              :dark="temas.forms_btn_add_bg==true" left>
+                            </v-badge>
+                            <span class="fg85">
+                              {{ formatoImporte(item.tasadescuento) }}
+                            </span>
+                          </template>
+                          <template v-slot:item.importedescuento="{ item }">
+                            <span class="fg85">
+                              ${{ formatoImporte(item.importedescuento) }}
+                            </span>
+                          </template>
+                          <template v-slot:item.total="{ item }">
+                            <strong>
+                              <span class="fg">${{ formatoImporte(item.total) }}</span>
+                            </strong>
+                          </template>
+                          <template v-slot:item.accion="{item}">
+                            <v-tooltip bottom>
+                              <template v-slot:activator="{ on }">
+                                <v-btn v-if="facRet==0"
+                                  fab x-small
+                                  :color="temas.cen_btns_bg"
+                                  :dark="temas.cen_btns_dark==true"
+                                  class="pl-1 pr-1"
+                                  @click="borrarArt(item)" v-on="on">
+                                  <v-icon>mdi-delete</v-icon>
+                                </v-btn>
+                              </template>
+                              <span>Borrar</span>
+                            </v-tooltip>
+                          </template>
+                        </v-data-table>
+                      </v-col>
+                    </v-row>
+                    <!-- FIN ITEMS DE COMPROBANTE -->
 
-                      <v-row>
-                        <v-col cols="12" sm="12" class="pt-0 pb-0">
-                          <v-data-table
-                            :headers="headersArt"
-                            :items="articulos"
-                            dense
-                            class="elevation-1 pr-0 ml-0"
-                            @click:row="editarArt">
-                            <template v-slot:item.activo="{ item }">
-                              <v-chip
-                                :color="getColor(item.activo)"
-                                dark>{{item.activo?'Sí':'No'}}
-                              </v-chip>
-                            </template>
-                            <template v-slot:item.codigo="{ item }">
-                              <span class="fg85">{{ item.codigo }}</span>
-                              <v-badge
-                                inline
-                                :content="itemIvaTasa(item.iva_id)"
-                                :color="temas.forms_btn_add_bg"
-                                :dark="temas.forms_btn_add_bg==true" left>
-                              </v-badge>
-                            </template>
-                            <template v-slot:item.id="{ item }">
-                              <span class="fg85">{{ item.id }}</span>
-                              <v-badge
-                                inline
-                                :content="itemIvaTasa(item.iva_id)"
-                                :color="temas.forms_btn_add_bg"
-                                :dark="temas.forms_btn_add_bg==true" left>
-                              </v-badge>
-                            </template>
-                            <template v-slot:item.nombre="{ item }">
-                              <span class="fg85">{{ item.nombre }}</span>
-                              <v-badge v-if="!item.loTengo"
-                                inline
-                                content="nlt"
-                                :color="temas.forms_btn_add_bg"
-                                :dark="temas.forms_btn_add_bg==true" left>
-                              </v-badge>
-                            </template>
-                            <template v-slot:item.cantidad="{ item }">
-                              <span
-                                class="fg85">{{ formatoImporte(item.cantidad) }}
-                              </span>
-                            </template>
-                            <template v-slot:item.precio="{ item }">
-                              <span
-                                class="fg85">${{ formatoImporteDec(item.precio,3) }}
-                              </span>
-                            </template>
-                            <template v-slot:item.tasadescuento="{ item }">
-                              <v-badge v-if="item.texto=='Promocion'"
-                                class="pt-5 pl-0 pr-0"
-                                overlap
-                                content="pub"
-                                :color="temas.forms_btn_add_bg"
-                                :dark="temas.forms_btn_add_bg==true" left>
-                              </v-badge>
-                              <span class="fg85">
-                                {{ formatoImporte(item.tasadescuento) }}
-                              </span>
-                            </template>
-                            <template v-slot:item.importedescuento="{ item }">
-                              <span class="fg85">
-                                ${{ formatoImporte(item.importedescuento) }}
-                              </span>
-                            </template>
-                            <template v-slot:item.total="{ item }">
-                              <strong>
-                                <span class="fg">${{ formatoImporte(item.total) }}</span>
-                              </strong>
-                            </template>
-                            <template v-slot:item.accion="{item}">
-                              <!--
-                              <v-tooltip bottom>
-                                <template v-slot:activator="{ on }">
-                                  <v-btn v-if="editado.cpr!='REM' && facRet==0"
-                                    class="pl-1 pr-1"
-                                    fab x-small
-                                    :color="temas.cen_btns_bg"
-                                    :dark="temas.cen_btns_dark==true"
-                                    @click="editarArt(item)" v-on="on">
-                                    <v-icon>mdi-pencil</v-icon>
-                                  </v-btn>
-                                </template>
-                                <span>Editar</span>
-                              </v-tooltip>
-                              -->
-                              <v-tooltip bottom>
-                                <template v-slot:activator="{ on }">
-                                  <v-btn v-if="facRet==0"
-                                    fab x-small
-                                    :color="temas.cen_btns_bg"
-                                    :dark="temas.cen_btns_dark==true"
-                                    class="pl-1 pr-1"
-                                    @click="borrarArt(item)" v-on="on">
-                                    <v-icon>mdi-delete</v-icon>
-                                  </v-btn>
-                                </template>
-                                <span>Borrar</span>
-                              </v-tooltip>
-                            </template>
-                          </v-data-table>
-                        </v-col>
-                      </v-row>
-                      <!-- FIN ITEMS DE COMPROBANTE -->
+                    <!-- TOTALES DEL COMPROBANTE -->
+                    <v-row>
+                      <v-col cols="12" sm="1" class="pt-4 pb-0">
+                        <v-text-field class="caption"
+                          v-if="editado.cpr!='REM'"
+                          dense outlined prefix="$"
+                          v-model="recargo"
+                          :color="temas.forms_titulo_bg"
+                          @change="calculos()"
+                          label="$Recargo">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="1" class="pt-4 pb-0">
+                        <v-text-field class="caption" v-if="editado.cpr!='REM'"
+                          dense outlined prefix="%"
+                          v-model="editado.tasadescuento"
+                          :color="temas.forms_titulo_bg"
+                          @change="calculos()"
+                          label="%Bonificación">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="pt-4 pb-0">
+                        <v-text-field class="caption" v-if="editado.cpr!='REM'"
+                          dense outlined prefix="$"
+                          v-model="editado.importedescuento"
+                          @change="calculos()"
+                          label="$Bonificación">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="pt-4 pb-0">
+                        <v-text-field class="fg135b" v-if="editado.cpr!='REM'"
+                          readonly dense outlined
+                          v-model="editadoGravado"
+                          label="Gravado">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="pt-4 pb-0">
+                        <v-text-field class="fg135b" v-if="editado.cpr!='REM'"
+                          readonly dense outlined
+                          v-model="editadoExento"
+                          label="Exento">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="pt-4 pb-0">
+                        <v-text-field class="fg135b" v-if="editado.cpr!='REM'"
+                          readonly dense outlined
+                          v-model="editadoIva"
+                          label="IVA">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="pt-4 pb-0">
+                        <v-text-field
+                          dense outlined readonly
+                          class="fg135b"
+                          v-model="editadoTotal"
+                          label="TOTAL">
+                        </v-text-field>
+                      </v-col>
+                    </v-row>
+                    <!-- FIN TOTALES DEL COMPROBANTE -->
 
-                      <!-- TOTALES DEL COMPROBANTE -->
-                      <v-row>
-                        <v-col cols="12" sm="1" class="pt-4 pb-0">
-                          <v-text-field class="caption"
-                            v-if="editado.cpr!='REM'"
-                            dense outlined prefix="$"
-                            v-model="recargo"
-                            :color="temas.forms_titulo_bg"
-                            @change="calculos()"
-                            label="$Recargo">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="1" class="pt-4 pb-0">
-                          <v-text-field class="caption" v-if="editado.cpr!='REM'"
-                            dense outlined prefix="%"
-                            v-model="editado.tasadescuento"
-                            :color="temas.forms_titulo_bg"
-                            @change="calculos()"
-                            label="%Bonificación">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="pt-4 pb-0">
-                          <v-text-field class="caption" v-if="editado.cpr!='REM'"
-                            dense outlined prefix="$"
-                            v-model="editado.importedescuento"
-                            @change="calculos()"
-                            label="$Bonificación">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="pt-4 pb-0">
-                          <v-text-field class="fg135b" v-if="editado.cpr!='REM'"
-                            readonly dense outlined
-                            v-model="editadoGravado"
-                            label="Gravado">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="pt-4 pb-0">
-                          <v-text-field class="fg135b" v-if="editado.cpr!='REM'"
-                            readonly dense outlined
-                            v-model="editadoExento"
-                            label="Exento">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="pt-4 pb-0">
-                          <v-text-field class="fg135b" v-if="editado.cpr!='REM'"
-                            readonly dense outlined
-                            v-model="editadoIva"
-                            label="IVA">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="pt-4 pb-0">
-                          <v-text-field
-                            dense outlined readonly
-                            class="fg135b"
-                            v-model="editadoTotal"
-                            label="TOTAL">
-                          </v-text-field>
-                        </v-col>
-                      </v-row>
-                      <!-- FIN TOTALES DEL COMPROBANTE -->
+                    <!-- BONIFICACION Y CREDITO MAXIMO -->
+                    <v-row v-if="editado.cpr.substring(0,3)=='FAC'">
+                      <v-col cols="12" sm="2" class="pt-0 pb-0">
+                        <v-text-field class="fg115b"
+                          readonly dense outlined prefix="%"
+                          v-model="bonificacionmaxima"
+                          label="% Max.Bonif.">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="pt-0 pb-0">
+                        <v-text-field class="fg115b"
+                          readonly dense outlined prefix="$"
+                          v-model="creditomaximo"
+                          label="Crédito Máximo">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="pt-0 pb-0">
+                        <v-text-field class="fg115b"
+                          readonly dense outlined prefix="$"
+                          v-model="saldoctacte"
+                          label="Saldo Cta.Cte">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="pt-0 pb-0">
+                        <v-text-field class="fg115b"
+                          readonly dense outlined prefix="$"
+                          v-model="valorespendientes"
+                          label="Valores pendientes">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="pt-0 pb-0">
+                        <v-text-field class="fg115b"
+                          readonly dense outlined
+                          v-model="saldoDisponible"
+                          label="Saldo Disponible">
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="pt-0 pb-0">
+                        <v-img v-if="electronica"
+                          height="40" width="40" :src="`/images/afip.png`"
+                          @click="chequearAfip">
+                        </v-img>
+                      </v-col>
+                    </v-row>
+                    <!-- BONIFICACION Y CREDITO MAXIMO -->
 
-                      <!-- BONIFICACION Y CREDITO MAXIMO -->
-                      <v-row v-if="editado.cpr.substring(0,3)=='FAC'">
-                        <v-col cols="12" sm="2" class="pt-0 pb-0">
-                          <v-text-field class="fg115b"
-                            readonly dense outlined prefix="%"
-                            v-model="bonificacionmaxima"
-                            label="% Max.Bonif.">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="pt-0 pb-0">
-                          <v-text-field class="fg115b"
-                            readonly dense outlined prefix="$"
-                            v-model="creditomaximo"
-                            label="Crédito Máximo">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="pt-0 pb-0">
-                          <v-text-field class="fg115b"
-                            readonly dense outlined prefix="$"
-                            v-model="saldoctacte"
-                            label="Saldo Cta.Cte">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="pt-0 pb-0">
-                          <v-text-field class="fg115b"
-                            readonly dense outlined prefix="$"
-                            v-model="valorespendientes"
-                            label="Valores pendientes">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="pt-0 pb-0">
-                          <v-text-field class="fg115b"
-                            readonly dense outlined
-                            v-model="saldoDisponible"
-                            label="Saldo Disponible">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="2" class="pt-0 pb-0">
-                          <v-img v-if="electronica"
-                            height="40" width="40" :src="`/images/afip.png`"
-                            @click="chequearAfip">
-                          </v-img>
-                        </v-col>
-                      </v-row>
-                      <!-- BONIFICACION Y CREDITO MAXIMO -->
-
-                      <!-- PAGO DEL COMPROBANTE -->
-                      <v-row
-                        v-if="(editado.cpr!='PRE' || $store.state.sucursalDemo) &&
-                        editado.cpr!='REM' && editado.cpr.substring(0,3)!='PED' && tienesaldo==true">
-                        <v-col cols="2" sm="2" md="2" class="pt-0 pb-0">
-                          <v-btn
-                            :color="temas.cen_btns_bg"
-                            :dark="temas.cen_btns_dark==true"
-                            @click="setComoPaga(2)">
-                            Detallar Pago
-                          </v-btn>
-                        </v-col>
-                        <v-col cols="10" sm="10" md="10" class="pt-0 pb-0">
-                          <v-chip class="ma-1 caption" label
-                            v-show="medpag[0].activo"
-                            :color="medpag[0].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
-                            :dark="temas.forms_titulo_dark==true">
-                            Eftvo. <b>{{ formatoImporte(medpag[0].total) }}</b>
-                          </v-chip>
-                          <v-chip class="ma-1 caption" label
-                            v-show="medpag[1].activo"
-                            :color="medpag[1].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
-                            :dark="temas.forms_titulo_dark==true">
-                            T.Créd. $<b>{{ formatoImporte(medpag[1].total)}}</b>
-                          </v-chip>
-                          <v-chip class="ma-1 caption" label
-                            v-show="medpag[2].activo"
-                            :color="medpag[2].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
-                            :dark="temas.forms_titulo_dark==true">
-                            T.Déb. $<b>{{ formatoImporte(medpag[2].total)}}</b>
-                          </v-chip>
-                          <v-chip v-if="disponible>0" class="ma-1 caption" label
-                            v-show="medpag[3].activo"
-                            :color="medpag[3].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
-                            :dark="temas.forms_titulo_dark==true">
-                            C.Cte. $<b>{{ formatoImporte(medpag[3].total) }}</b>
-                          </v-chip>
-                          <v-chip class="ma-1 caption" label
-                            v-show="medpag[4].activo"
-                            :color="medpag[4].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
-                            :dark="temas.forms_titulo_dark==true">
-                            Transf. $<b>{{ formatoImporte(medpag[4].total) }}</b>
-                          </v-chip>
-                          <v-chip class="ma-1 caption" label
-                            v-show="medpag[5].activo"
-                            :color="medpag[5].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
-                            :dark="temas.forms_titulo_dark==true">
-                            Cheque $<b>{{ formatoImporte(medpag[5].total) }}</b>
-                          </v-chip>
-                          <v-chip class="ma-1 caption" label
-                            v-show="medpag[6].activo"
-                            :color="medpag[6].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
-                            :dark="temas.forms_titulo_dark==true">
-                            M.Pago $<b>{{ formatoImporte(medpag[6].total) }}</b>
-                          </v-chip>
-                          <v-chip class="ma-1 caption" label
-                            v-show="medpag[7].activo"
-                            :color="medpag[7].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
-                            :dark="temas.forms_titulo_dark==true">
-                            T.Pago $<b>{{ formatoImporte(medpag[7].total) }}</b>
-                          </v-chip>
-                        </v-col>
-                      </v-row>
-                      <!-- FIN TOTALES DEL COMPROBANTE -->
-<!--                </v-container>  -->
+                    <!-- PAGO DEL COMPROBANTE -->
+                    <v-row
+                      v-if="(editado.cpr!='PRE' || $store.state.sucursalDemo) &&
+                      editado.cpr!='REM' && editado.cpr.substring(0,3)!='PED' && tienesaldo==true">
+                      <v-col cols="2" sm="2" md="2" class="pt-0 pb-0">
+                        <v-btn
+                          :color="temas.cen_btns_bg"
+                          :dark="temas.cen_btns_dark==true"
+                          @click="setComoPaga()">
+                          Detallar Pago
+                        </v-btn>
+                      </v-col>
+                      <v-col cols="10" sm="10" md="10" class="pt-0 pb-0">
+                        <v-chip class="ma-1 caption" label
+                          v-show="medpag[0].activo"
+                          :color="medpag[0].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
+                          :dark="temas.forms_titulo_dark==true">
+                          Eftvo. <b>{{ formatoImporte(medpag[0].total) }}</b>
+                        </v-chip>
+                        <v-chip class="ma-1 caption" label
+                          v-show="medpag[1].activo"
+                          :color="medpag[1].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
+                          :dark="temas.forms_titulo_dark==true">
+                          T.Créd. $<b>{{ formatoImporte(medpag[1].total)}}</b>
+                        </v-chip>
+                        <v-chip class="ma-1 caption" label
+                          v-show="medpag[2].activo"
+                          :color="medpag[2].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
+                          :dark="temas.forms_titulo_dark==true">
+                          T.Déb. $<b>{{ formatoImporte(medpag[2].total)}}</b>
+                        </v-chip>
+                        <v-chip v-if="disponible>0" class="ma-1 caption" label
+                          v-show="medpag[3].activo"
+                          :color="medpag[3].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
+                          :dark="temas.forms_titulo_dark==true">
+                          C.Cte. $<b>{{ formatoImporte(medpag[3].total) }}</b>
+                        </v-chip>
+                        <v-chip class="ma-1 caption" label
+                          v-show="medpag[4].activo"
+                          :color="medpag[4].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
+                          :dark="temas.forms_titulo_dark==true">
+                          Transf. $<b>{{ formatoImporte(medpag[4].total) }}</b>
+                        </v-chip>
+                        <v-chip class="ma-1 caption" label
+                          v-show="medpag[5].activo"
+                          :color="medpag[5].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
+                          :dark="temas.forms_titulo_dark==true">
+                          Cheque $<b>{{ formatoImporte(medpag[5].total) }}</b>
+                        </v-chip>
+                        <v-chip class="ma-1 caption" label
+                          v-show="medpag[6].activo"
+                          :color="medpag[6].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
+                          :dark="temas.forms_titulo_dark==true">
+                          M.Pago $<b>{{ formatoImporte(medpag[6].total) }}</b>
+                        </v-chip>
+                        <v-chip class="ma-1 caption" label
+                          v-show="medpag[7].activo"
+                          :color="medpag[7].total==0 ? temas.forms_titulo_bg : temas.cen_btns_bg"
+                          :dark="temas.forms_titulo_dark==true">
+                          T.Pago $<b>{{ formatoImporte(medpag[7].total) }}</b>
+                        </v-chip>
+                      </v-col>
+                    </v-row>
+                    <!-- FIN TOTALES DEL COMPROBANTE -->
                   </v-card-text>
                 </v-form>
                 <!-- FIN DE LA CABECERA DEL COMPROBANTE -->
@@ -911,7 +842,11 @@
             </v-dialog>
 
             <!--// MODIFICACION DE PEDIDOS // -->
-            <v-dialog v-model="dialogPed" max-width="550px" :fullscreen="true" :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogPed"
+              max-width="550px"
+              :fullscreen="true"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
                 <v-toolbar flat
@@ -946,8 +881,7 @@
                           <v-data-table
                             :headers="headersPed"
                             :items="artPed"
-                            dense
-                            class="elevation-3"
+                            dense class="elevation-3"
                             hide-default-footer>
                             <template v-slot:item.estado="{ item }">
                               <v-chip label dark
@@ -1004,7 +938,10 @@
             <!--// FIN DEL PROCESAMIENTO DE PEDIDOS // -->
 
             <!--TRANSFERENCIA DE PEDIDO A OTRA SUCURSAL -->
-            <v-dialog v-model="dialogTransferirPedido" max-width="1080px" :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogTransferirPedido"
+              max-width="980px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card class="fg">
                 <v-toolbar flat
@@ -1022,7 +959,7 @@
                   </span>
                   <v-spacer></v-spacer>
                   <span class="text--right">
-                    <v-btn v-if="artTransfPorcentaje>0&&artTransfPorcentaje<101"
+                    <v-btn v-if="artTransfPorcentaje>0&&artTransfPorcentaje<=100"
                       class="ma-2 white--text"
                       :color="temas.cen_btns_bg"
                       :dark="temas.cen_btns_dark==true"
@@ -1052,7 +989,6 @@
                           </p>
                         </v-col>
                       </v-row>
-
                       <v-row>
                         <v-col cols="5" sm="5" md="5" class="pt-0">
                         </v-col>
@@ -1071,20 +1007,17 @@
                         <v-col cols="5" sm="5" md="5" class="pt-0">
                         </v-col>
                       </v-row>
-
                       <v-row>
                         <v-col cols="12" sx="12" mx="12">
                           <span class="fg150b">Items del Pedido</span>
                           <v-data-table
                             :headers="headersTransfPed"
                             :items="artTransfPed"
-                            dense
-                            class="elevation-3"
-                            :footer-props="footerProps10">
+                            dense class="elevation-3"
+                            :footer-props="footProps(10)">
                             <template v-slot:item.nombre="{ item }">
                               <span class="fg85">{{ item.nombre.substring(0,60) }}</span>
                             </template>
-
                             <template v-slot:item.accion="{item}">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on }">
@@ -1124,7 +1057,9 @@
                               </v-tooltip>
                             </template>
                             <template v-slot:top>
-                              <v-dialog v-model="dialogTransferirItem" max-width="250px"
+                              <v-dialog
+                                v-model="dialogTransferirItem"
+                                max-width="250px"
                                 :transition="transition==null?'false':transition">
                                 <v-card>
                                   <v-card-title>
@@ -1158,7 +1093,7 @@
                                       :color="temas.cen_btns_bg"
                                       :dark="temas.cen_btns_dark==true"
                                       text
-                                      @click="cancelarTransferirItem">
+                                      @click="dialogTransferirItem=false">
                                       Cancelar
                                     </v-btn>
                                   </v-card-actions>
@@ -1175,48 +1110,11 @@
             </v-dialog>
             <!-- FIN DE TRANSFERENCIA DE PEDIDO -->
 
-            <!--// SEGUIMIENTO/RASTREO DE COMPROBANTES // -->
-            <v-dialog v-model="dialogRas" max-width="1260px" :transition="transition==null?'false':transition">
-              <v-card class="fg">
-                <template v-slot:activator="{}"></template>
-                <v-toolbar flat
-                  :color="temas.forms_titulo_bg"
-                  :dark="temas.forms_titulo_dark==true">
-                  <v-btn
-                    icon @click="dialogRas=false"
-                    :color="temas.forms_close_bg"
-                    :dark="temas.forms_close_dark==true">
-                    <v-icon>mdi-arrow-left-circle</v-icon>
-                  </v-btn>
-                  <span class="text--right">
-                    {{empresa}} - Seguimiento del Comprobante: {{editado.cpr}}
-                  </span>
-                  <v-spacer></v-spacer>
-                </v-toolbar>
-                <v-card>
-                  <v-form ref="art2">
-                    <v-card-text>
-                      <v-container>
-                        <v-row>
-                          <v-col cols="12" sx="12" mx="12">
-                            <v-data-table
-                              :headers="headersRas"
-                              :items="rastreo"
-                              dense
-                              class="elevation-3">
-                            </v-data-table>
-                          </v-col>
-                        </v-row>
-                      </v-container>
-                    </v-card-text>
-                  </v-form>
-                </v-card>
-              </v-card>
-            </v-dialog>
-            <!-- FIN DEL RASTREO -->
-
             <!--// TIMELINE // -->
-            <v-dialog v-model="dialogTimeLine" max-width="500px" :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogTimeLine"
+              max-width="400px"
+              :transition="transition==null?'false':transition">
               <v-card class="fg">
                 <template v-slot:activator="{}"></template>
                 <v-toolbar flat
@@ -1239,11 +1137,12 @@
                       <v-timeline-item class="fg"
                         v-for="(tm, idx) in timeLine" v-bind:key="idx"
                         :color="temas.barra_principal_bg" small>
-                        <v-card :color="temas.forms_titulo_bg" dark>
+                        <v-card>
                           <v-card-title class="fg pt-1 pb-1">
                             {{tm.novedad}}
                           </v-card-title>
-                          <v-card-text class="pt-2 pb-0 fg75 white text--primary">
+                          <!-- GILGAMESH -->
+                          <v-card-text class="pt-2 pb-0 fg85">
                             <p>{{ fechaTimeLine(tm.created_at) }}<br>{{ tm.detalles }}</p>
                           </v-card-text>
                         </v-card>
@@ -1256,7 +1155,11 @@
             <!-- FIN DEL TIMELINE -->
 
             <!--// ANOTACIONES DE VENTAS // -->
-            <v-dialog v-model="dialogNot" max-width="1250px" persistent :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogNot"
+              max-width="1250px"
+              persistent
+              :transition="transition==null?'false':transition">
               <v-card>
                 <v-toolbar flat
                   :color="$store.state.temas.forms_titulo_bg"
@@ -1282,14 +1185,14 @@
                     <v-container>
 
                       <!-- ITEMS DEL ANOTADOR -->
-                      <span dense class="headline">Items</span>
+                      <span dense class="fg150b">Items</span>
                       <v-row>
                         <v-col cols="1" class="mt-0 pt-3 pl-1 pr-0">
                           <v-text-field
-                            class="text-input-blue"
-                            filled dense label="Código"
+                            class="fg" filled dense
+                            :label="$store.state.codigooid=='C'?'Código':'ID'"
                             :disabled="editedIndexArt>-1"
-                            hint="Código, Desc"
+                            hint="Código, Desc, TEXTO"
                             :color="temas.forms_titulo_bg"
                             ref="buscar"
                             v-model="busArt"
@@ -1299,9 +1202,9 @@
                             @blur="buscarArt(false)">
                           </v-text-field>
                         </v-col>
-                        <v-col  cols="5" class="fg mt-0 pt-3 pl-1 pr-0">
+                        <v-col cols="5" class="fg mt-0 pt-3 pl-1 pr-0">
                           <v-text-field
-                            filled dense label="Descripción"
+                            class="fg" filled dense label="Descripción"
                             disabled
                             :color="temas.forms_titulo_bg"
                             v-model="editadoArt.nombre">
@@ -1309,7 +1212,7 @@
                         </v-col>
                         <v-col cols="1" class="mt-0 pt-3 pl-1 pr-0">
                           <v-text-field
-                            filled dense label="Cantidad" class="fg"
+                            class="fg" filled dense label="Cantidad"
                             :color="temas.forms_titulo_bg"
                             v-model.number="editadoArt.cantidad"
                             ref="cantidad"
@@ -1321,7 +1224,7 @@
                         </v-col>
                         <v-col cols="2" class="mt-0 pt-3 pl-1 pr-0">
                           <v-text-field
-                            filled dense label="Precio"
+                            class="fg" filled dense label="Precio"
                             :color="temas.forms_titulo_bg"
                             v-model="editadoArt.precio"
                             disabled
@@ -1330,7 +1233,7 @@
                         </v-col>
                         <v-col cols="1" class="mt-0 pt-3 pl-1 pr-0">
                           <v-select
-                            filled dense label="IVA" class="fg70"
+                            class="fg" filled dense label="IVA"
                             :color="temas.forms_titulo_bg"
                             v-model="editadoArt.iva_id"
                             disabled
@@ -1340,45 +1243,36 @@
                         </v-col>
                         <v-col cols="2" class="mt-0 pt-3 pl-1 pr-0">
                           <v-text-field
-                            filled dense label="TOTAL"
+                            class="fg" filled dense label="TOTAL"
                             :color="temas.forms_titulo_bg"
                             disabled type="number"
                             v-model="editadoArt.total">
                           </v-text-field>
                         </v-col>
                       </v-row>
-
                       <v-row>
                         <v-col v-show="seleccionarArticulo == true"
-                          cols="12" sm="12" md="12">
+                          cols="12" md="12">
                           <v-data-table
                             :headers="headersSelArt"
                             :color="$store.state.temas.forms_titulo_bg"
                             :items="selArt" dense class="elevation-1"
                             single-select
                             @click:row="selArtClick"
-                            :footer-props="footerProps10">
+                            :footer-props="footProps(10)">
                             <template v-slot:item.precio="{ item }">
                               <span>${{ formatoImporteDec(item.precio,3) }}</span>
                             </template>
                           </v-data-table>
                         </v-col>
                       </v-row>
-
                       <v-row>
-                        <v-col cols="12" sx="12" mx="12" class="pt-0 pb-0">
+                        <v-col cols="12" md="12" class="pt-0 pb-0">
                           <v-data-table
                             :headers="headersNot"
                             :items="articulos"
-                            dense
-                            class="elevation-1 pr-0 ml-0"
-                            :footer-props="{
-                              itemsPerPageOptions: [6],
-                              showFirstLastPage: true,
-                              showCurrentPage: true,
-                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
-                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
-                            }"
+                            dense class="elevation-1 pr-0 ml-0"
+                            :footer-props="footProps(6)"
                             @click:row="editarArt">
                             <template v-slot:item.codigo="{ item }">
                               <span class="fg85">{{ item.codigo }}</span>
@@ -1451,7 +1345,7 @@
                       <!-- FIN ITEMS DEL ANOTADOR -->
 
                       <!-- TOTALES DEL ANOTADOR -->
-                      <v-row>
+                      <v-row class="fg">
                         <v-col cols="6" sm="6" md="6">
                         </v-col>
                         <v-col cols="2" sm="2" md="2">
@@ -1479,7 +1373,10 @@
             <!-- FIN DE ANOTACIONES DE VENTAS -->
 
              <!--// ENVIOS // -->
-            <v-dialog v-model="dialogEnvios" max-width="700px" :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogEnvios"
+              max-width="700px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
                 <v-toolbar flat
@@ -1594,7 +1491,7 @@
                       <v-row v-show="envio.tipodeenvio=='T' && envio.adomicilio=='S'">
                         <v-col cols="12" sm="12" md="12">
                           <v-select
-                            label='Direccion de Envío' outlined
+                            label='Dirección de Envío' outlined
                             :color="temas.forms_titulo_bg"
                             v-model="envio.direccion_id"
                             :items="dirItems"
@@ -1622,8 +1519,7 @@
                             item-value="id"
                             outlined
                             :color="temas.forms_titulo_bg"
-                            placeholder="Escriba para buscar"
-                            @change="leerDirPdr()">
+                            placeholder="Escriba para buscar">
                           </v-autocomplete>
                         </v-col>
                       </v-row>
@@ -1705,7 +1601,10 @@
             <!-- FIN DE ENVIOS -->
 
             <!-- BULTOS DEL PEDIDO -->
-            <v-dialog v-model="dialogBultos" max-width="400px" :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogBultos"
+              max-width="400px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
                 <v-toolbar flat
@@ -1750,11 +1649,12 @@
             <!-- FIN INGRESO DE BULTOS -->
 
             <!-- RETIROS DE MERCADERIA YA FACTURADA -->
-            <v-dialog v-model="dialogRetiro" max-width="700px"
+            <v-dialog
+              v-model="dialogRetiro"
+              max-width="700px"
               :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
-
                 <v-toolbar flat
                   :color="temas.forms_titulo_bg"
                   :dark="temas.forms_titulo_dark==true">
@@ -1765,17 +1665,16 @@
                     <v-icon>mdi-arrow-left-circle</v-icon>
                   </v-btn>
                   <span class="text--right">
-                    {{empresa}} - Retiro de Mercaderíax
+                    {{empresa}} - Retiro de Mercadería
                   </span>
                   <v-spacer></v-spacer>
                   <v-btn
                     :color="temas.barra_principal_bg"
                     :dark="temas.barra_principal_dark"
                     class="ma-2 white--text" @click="confirmarRetiroMerc()">
-                    Guardar Retirox
+                    Guardar Retiro
                   </v-btn>
                 </v-toolbar>
-
                 <v-form ref="art3">
                   <v-card-text>
                     <v-container>
@@ -1831,10 +1730,12 @@
             <!-- FIN DE RETIROS -->
 
             <!--// ADMINISTRACION DE PEDIDOS // -->
-            <v-dialog v-model="dialogAdministracionPedidos" :fullscreen="true" persistent
-              :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogAdministracionPedidos" persistent
+              :transition="transition==null?'false':transition"
+              max-width="950">
               <template v-slot:activator="{}"></template>
-              <v-card class="fg" height="700px">
+              <v-card class="fg" height="600px">
                 <v-toolbar flat
                   :color="temas.forms_titulo_bg"
                   :dark="temas.forms_titulo_dark==true">
@@ -1845,12 +1746,12 @@
                     <v-icon>mdi-arrow-left-circle</v-icon>
                   </v-btn>
                   <span class="text--right">
-                    {{empresa}} - Administración de Pedidos
+                    Administración de Pedidos
                   </span>
                     <v-chip class="ml-3"
                       :color="temas.barra_lateral_bg"
                       :dark="temas.barra_lateral_dark">
-                      Viaje Nro. {{ sayItemActualViaje('id') }}
+                      Viaje ( {{ sayItemActualViaje('id') }} )
                     </v-chip>
                     <v-chip class="ml-3"
                       :color="temas.barra_lateral_bg"
@@ -1860,19 +1761,18 @@
                     <v-chip v-if="viajeEstado('D')" class="ml-3"
                       :color="temas.barra_lateral_bg"
                       :dark="temas.barra_lateral_dark">
-                      {{viajesStaticsSay}} % completado
+                      {{ viajesStaticsSay }} % comp.
                     </v-chip>
                     <v-chip class="ml-3"
                       :color="colorEstadoDelViaje()"
                       :dark="temas.barra_lateral_dark">
-                      {{viajeEstadoSay()}}
+                      {{ viajeEstadoSay() }}
                     </v-chip>
                 </v-toolbar>
                 <v-card>
                   <v-card-text>
                     <v-row class="fg">
-
-                      <v-col cols="3" sx="3" mx="3" class="pt-5 pb-0">
+                      <v-col cols="12" md="3" class="pt-5 pb-0">
                         <v-pagination
                           v-model="pagina"
                           :length="itemsRecorrido.length>0?Math.ceil(itemsRecorrido.length/perPage):0"
@@ -1880,16 +1780,14 @@
                           :total-visible="5">
                         </v-pagination>
                       </v-col>
-
-                      <v-col cols="2" sx="2" mx="2" class="mt-0 pt-5 pb-2">
+                      <v-col cols="12" md="3" class="mt-0 pt-5 pb-2">
                         <v-text-field
                           outlined dense
                           v-model="search"
                           label="Buscar">
                         </v-text-field>
                       </v-col>
-
-                      <v-col cols="7" sx="7" mx="7" class="mt-0 pt-5 pb-2">
+                      <v-col cols="12" md="6" class="mt-0 pt-5 pb-2">
                         <span v-for="(fe, idx) in filtrosEstadosCprs" v-bind:key="idx">
                           <v-badge
                             class="pt-1 pb-0 pl-0 pr-0" overlap :content="fe.ctt"
@@ -1907,7 +1805,6 @@
                           </v-badge>
                         </span>
                       </v-col>
-
                     </v-row>
                   </v-card-text>
                 </v-card>
@@ -1915,22 +1812,19 @@
                   <v-card-text>
                     <v-row>
                       <v-col cols="12" sx="12" mx="12">
-
                         <v-data-table
                           :headers="headersRecorrido"
                           :items="itemsRecorrido"
-                          :footer-props="footerProps3"
                           :search="search"
                           :items-per-page=perPage
                           :page.sync="pagina"
                           :hide-default-footer="true"
-                          dense>
-
+                          dense
+>
                           <template v-slot:item.tercero.razon_social="{ item }">
                             <div class="pt-2 pb-2">
                               <v-card flat>
                                 <v-card-text>
-
                                   <!-- CLIENTE -->
                                   <v-row class="pt-0 pb-0">
                                     <v-col cols="12" class="pt-2 pb-0">
@@ -1938,7 +1832,7 @@
                                         <b>{{ item.tercero.id }} - </b>
                                         <b>{{ item.tercero.razon_social.substring(0,20)}}</b>
                                       </span>
-                                      <v-badge v-if="terceroUserDefined(item)"
+                                      <v-badge v-if="terceroUserDefinido(item)"
                                         class="pt-1 pl-2"
                                         :content="marcaTercero(item,'m')"
                                         :color="marcaTercero(item,'c')"
@@ -1946,7 +1840,6 @@
                                       </v-badge>
                                     </v-col>
                                   </v-row>
-
                                   <!-- BOTON ARTICULOS Y PARTICION DEL PEDIDO -->
                                   <v-row class="pt-0 pb-0">
                                     <v-col cols="12">
@@ -1961,7 +1854,6 @@
                                         </template>
                                         <span>Artículos del Pedido</span>
                                       </v-tooltip>
-
                                       <v-tooltip bottom
                                         v-if="
                                         (itemActualViaje.estado=='D'||itemActualViaje.estado=='I')&&
@@ -1978,24 +1870,12 @@
                                         <span>Particionar Pedido
                                         </span>
                                       </v-tooltip>
-
                                     </v-col>
                                   </v-row>
-                                  <!--
-                                  <v-row>
-                                    <div v-if="item.lista!=null">
-                                      Lista
-                                      <b>
-                                        <span :style="{ color: 'red' }">{{ item.lista }}</span>
-                                      </b>
-                                    </div>
-                                  </v-row>
-                                  -->
                                 </v-card-text>
                               </v-card>
                             </div>
                           </template>
-
                           <!-- CPR PEDIDO -->
                           <template v-slot:item.cprsA.pedido.cpr="{ item }">
                             <v-row class="pt-1 pb-2">
@@ -2011,15 +1891,6 @@
                                     </div>
                                     <div class="fg85">
                                       Artículos <b><span :style="{ color: 'red' }">{{item.cprsA.pedido.items.length}}</span></b>
-                                      <!--
-                                      <br>
-                                      <div v-if="item.lista!=null">
-                                        Lista
-                                        <b>
-                                          <span :style="{ color: 'red' }">{{ item.lista }}</span>
-                                        </b>
-                                      </div>
-                                      -->
                                     </div>
                                   </v-card-text>
                                 </v-card>
@@ -2044,7 +1915,6 @@
                               </v-col>
                             </v-row>
                           </template>
-
                           <!-- CPR/BOTON FACTURA -->
                           <template v-slot:item.cprsA.factura.cpr="{ item }">
                             <v-row>
@@ -2117,156 +1987,7 @@
                               </v-col>
                             </v-row>
                           </template>
-
-                          <!-- CPR/BOTON NDD -->
-                          <template v-slot:item.cprsA.ndd.cpr="{ item }">
-                            <v-row>
-                              <v-col cols="12">
-                                <v-card flat>
-                                  <v-card-text class="pt-0 pb-0 pr-2 pl-2">
-                                    <div v-if="item.cprsA.ndd.cpr=='?'" class=" text-center pt-1 pb-1">
-                                      <v-tooltip bottom>
-                                        <template v-slot:activator="{ on }">
-                                          <v-btn class="mr-0 ml-0 pl-0"
-                                            outlined fab x-small
-                                            :disabled="tieneAsociado(item,'ndd')||viajeEnReparto()"
-                                            :color="temas.barra_lateral_bg"
-                                            @click="cprDesdeAdminDePedidos(item,'NDD', 'NODIV')" v-on="on">
-                                            <v-icon>mdi-file-document</v-icon>
-                                          </v-btn>
-                                        </template>
-                                        <span>Aplicar NDD</span>
-                                      </v-tooltip>
-                                    </div>
-                                    <div v-else class="fg85">
-                                      <span :style="{ color: 'green' }">
-                                        ${{kit.redondear(item.cprsA.ndd.total,2,2)}}
-                                      </span>
-                                      <span style="margin-right: 5px;">
-                                        <b>{{item.cprsA.ndd.cpr}}</b>
-                                      </span>
-                                      <v-btn icon
-                                        @click="print(item.cprsA.ndd)">
-                                        <v-icon>mdi-printer</v-icon>
-                                      </v-btn>
-                                    </div>
-                                  </v-card-text>
-                                </v-card>
-                              </v-col>
-                            </v-row>
-
-                            <v-row v-if="item.cprsB.pedido" class="pt-0 mt-0 pb-2">
-                              <v-col cols="12">
-                                <v-card flat>
-                                  <v-card-text class="pt-0 pb-0 pr-2 pl-2">
-                                    <div
-                                      v-if="item.cprsB.pedido" class=" text-center pt-1 pb-1">
-                                      <v-tooltip bottom>
-                                        <template v-slot:activator="{ on }">
-                                          <v-btn
-                                            outlined fab x-small
-                                            :disabled="tieneAsociado(item,'nddB')||viajeEnReparto()"
-                                            :color="temas.barra_lateral_bg"
-                                            class="mr-0 ml-0 pl-0"
-                                            @click="cprDesdeAdminDePedidos(item,'NDD','DIV')" v-on="on">
-                                            <v-icon>mdi-file</v-icon>
-                                          </v-btn>
-                                        </template>
-                                        <span>Aplicar NDD</span>
-                                      </v-tooltip>
-                                    </div>
-                                    <div class="fg85"
-                                      v-else>
-                                      <span style="margin-right: 5px;">
-                                        <b>{{item.cprsB.pedido?item.cprsB.ndd.cpr:''}}</b>
-                                      </span>
-                                      <span :style="{ color: 'green' }">
-                                        ${{kit.redondear(item.cprsB.pedido?item.cprsB.ndd.total:0,2,2)}}
-                                      </span>
-                                      <v-btn icon
-                                        @click="print(item.cprsB.ndd)">
-                                        <v-icon>mdi-printer</v-icon>
-                                      </v-btn>
-                                    </div>
-                                  </v-card-text>
-                                </v-card>
-                              </v-col>
-                            </v-row>
-                          </template>
-
-                          <!-- CPR/BOTON NDC -->
-                          <template v-slot:item.cprsA.ndc.cpr="{ item }">
-                            <v-row>
-                              <v-col cols="12">
-                                <v-card flat>
-                                  <v-card-text class="pt-0 pb-0 pr-2 pl-2">
-                                    <div v-if="item.cprsA.ndc.cpr=='?'"
-                                      class=" text-center pt-1 pb-1">
-                                      <v-tooltip bottom>
-                                        <template v-slot:activator="{ on }">
-                                          <v-btn class="mr-0 ml-0 pl-0"
-                                            outlined fab x-small
-                                            :disabled="tieneAsociado(item,'ndc')||viajeEnReparto()"
-                                            :color="temas.barra_lateral_bg"
-                                            @click="cprDesdeAdminDePedidos(item,'NDC','NODIV')" v-on="on">
-                                            <v-icon>mdi-file-document</v-icon>
-                                          </v-btn>
-                                        </template>
-                                        <span>Aplicar NDC</span>
-                                      </v-tooltip>
-                                    </div>
-                                    <div v-else>
-                                      <span style="margin-right: 5px;">
-                                        <b>{{item.cprsA.ndc.cpr}}</b>
-                                      </span>
-                                      <span :style="{ color: 'green' }">
-                                        ${{kit.redondear(item.cprsA.ndc.total,2,2)}}
-                                      </span>
-                                      <v-btn icon
-                                        @click="print(item.cprsA.ndc)">
-                                        <v-icon>mdi-printer</v-icon>
-                                      </v-btn>
-                                    </div>
-                                  </v-card-text>
-                                </v-card>
-                              </v-col>
-                            </v-row>
-                            <v-row v-if="item.cprsB.pedido" class="pt-0 mt-0 pb-2">
-                              <v-col cols="12">
-                                <v-card flat>
-                                  <v-card-text class="pt-0 pb-0 pr-2 pl-2">
-                                    <div v-if="item.cprsB.ndc.cpr=='?'"
-                                      class=" text-center pt-1 pb-1">
-                                      <v-tooltip bottom>
-                                        <template v-slot:activator="{ on }">
-                                          <v-btn class="mr-0 ml-0 pl-0"
-                                            outlined fab x-small
-                                            :disabled="tieneAsociado(item,'ndcB')||viajeEnReparto()"
-                                            :color="temas.barra_lateral_bg"
-                                            @click="cprDesdeAdminDePedidos(item,'NDC','DIV')" v-on="on">
-                                            <v-icon>mdi-file</v-icon>
-                                          </v-btn>
-                                        </template>
-                                        <span>Aplicar NDC</span>
-                                      </v-tooltip>
-                                    </div>
-                                    <div v-else>
-                                      <span style="margin-right: 5px;">
-                                        <b>{{item.cprsB.pedido?item.cprsB.ndc.cpr:''}}</b>
-                                      </span>
-                                      <span :style="{ color: 'green' }">
-                                        ${{kit.redondear(item.cprsB.pedido?item.cprsB.ndc.total:0,2,2)}}
-                                      </span>
-                                      <v-btn icon
-                                        @click="print(item.cprsB.ndc)">
-                                        <v-icon>mdi-printer</v-icon>
-                                      </v-btn>
-                                    </div>
-                                  </v-card-text>
-                                </v-card>
-                              </v-col>
-                            </v-row>
-                          </template>
+                          <!-- FIN BOTON FACTURA -->
 
                           <!-- CPR/BOTON REMITO -->
                           <template v-slot:item.remito.cpr="{ item }">
@@ -2302,93 +2023,6 @@
                               </v-col>
                             </v-row>
                           </template>
-
-                          <!-- CPR RECIBO -->
-                          <!--v-if="r.cpr.substring(0,3)=='REC'"-->
-                          <template v-slot:item.cprsA.recibo.cpr="{ item }">
-                            <v-row class="pt-0 pb-0">
-                              <v-col cols="12">
-                                <v-row v-if="item.cprsA.pedido">
-                                  <v-col cols="12">
-                                    <v-card flat class="pt-0 mt-0">
-                                      <v-card-text v-for="(r, idx) in item.cprsA.recibo" v-bind:key="idx"
-                                        class="pt-0 pb-0 pr-2 pl-2">
-                                        <div class="fg" :color="temas.forms_btn_xls_bg">
-                                          <div class="width:300px">
-                                            <span class="izq pr-2 pt-1 mt-1"><b>{{r.cpr}}</b></span>
-                                            <v-btn icon v-if="r.cpr.substring(0,2)=='RC'"
-                                              @click="print(r)">
-                                              <v-icon>mdi-printer</v-icon>
-                                            </v-btn>
-                                            <span class="der pt-1 mt-1" :style="{ color: (
-                                              roundTo(item.cprsA.factura.total+item.cprsA.ndd.total+item.cprsA.ndc.total,2)!=
-                                              r.total)?'red':'green' }">
-                                              ${{kit.redondear(r.total,2,2)}}
-                                            </span><br>
-                                          </div>
-                                        </div>
-                                      </v-card-text>
-                                      <v-card-text v-if="faltanRecibos(item,'A')&&viajeEnReparto()">
-                                        <div class=" text-center pt-0 pb-0">
-                                          <v-tooltip bottom>
-                                            <template v-slot:activator="{ on }">
-                                              <v-btn class="mr-0 ml-0 pl-0"
-                                                outlined fab x-small
-                                                :color="temas.barra_lateral_bg"
-                                                @click="cprDesdeAdminDePedidos(item,'REC','NODIV')" v-on="on">
-                                                <v-icon>mdi-file-document</v-icon>
-                                              </v-btn>
-                                            </template>
-                                            <span>Aplicar Recibo</span>
-                                          </v-tooltip>
-                                        </div>
-                                      </v-card-text>
-                                    </v-card>
-                                  </v-col>
-                                </v-row>
-
-                                <v-row v-if="item.cprsB.pedido" class="pt-0 mt-0 pb-2">
-                                  <v-col cols="12">
-                                    <v-card flat class="pt-0 mt-0">
-                                      <v-card-text v-for="(r, idx) in item.cprsB.recibo" v-bind:key="idx"
-                                        class="pt-0 pb-0 pr-2 pl-2">
-                                        <div class="fg" :color="temas.forms_btn_xls_bg">
-                                          <div class="width:300px">
-                                            <span class="izq pr-2 pt-0 mt-0"><b>{{r.cpr}}</b></span>
-                                            <v-btn icon v-if="r.cpr.substring(0,2)=='RC'"
-                                              @click="print(r)">
-                                              <v-icon>mdi-printer</v-icon>
-                                            </v-btn>
-                                            <span class="der pt-0 mt-0" :style="{ color: (
-                                              roundTo(item.cprsB.factura.total+item.cprsB.ndd.total+item.cprsB.ndc.total,2)!=
-                                              r.total)?'red':'green' }">
-                                              ${{kit.redondear(r.total,2,2)}}
-                                            </span><br>
-                                          </div>
-                                        </div>
-                                      </v-card-text>
-                                      <v-card-text v-if="faltanRecibos(item,'B')&&viajeEnReparto()">
-                                        <div class=" text-center pt-0 pb-0">
-                                          <v-tooltip bottom>
-                                            <template v-slot:activator="{ on }">
-                                              <v-btn class="mr-0 ml-0 pl-0"
-                                                outlined fab x-small
-                                                :color="temas.barra_lateral_bg"
-                                                @click="cprDesdeAdminDePedidos(item,'REC','DIV')" v-on="on">
-                                                <v-icon>mdi-file-document</v-icon>
-                                              </v-btn>
-                                            </template>
-                                            <span>Aplicar Recibo</span>
-                                          </v-tooltip>
-                                        </div>
-                                      </v-card-text>
-                                    </v-card>
-                                  </v-col>
-                                </v-row>
-
-                              </v-col>
-                            </v-row>
-                          </template>
                         </v-data-table>
                       </v-col>
                     </v-row>
@@ -2398,7 +2032,10 @@
             </v-dialog>
 
             <!-- ARTICULOS DEL PEDIDO -->
-            <v-dialog v-model="dialogPedidoArticulos" max-width="1200px" :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogPedidoArticulos"
+              max-width="1200px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card class="fg" height="700px">
                 <v-toolbar flat
@@ -2422,8 +2059,8 @@
                         <v-data-table
                           :headers="headersRepartoArticulos"
                           :items="itemsRepartoPedidoUnds"
-                          dense
-                          class="elevation-1">
+                          dense class="elevation-1"
+                          :footer-props="footProps(6)">
                           <template v-slot:item.codigo="{ item }">
                             <span>{{ item.codigo }}</span>
                           </template>
@@ -2446,10 +2083,12 @@
             <!-- FIN ARTICULOS DEL PEDIDO -->
 
             <!-- ANULAR PEDIDO -->
-            <v-dialog v-model="dialogAnularPedido" max-width="700px" :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogAnularPedido"
+              max-width="700px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-card>
-
                 <v-toolbar flat
                   :color="temas.forms_titulo_bg"
                   :dark="temas.forms_titulo_dark==true">
@@ -2496,9 +2135,11 @@
             <!-- FIN ANULAR PEDIDO -->
 
             <!--REMITO DE UNA FACTURA -->
-            <v-dialog v-model="dialogRem" max-width="800px" :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogRem"
+              max-width="800px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
-
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
                 :dark="temas.forms_titulo_dark==true">
@@ -2520,7 +2161,6 @@
                   Confirmar
                 </v-btn>
               </v-toolbar>
-
               <v-card>
                 <v-form ref="art3">
                   <v-card-text>
@@ -2568,9 +2208,11 @@
             <!-- FIN DE REMITO DE UNA FACTURA -->
 
             <!-- DIALOG DE REMITO PARA VARIAS FACTURAS  -->
-            <v-dialog v-model="dialogSelFacturas" max-width="700px" :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogSelFacturas"
+              max-width="700px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
-
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
                 :dark="temas.forms_titulo_dark==true">
@@ -2591,7 +2233,6 @@
                   Confirmar Selección
                 </v-btn>
               </v-toolbar>
-
               <v-card>
                 <v-form ref="art3">
                   <v-card-text>
@@ -2608,7 +2249,7 @@
                               item-key="cpr"
                               show-select  dense
                               class="pl-1 pr-3 elevation-1 pt-2"
-                              :footer-props="footerProps10">
+                              :footer-props="footProps(6)">
                               <template v-slot:item.total="{ item }">
                                 <span>$ {{ formatoImporte(item.total) }}</span>
                               </template>
@@ -2627,9 +2268,11 @@
             <!-- FIN DIALOG DE REMITO PARA VARIAS FACTURAS  -->
 
             <!-- DIALOG VER MALETINES -->
-            <v-dialog v-model="dialogVerSelMaletines" max-width="1000px" :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogVerSelMaletines"
+              max-width="1000px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
-
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
                 :dark="temas.forms_titulo_dark==true">
@@ -2643,7 +2286,6 @@
                   Maletines pendientes de Recibos
                 </span>
               </v-toolbar>
-
               <v-card class="fg">
                 <v-form ref="art4">
                   <v-card-text>
@@ -2661,10 +2303,8 @@
                           <v-data-table
                             :headers="headersMaletines"
                             :items="maletines"
-                            @click:row="selMaletinClick"
-                            dense
-                            class="pl-1 pr-3 elevation-0 pt-2"
-                            :footer-props="footerProps10">
+                            dense class="pl-1 pr-3 elevation-0 pt-2"
+                            :footer-props="footProps(10)">
                             <template v-slot:item.importe="{ item }">
                               <span>$ {{ formatoImporte(item.importe) }}</span>
                             </template>
@@ -2679,9 +2319,11 @@
             <!-- FIN DIALOG VER MALETINES -->
 
             <!-- DIALOG DE TURNOS A FACTURAR -->
-            <v-dialog v-model="dialogSelTurnos" max-width="1100px" :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogSelTurnos"
+              max-width="1100px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
-
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
                 :dark="temas.forms_titulo_dark==true">
@@ -2702,7 +2344,6 @@
                   Confirmar Selección
                 </v-btn>
               </v-toolbar>
-
               <v-card>
                 <v-form ref="art3">
                   <v-card-text>
@@ -2719,7 +2360,7 @@
                               item-key="fecha"
                               show-select  dense
                               class="pl-1 pr-3 elevation-1 pt-2"
-                              :footer-props="footerProps10">
+                              :footer-props="footProps(6)">
                               <template v-slot:item.precio="{ item }">
                                 <span>$ {{ formatoImporteDec(item.precio,3) }}</span>
                               </template>
@@ -2734,10 +2375,56 @@
             </v-dialog>
             <!-- FIN DIALOG DE REMITO PARA VARIAS FACTURAS  -->
 
-            <!--NDC DE UNA FACTURA/PRESUPUESTO -->
-            <v-dialog v-model="dialogNdcFac" max-width="1200px" :transition="transition==null?'false':transition">
+            <!-- DIALOG SELECCION DE CLIENTE -->
+            <v-dialog
+              v-model="dialogClientes"
+              max-width="750px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
+              <v-toolbar flat
+                :color="temas.forms_titulo_bg"
+                :dark="temas.forms_titulo_dark==true">
+                <v-btn
+                  icon @click="dialogClientes=false"
+                  :color="temas.forms_close_bg"
+                  :dark="temas.forms_close_dark==true">
+                  <v-icon>mdi-arrow-left-circle</v-icon>
+                </v-btn>
+                <span class="text--right">
+                  {{empresa}} - SELECCION DE CLIENTES
+                </span>
+              </v-toolbar>
+              <v-card>
+                <v-form ref="art3">
+                  <v-card-text>
+                    <v-container>
+                       <v-row>
+                        <v-col cols="12" sm="12" md="12">
+                          <v-form ref="art">
+                            <v-data-table
+                              :headers="headersClientes"
+                              :items="clientes"
+                              dense class="pl-1 pr-3 elevation-1 pt-2"
+                              :footer-props="footProps(10)"
+                              @click:row="seleccionDelCliente">
+                            </v-data-table>
+                          </v-form>
+                        </v-col>
+                      </v-row>
+                     </v-container>
+                  </v-card-text>
+                </v-form>
+              </v-card>
+            </v-dialog>
+            <!-- FIN DIALOG SELECCION DEL CLIENTE -->
 
+            <!--NDC DE UNA FACTURA O PRESUPUESTO -->
+            <v-dialog
+              v-model="dialogNdcFac"
+              :max-width="ndcfacWidth"
+              persistent
+              :transition="transition==null?'false':transition">
+              <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
                 :dark="temas.forms_titulo_dark==true">
@@ -2759,41 +2446,46 @@
                   Confirmar
                 </v-btn>
               </v-toolbar>
-
-              <v-card>
+              <v-card class="fg">
                 <v-form ref="art3">
                   <v-card-text>
                     <v-container>
                       <v-row>
-                        <v-col cols="4" sm="4" md="4">
+                        <v-col cols="12" md="12">
                           <v-select
                             label='Motivo'
                             v-model='ndcMotivoSel'
-                            autofocus
+                            disabled
                             :color="temas.forms_titulo_bg"
-                            :items='ndcMotivos' item-value='id' item-text='nombre'
-                            @change="selMotivoNdc">
+                            :items='ndcMotivos'
+                            item-value='id'
+                            item-text='nombre'>
                           </v-select>
                         </v-col>
-                        <v-col cols="2" sm="2" md="2">
+                      </v-row>
+                      <v-row>
+                        <v-col cols="12" md="4">
                           <v-text-field
+                            autofocus
                             v-show="ndcMotivoSel==1"
+                            :disabled="ndcEstado=='P'"
                             :color="temas.forms_titulo_bg"
                             v-model="ndcTasaDescuento"
                             @change="calculosNdc(1)"
                             label="%Desc.">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="3" sm="3" md="3">
+                        <v-col cols="12" md="4">
                           <v-text-field
                             v-show="ndcMotivoSel==1 || ndcMotivoSel==2"
                             :color="temas.forms_titulo_bg"
+                            :disabled="ndcEstado=='P'"
                             v-model="ndcTotal"
                             @change="calculosNdc(2)"
                             label="Total NDC">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="3" sm="3" md="3">
+                        <v-col cols="12" md="4">
                           <v-text-field
                             label="TOTAL DEL COMPROBANTE"
                             disabled
@@ -2804,16 +2496,14 @@
 
                       <!--// PROCESAMIENTO DE DEVOLUCION DE ARTICULOS EN NDC // -->
                       <v-row v-show="dialogNdcxDev==true">
-                        <v-col cols="12" sm="12" md="12">
+                        <v-col cols="12" md="12">
                           <v-form ref="art">
-                            <span dense class="headline">Items a Devolver</span>
+                            <span dense class="fg115b">Items a Devolver</span>
                             <v-data-table
                               :headers="headersNdcxDev"
                               :items="articulos"
-                              dense
-                              class="elevation-3"
+                              dense class="elevation-3"
                               hide-default-footer>
-
                               <template v-slot:item.accion="{ item }">
                                 <v-tooltip bottom>
                                   <template v-slot:activator="{ on }">
@@ -2828,7 +2518,6 @@
                                   </template>
                                   <span>Sumar</span>
                                 </v-tooltip>
-
                                 <v-tooltip bottom>
                                   <template v-slot:activator="{ on }">
                                     <v-btn
@@ -2842,7 +2531,6 @@
                                   </template>
                                   <span>Restar</span>
                                 </v-tooltip>
-
                                 <v-tooltip bottom>
                                   <template v-slot:activator="{ on }">
                                     <v-btn
@@ -2872,9 +2560,11 @@
             <!-- FIN DE NDC DE UNA FACTURA -->
 
             <!--NDD DE UNA FACTURA -->
-            <v-dialog v-model="dialogNddFac" max-width="1200px" :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogNddFac"
+              max-width="1200px"
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
-
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
                 :dark="temas.forms_titulo_dark==true">
@@ -2897,7 +2587,6 @@
                   Confirmar
                 </v-btn>
               </v-toolbar>
-
               <v-card>
                 <v-form ref="art3">
                   <v-card-text>
@@ -2909,13 +2598,12 @@
                             v-model='nddMotivoSel'
                             autofocus
                             :color="temas.forms_titulo_bg"
-                            :items='nddMotivos' item-value='id' item-text='nombre'
-                            @change="selMotivoNdd">
+                            :items='nddMotivos' item-value='id' item-text='nombre'>
                           </v-select>
                         </v-col>
                         <v-col cols="2" sm="2" md="2">
                           <v-text-field
-                            v-show="nddMotivoSel==2"
+                            v-show="nddMotivoSel==1"
                             :color="temas.forms_titulo_bg"
                             v-model="nddTasaDescuento"
                             @change="calculosNdd(1)"
@@ -2939,44 +2627,6 @@
                           </v-text-field>
                         </v-col>
                       </v-row>
-
-                      <!--// PROCESAMIENTO DE DEVOLUCION DE CHEQUES EN NDD // -->
-                      <v-row v-show="dialogNddxDev==true">
-                        <v-col cols="12" sm="12" md="12">
-                          <v-form ref="art">
-                            <span class="font-weight-medium">
-                              Cheques a Devolver
-                            </span>
-                            <v-data-table
-                              v-model="selected"
-                              :headers="headersNddxDev"
-                              :items="cheques"
-                              @toggle-select-all="selectAllChq"
-                              :single-select="false"
-                              item-key="cpr"
-                              show-select dense
-                              class="pl-1 pr-3 elevation-1 pt-2"
-                              :footer-props="footerProps"
-                              @item-selected="clickRow">
-                              <template v-slot:item.importe="{ item }">
-                                <span>${{ formatoImporte(item.importe) }}</span>
-                              </template>
-                              <template v-slot:item.fechafinanciera="{ item }">
-                                <span>{{ formatoFechaCorta(item.fechafinanciera) }}</span>
-                              </template>
-                              <template v-slot:item.seleccionado="{ item }">
-                                <v-chip fab
-                                  :color="getColor(item.seleccionado)"
-                                  dark>{{item.seleccionado?'Sí':'No'}}
-                                </v-chip>
-                              </template>
-                            </v-data-table>
-
-                          </v-form>
-                        </v-col>
-                      </v-row>
-                      <!--// FIN DEL PROCESAMIENTO DE DEVOLUCION DE ARTICULOS EN NDC // -->
-
                     </v-container>
                   </v-card-text>
                 </v-form>
@@ -2985,7 +2635,11 @@
             <!-- FIN DE NDD DE UNA FACTURA -->
 
             <!--RECIBO -->
-            <v-dialog v-model="dialogRec" max-width="1300px" persistent :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogRec"
+              max-width="1000px"
+              persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
@@ -3011,49 +2665,56 @@
                   <v-card-text>
                     <!-- PIDO CLIENTE -->
                     <v-row>
-                      <v-col v-show="basadoEnCpr==false" cols="6" sx="6" mx="6" class="pl-4">
-                        <v-autocomplete
-                          ref="clienterecibo"
-                          v-model="editado.tercero_id"
-                          :items="itemsTerceros"
-                          :loading="isLoadingTercerosRec"
-                          :search-input.sync="searchTercerosRec"
-                          item-text="nombre"
-                          item-value="id"
-                          :color="temas.forms_titulo_bg"
-                          autofocus
-                          label="Nombre del Cliente"
-                          placeholder="Escriba para buscar"
-                          prepend-icon="mdi-database-search"
-                          auto-select-first
-                          :disabled="editedIndex!=-1"
-                          v-on:keydown.tab="buscoSiElTerceroEstaVinculado">
-                        </v-autocomplete>
-                      </v-col>
-                      <v-col v-show="basadoEnCpr==true" cols="6" sm="6" md="6" class="pl-4">
-                        <v-text-field
-                          disabled
-                          v-model="editado.nombre"
-                          label="Cliente">
-                        </v-text-field>
-                      </v-col>
-                      <v-col cols="2" sm="2" md="2">
-                        <v-text-field
-                          :disabled="hayMaletin()"
-                          v-model="editado.total"
-                          :color="temas.forms_titulo_bg"
-                          label="Total Recibo"
-                          @change="calculosMed">
-                        </v-text-field>
-                      </v-col>
-                      <v-col cols="3" class="pt-6 pl-6">
-                        <v-btn v-show="pend.length>0&&!hayMaletin()"
-                          :color="temas.forms_titulo_bg"
-                          :dark="temas.cen_btns_dark==true"
-                          outlined
-                          @click="automaticoPend()">
-                          Selección Automática
-                        </v-btn>
+                      <v-col cols="12" sm="12" class="fg pt-3">
+                        <v-row v-if="!encontroElCliente">
+                          <v-col cols="12" sm="8" class="fg pt-3">
+                            <v-text-field
+                              ref="codigocliente"
+                              v-model="editado.tercero_id"
+                              :color="temas.forms_titulo_bg"
+                              label="Ingresa el Código, el Nombre o el CUIT. Utiliza el caracter % para buscar por parecido."
+                              :disabled="editedIndex!=-1"
+                              autofocus
+                              v-on:blur="buscarCliente()">
+                            </v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-row v-else>
+                          <v-col cols="12" sm="2" class="pt-6 pl-2 fg">
+                            <v-btn
+                              :color="temas.cen_btns_bg"
+                              :dark="temas.cen_btns_dark==true"
+                              class="mt-0 mr-2 text-capitalize"
+                              @click="setBuscarCliente()"
+                              :disabled="basadoEnCpr">
+                              Buscar
+                            </v-btn>
+                          </v-col>
+                          <v-col cols="12" sm="2" class="pt-3 fg">
+                            <v-text-field
+                              ref="codigocliente"
+                              v-model="editado.tercero_id"
+                              label="Código"
+                              disabled>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" class="pt-3 fg">
+                            <v-text-field
+                              v-model="editado.nombre"
+                              label="Nombre del Cliente"
+                              disabled>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="2" md="2">
+                            <v-text-field
+                              disabled
+                              v-model="editado.total"
+                              :color="temas.forms_titulo_bg"
+                              label="Total Recibo"
+                              @change="calculosMed">
+                            </v-text-field>
+                          </v-col>
+                        </v-row>
                       </v-col>
                     </v-row>
                     <!-- FIN PIDO CLIENTE -->
@@ -3078,23 +2739,24 @@
 
                     <!-- PENDIENTES PARA CANCELAR -->
                     <v-row>
-                      <v-col cols="12" sx="12" mx="12">
+                      <v-col cols="12" md="7">
+                        <span class="fg"><b>Pendientes</b></span>
                         <v-data-table
                           :headers="headersPend"
                           :items="pend"
-                          dense
-                          class="elevation-3">
+                          dense class="elevation-3"
+                          :footer-props="footProps(10)">
                           <template v-slot:top>
-
-                            <!-- A CANCELAR -->
-                            <v-dialog v-model="dialogPend" max-width="300px" :transition="transition==null?'false':transition">
-
+                            <v-dialog
+                              v-model="dialogPend"
+                              max-width="300px"
+                              :transition="transition==null?'false':transition">
                               <template v-slot:activator="{}"></template>
                               <v-toolbar flat
                                 :color="temas.forms_titulo_bg"
                                 :dark="temas.forms_titulo_dark==true">
                                 <v-btn
-                                  icon @click="cancelarPend"
+                                  icon @click="dialogPend=false"
                                   :color="temas.forms_close_bg"
                                   :dark="temas.forms_close_dark==true">
                                   <v-icon>mdi-arrow-left-circle</v-icon>
@@ -3110,15 +2772,6 @@
                                   Aceptar
                                 </v-btn>
                               </v-toolbar>
-
-                              <template v-slot:activator="{}">
-                                <v-btn small
-                                  :color="temas.cen_btns_bg"
-                                  :dark="temas.cen_btns_dark==true">
-                                  Pendientes
-                                </v-btn>
-                              </template>
-
                               <v-card>
                                 <v-card-text>
                                   <v-container>
@@ -3136,9 +2789,8 @@
                                 </v-card-text>
                               </v-card>
                             </v-dialog>
-                            <!-- FIN A CAMCELAR -->
+                            <!-- FIN A CANCELAR -->
                           </template>
-
                           <template v-slot:item.cpr="{ item }">
                             <span class="fg">{{ item.cpr }}</span>
                           </template>
@@ -3148,40 +2800,62 @@
                           <template v-slot:item.importe="{ item }">
                             <span class="fg">${{ formatoImporte(item.importe) }}</span>
                           </template>
-                          <template v-slot:item.pendiente="{ item }">
-                            <span class="fg">${{ formatoImporte(item.pendiente) }}</span>
-                          </template>
-                          <template v-slot:item.acancelar="{ item }">
-                            <span class="fg"><b>${{ formatoImporte(item.acancelar) }}</b></span>
-                          </template>
-
-                          <template v-slot:item.accion="{item}">
-                            <v-tooltip bottom>
-                              <template v-slot:activator="{ on }">
-                                <v-btn v-show="!hayMaletin()"
-                                  fab x-small class="mr-2"
-                                  :color="temas.cen_btns_bg"
-                                  :dark="temas.cen_btns_dark==true"
-                                  @click="editarPend(item)" v-on="on">
-                                  <v-icon>mdi-pencil</v-icon>
-                                </v-btn>
-                              </template>
-                              <span>Editar</span>
-                            </v-tooltip>
-                            <v-tooltip bottom>
-                              <template v-slot:activator="{ on }">
-                                <v-btn v-show="reciboDeUnSoloComprobante==false&&!hayMaletin()"
-                                  fab x-small class="mr-2"
-                                  :color="item.acancelar==0?temas.cen_btns_bg:temas.cen_card_activo_bg"
-                                  :dark="temas.cen_btns_dark==true"
-                                  @click="selectPend(item)" v-on="on">
-                                  <v-icon>mdi-checkbox-marked-outline</v-icon>
-                                </v-btn>
-                              </template>
-                              <span>Seleccionar</span>
-                            </v-tooltip>
-                          </template>
                         </v-data-table>
+                      </v-col>
+                      <v-col cols="12" sm="5">
+                        <v-row>
+                          <v-col cols="12" md="12" class="fg">
+                            <span class="fg">
+                              <b>
+                                {{ hayMaletin()?'¡No puedes modificar! (es por Maletín)':'Selecciona como Cobras'}}
+                              </b>
+                            </span>
+                            <v-data-table
+                              :headers="headersCondDePagos"
+                              :items="condicionesDePago"
+                              item-key="id"
+                              dense class="elevation-3"
+                              @click:row="onRowClick"
+                              :footer-props="footProps(10)">
+                              <template v-slot:item.nombre="{ item }">
+                                <span :style="getCellStyles(item)">
+                                  {{ item.nombre }}
+                                </span>
+                              </template>
+                              <template v-slot:item.apagar="{ item }">
+                                <span :style="getCellStyles(item)">
+                                  ${{ formatoImporte(item.apagar) }}
+                                </span>
+                              </template>
+                            </v-data-table>
+                          </v-col>
+                        </v-row>
+                      </v-col>
+
+                      <!-- MEDIOS DE PAGO SELECCION -->
+                      <v-col cols="12" md="12">
+                        <v-row v-if="!hayMaletin()" class="pl-2 pt-0 pb-0">
+                          <v-col cols="11" class="pl-8">
+                            <v-radio-group v-model="medioDePagoId" row>
+                              <v-radio v-for="item in medpag"
+                              :key="item.id" dense :value="item.id"
+                              :label="item.nombre"
+                              v-show="item.activo==true"
+                              :color="temas.forms_titulo_bg"
+                              @click="setFP(item.id, null)">
+                              </v-radio>
+                            </v-radio-group>
+                          </v-col>
+                        </v-row>
+                        <v-row v-if="ndcPorPP!=0">
+                          <v-col cols="11" class="pl-8">
+                            <span class="fg">
+                              ¡Se va a generar una orden de NDC por
+                              <b>${{ formatoImporte(ndcPorPP) }}!</b>
+                            </span>
+                          </v-col>
+                        </v-row>
+                        <!-- FIN DE MEDIOS DE PAGO SELECCION -->
                       </v-col>
                     </v-row>
                     <!-- FIN DE PENDIENTES A CANCELAR -->
@@ -3200,64 +2874,18 @@
                     </v-row>
                     <!-- FIN DE MEDIOS DE PAGO SELECCION -->
 
-                    <!-- MEDIOS DE PAGO SELECCION -->
-                    <!--
-                    <v-row class="pl-2 pb-0">
-                      <v-col cols="1">
-                        <v-switch class="pt-1 pb-2"
-                          label="Vuelto"
-                          v-model="vuelto"
-                          :color="temas.forms_titulo_bg">
-                        </v-switch>
-                      </v-col>
-                      <v-col cols="11" class="pl-8">
-                        <v-radio-group v-model="medioDePagoId" row>
-                          <v-radio v-for="item in medpag"
-                            :key="item.id" dense :value="item.id"
-                            :label="item.nombre"
-                            v-show="item.activo==true"
-                            :color="temas.forms_titulo_bg"
-                            @click="setFP(item.id, null)">
-                          </v-radio>
-                        </v-radio-group>
-                      </v-col>
-                    </v-row>
-                    -->
-
-                    <v-row v-if="!hayMaletin()" class="pl-2 pb-0">
-                      <v-col cols="1">
-                        <v-switch class="pt-1 pb-2"
-                          label="Vuelto"
-                          v-model="vuelto"
-                          :color="temas.forms_titulo_bg">
-                        </v-switch>
-                      </v-col>
-                      <v-col cols="11" class="pl-8">
-                        <v-radio-group v-model="medioDePagoId" row>
-                          <v-radio v-for="item in medpag"
-                            :key="item.id" dense :value="item.id"
-                            :label="item.nombre"
-                            v-show="item.activo==true"
-                            :color="temas.forms_titulo_bg"
-                            @click="setFP(item.id, null)">
-                          </v-radio>
-                        </v-radio-group>
-                      </v-col>
-                    </v-row>
-                    <!-- FIN DE MEDIOS DE PAGO SELECCION -->
-
                     <!--// DIALOGO INGRESO DE VALORES QUE ENTRAN EN EL RECIBO// -->
                     <v-row class="mt-0 pt-0">
-                      <v-col cols="12" sx="12" mx="12">
+                      <v-col cols="12" sm="12">
                         <v-data-table
                           :headers="headersMed"
                           :items="valores"
-                          dense
-                          class="elevation-3"
+                          dense class="elevation-3"
                           hide-default-footer>
                           <template v-slot:top>
-
-                            <v-dialog v-model="dialogMed" :max-width="medpagwidth"
+                            <v-dialog
+                              v-model="dialogMed"
+                              :max-width="medpagWidth"
                               :transition="transition==null?'false':transition">
                               <v-card>
                                 <v-toolbar flat
@@ -3270,19 +2898,22 @@
                                     <v-icon>mdi-arrow-left-circle</v-icon>
                                   </v-btn>
                                   <span class="headdline">{{ medioDePagoNombre }}</span>
+                                  <span v-if="medioDePagoNombre.substring(0,3)=='Ch.'">
+                                    Carga de Cheques de Terceros
+                                    (Máximo {{maxDiasChq}} días).
+                                  </span>
                                   <v-spacer></v-spacer>
-                                    <v-btn v-if="medioDePagoOk"
+                                  <v-btn v-if="medioDePagoOk"
                                     @click="guardarMed(editadoMed)"
                                     :color="temas.barra_principal_bg"
                                     :dark="temas.barra_principal_dark">
                                     Guardar
                                   </v-btn>
                                 </v-toolbar>
-
                                 <v-card-text>
                                   <v-container>
                                     <!-- GRILLA DE CHEQUES DE TERCERO -->
-                                    <v-row v-show="habinhab('cheque de tercero')">
+                                    <v-row v-show="habInhab('cheque de tercero')">
                                       <v-col cols="2" sm="2" md="2">
                                         <v-text-field
                                           ref="cuit"
@@ -3303,7 +2934,7 @@
                                           label="Propio del Cliente"
                                           v-model="editadoMed.propiodelcliente"
                                           :color="temas.forms_titulo_bg"
-                                          @change="propiodelcliente">
+                                          @change="propioDelCliente">
                                         </v-switch>
                                       </v-col>
                                       <v-col cols="3" sm="3" md="3">
@@ -3331,13 +2962,11 @@
                                           label="Banco"
                                           placeholder="Escriba para buscar"
                                           prepend-icon="mdi-database-search"
-                                          v-on:keydown.tab="buscoSiElTerceroEstaVinculado"
                                           @blur="elValorEstaOk()">
                                         </v-autocomplete>
                                       </v-col>
                                     </v-row>
-
-                                    <v-row v-show="habinhab('cheque de tercero')">
+                                    <v-row v-show="habInhab('cheque de tercero')">
                                       <v-col cols="6" sm="6" md="6">
                                         <v-text-field
                                           v-model="editadoMed.nombre"
@@ -3350,7 +2979,6 @@
                                           @blur="elValorEstaOk()">
                                         </v-text-field>
                                       </v-col>
-
                                       <v-col cols="2" sm="2" md="2">
                                         <v-switch
                                           label="eCheq"
@@ -3358,7 +2986,6 @@
                                           :color="temas.forms_titulo_bg">
                                         </v-switch>
                                       </v-col>
-
                                       <v-col cols="2" sm="2" md="2">
                                         <v-text-field
                                           ref="numerodecheque"
@@ -3387,9 +3014,8 @@
                                         </v-badge>
                                       </v-col>
                                     </v-row>
-
                                     <!-- TARJETA -->
-                                    <v-row v-show="habinhab('tarjeta')">
+                                    <v-row v-show="habInhab('tarjeta')">
                                       <v-col cols="12" sm="12" md="12">
                                         <v-select
                                           label='Medio de Cobro'
@@ -3403,7 +3029,7 @@
                                         </v-select>
                                       </v-col>
                                     </v-row>
-                                    <v-row v-show="habinhab('tarjeta')">
+                                    <v-row v-show="habInhab('tarjeta')">
                                       <v-col cols="1" sm="1" md="1">
                                         <v-text-field
                                           v-model="editadoMed.nrovalor"
@@ -3462,7 +3088,7 @@
                                       </v-col>
                                     </v-row>
                                     <!-- TRANSFERENCIA -->
-                                    <v-row v-show="habinhab('transferencia')">
+                                    <v-row v-show="habInhab('transferencia')">
                                       <v-col cols="12" sm="12" md="12">
                                         <v-select
                                           label='Cuenta Destino'
@@ -3497,7 +3123,6 @@
                               </v-card>
                             </v-dialog>
                           </template>
-
                           <template v-slot:item.vuelto="{item}">
                             <span>{{ item.vuelto?'Sí':'No' }}</span>
                           </template>
@@ -3508,8 +3133,7 @@
                             </v-chip>
                           </template>
                           <template v-slot:item.accion="{item}">
-
-                            <v-tooltip bottom>
+                            <v-tooltip bottom v-if="!hayMaletin()">
                               <template v-slot:activator="{ on }">
                                 <v-btn
                                   fab x-small
@@ -3522,8 +3146,7 @@
                               </template>
                               <span>Agregar mismo tipo de valor</span>
                             </v-tooltip>
-
-                            <v-tooltip bottom>
+                            <v-tooltip bottom v-if="!hayMaletin()">
                               <template v-slot:activator="{ on }">
                                 <v-btn
                                   fab x-small
@@ -3536,7 +3159,6 @@
                               </template>
                               <span>Editar</span>
                             </v-tooltip>
-
                             <v-tooltip bottom>
                               <template v-slot:activator="{ on }">
                                 <v-btn
@@ -3550,13 +3172,10 @@
                               </template>
                               <span>Borrar</span>
                             </v-tooltip>
-
                           </template>
-
                           <template v-slot:item.importe="{ item }">
                             <span>${{ formatoImporte(item.importe) }}</span>
                           </template>
-
                         </v-data-table>
                       </v-col>
                     </v-row>
@@ -3575,8 +3194,8 @@
                           <v-col cols="2" sm="2" md="2">
                             <v-text-field v-show="editado.cpr=='REC'"
                               disabled dense outlined
-                              v-model="totCancelado"
-                              label="Cancelado">
+                              v-model="totACobrar"
+                              label="A Cobrar">
                             </v-text-field>
                           </v-col>
                           <v-col cols="2" sm="2" md="2">
@@ -3604,9 +3223,12 @@
             <!-- FIN DEL RECIBO -->
 
             <!--RETIROS DE MERCADERIA A FACTURAR -->
-            <v-dialog v-model="dialogRetiroMerc" max-width="1000px" persistent :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogRetiroMerc"
+              max-width="1000px"
+              persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
-
               <v-toolbar flat
                 :color="temas.forms_titulo_bg"
                 :dark="temas.forms_titulo_dark==true">
@@ -3616,7 +3238,7 @@
                   :dark="temas.forms_close_dark==true">
                   <v-icon>mdi-arrow-left-circle</v-icon>
                 </v-btn>
-                <span class="fg pl-2 headdline">{{ formTitle }}xxx</span>
+                <span class="fg pl-2 headdline">{{ formTitle }}</span>
                 <v-spacer></v-spacer>
                 <v-btn v-if="editado.tercero_id!=''&&articulos.length>0 && !yaEnviado"
                   :color="temas.barra_principal_bg"
@@ -3630,25 +3252,49 @@
                 <v-form ref="pend">
                   <v-card-text>
                     <v-container>
-
                       <!-- PIDO CLIENTE -->
                       <v-row>
-                        <v-col cols="6" sx="6" mx="6">
-                          <v-autocomplete
-                            ref="clienteretiro"
-                            v-model="editado.tercero_id"
-                            :disabled="editedIndexRetiroMer!=-1"
-                            :items="itemsTerceros"
-                            :loading="isLoadingTercerosRetirosMerc"
-                            :search-input.sync="searchTercerosRetirosMerc"
-                            :color="temas.forms_titulo_bg"
-                            item-text="nombre"
-                            item-value="id"
-                            autofocus
-                            label="Cliente"
-                            placeholder="Escriba para buscar"
-                            prepend-icon="mdi-database-search">
-                          </v-autocomplete>
+                        <v-col cols="12" sm="12" class="fg pt-0">
+                          <v-row v-if="!encontroElCliente">
+                            <v-col cols="12" sm="12" class="fg pt-3">
+                              <v-text-field
+                                ref="codigocliente"
+                                v-model="editado.tercero_id"
+                                :color="temas.forms_titulo_bg"
+                                label="Ingresa el Código, el Nombre o el CUIT. Utiliza el caracter % para buscar por parecido."
+                                :disabled="editedIndex!=-1"
+                                autofocus
+                                v-on:blur="buscarCliente()">
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
+                          <v-row v-else>
+                            <v-col cols="12" sm="2" class="pt-6 pl-2 fg">
+                              <v-btn
+                                :color="temas.cen_btns_bg"
+                                :dark="temas.cen_btns_dark==true"
+                                class="mt-0 mr-2 text-capitalize"
+                                @click="encontroElCliente=false"
+                                :disabled="basadoEnCpr">
+                                Buscar
+                              </v-btn>
+                            </v-col>
+                            <v-col cols="12" sm="2" class="pt-3 fg">
+                              <v-text-field
+                                ref="codigocliente"
+                                v-model="editado.tercero_id"
+                                label="Código"
+                                disabled>
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="8" class="pt-3 fg">
+                              <v-text-field
+                                v-model="editado.nombre"
+                                label="Nombre del Cliente"
+                                disabled>
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
                         </v-col>
                       </v-row>
                       <!-- FIN PIDO CLIENTE -->
@@ -3659,7 +3305,7 @@
                         <v-col cols="2" class="mt-3 pt-0 pl-1 pr-0">
                           <v-text-field
                             filled dense label="Código"
-                            class="fg text-input-blue"
+                            class="fg"
                             :disabled="editedIndexArt>-1"
                             hint="Código, Desc, TEXTO"
                             :color="temas.forms_titulo_bg"
@@ -3706,7 +3352,7 @@
                             :items="selArt" dense class="elevation-1"
                             single-select
                             @click:row="selArtClick"
-                            :footer-props="footerProps10">
+                            :footer-props="footProps(10)">
                             <template v-slot:item.precio="{ item }">
                               <span>${{ formatoImporteDec(item.precio,3) }}</span>
                             </template>
@@ -3722,7 +3368,8 @@
                             :color="$store.state.temas.forms_titulo_bg"
                             :items="articulos" dense class="elevation-3"
                             single-select
-                            @click:row="selArtClick">
+                            @click:row="selArtClick"
+                            :footer-props="footProps(10)">
                             <template v-slot:top>
                             </template>
                             <template v-slot:item.cantidad="{ item }">
@@ -3767,14 +3414,18 @@
             <!-- FIN DE RETIROS DE MERCADERIA -->
 
             <!-- ERROR EN EL PEDIDO -->
-            <v-dialog v-model="dialogError" max-width="1200px" persistent :transition="transition==null?'false':transition">
+            <v-dialog
+              v-model="dialogError"
+              max-width="1200px"
+              persistent
+              :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card>
                 <v-toolbar flat
                   :dark="temas.forms_titulo_dark==true"
                   :color="temas.forms_titulo_bg">
                   <v-btn
-                    icon @click="cancelarSelArtPedErr"
+                    icon @click="dialogError=false"
                     :color="temas.forms_close_bg"
                     :dark="temas.forms_close_dark==true">
                     <v-icon>mdi-arrow-left-circle</v-icon>
@@ -3807,8 +3458,8 @@
                   <v-data-table
                     :headers="headersSelArtPedErr"
                     :items="selArtPedErr"
-                    dense
-                    class="elevation-3 pl-0">
+                    dense class="elevation-3 pl-0"
+                    :footer-props="footProps(6)">
                     <template #item.nombre="{ value }">
                       <div class="text-truncate" style="max-width: 245px">
                         {{ value }}
@@ -3870,11 +3521,11 @@
         <template v-slot:expanded-item="{ headers, item }"
           v-if="filtroComprobanteSel!='Viajes'">
           <td :colspan="headers.length">
-            <v-data-table
-              v-if="filtroComprobanteSel!='Recibos'"
+            <v-data-table v-if="filtroComprobanteSel!='Recibos'"
               :headers="headersItems"
               :items="item.items"
-              dense>
+              dense
+              :footer-props="footProps(10)">
               <template v-slot:item.articulo.codigo="{ item }">
                 <span class="fg">{{ item.articulo.codigo }}</span>
               </template>
@@ -3899,42 +3550,13 @@
                 <span class="fg">${{ formatoImporte(item.total) }}</span>
               </template>
             </v-data-table>
-
-            <v-data-table v-else
-              :headers="headersCancelaciones"
-              :items="item.cancelaciones"
-              dense>
-              <template v-slot:item.cancelado.comprobante.cpr="{ item }">
-                <span class="fg">{{ item.cancelado.comprobante.cpr }}</span>
-              </template>
-              <template v-slot:item.concepto="{ item }">
-                <span class="fg">{{ item.concepto }}</span>
-              </template>
-              <template v-slot:item.nombre="{ item }">
-                <span class="fg">
-                  {{ item.codigo=='1@1' ? item.texto : item.nombre }}
-                </span>
-              </template>
-              <template v-slot:item.cancelado.comprobante.fecha="{ item }">
-                <span class="fg">
-                  {{ formatoFechaCorta(item.cancelado.comprobante.fecha) }}
-                </span>
-              </template>
-              <template v-slot:item.importe="{ item }">
-                <span class="fg">${{ formatoImporte(item.importe) }}</span>
-              </template>
-              <template v-slot:item.cancelado.pendiente="{ item }">
-                <span class="fg">${{ formatoImporte(item.cancelado.pendiente) }}</span>
-              </template>
-            </v-data-table>
-
           </td>
         </template>
         <template v-slot:item.tercero.razon_social="{ item }">
           <span class="fg">
             {{item.tercero?item.tercero.razon_social.substring(0,23):null}}
           </span>
-          <v-badge v-if="terceroUserDefined(item)"
+          <v-badge v-if="terceroUserDefinido(item)"
             class="pt-1 pl-2"
             :content="marcaTercero(item,'m')"
             :color="marcaTercero(item,'c')"
@@ -3964,33 +3586,34 @@
             :dark="temas.forms_btn_add_bg==true" rigth>
           </v-badge>
         </template>
-        <template v-slot:item.rentabilidad="{ item }">
-          <span class="fg">$ {{ formatoImporte(item.rentabilidad) }}</span>
+        <template v-slot:item.ctacte="{ item }">
+          <v-chip
+            :color="item.ctacte?temas.forms_titulo_bg:temas.barra_lateral_bg"
+            :dark="temas.forms_titulo_dark==true">
+            {{item.ctacte?'Sí':'No'}}
+          </v-chip>
+        </template>
+        <template v-slot:item.ndcPPTot="{ item }">
+          <span class="fg">
+            $ {{ formatoImporte( item.ndcPPTot==null?0:item.ndcPPTot ) }}
+          </span>
+          <v-badge v-if="item.ndcPPTot!=null"
+            class="pt-2"
+            :content="item.ndcPPTot==0?'f':'p'"
+            :color="item.ndcPPTot==0?'green':'red'"
+            :dark="temas.forms_btn_add_bg==true" rigth>
+          </v-badge>
         </template>
         <template v-slot:item.importedescuento="{ item }">
           <span class="fg">
             $ {{ formatoImporte(item.importedescuento) }}
           </span>
-          <v-badge v-if="descuentoProbable(item)"
-            class="pt-2"
-            :content="descuentoProbable(item)"
-            :color="temas.forms_btn_add_bg"
-            :dark="temas.forms_btn_add_bg==true" rigth>
-          </v-badge>
         </template>
         <template v-slot:item.total="{ item }">
-          <v-tooltip v-if="sayMessage(item, true)" bottom color="blue">
-            <template v-slot:activator="{ on, attrs }">
-              <v-chip label outlined :color="getColorTotal(item)" v-on="on">
-                <b class="fg">$ {{ formatoImporte(item.total) }}</b>
-              </v-chip>
-            </template>
-            <span v-html="sayMessage(item, true)"></span>
-          </v-tooltip>
-          <v-chip v-else label outlined :color="getColorTotal(item)">
+          <v-chip label outlined>
             <b class="fg">$ {{ formatoImporte(item.total) }}</b>
           </v-chip>
-          <v-badge v-if="tieneRemito(item)"
+          <v-badge v-if="item.rem_id!=null"
             class="pt-2"
             :content="'r'"
             :color="temas.forms_btn_add_bg"
@@ -4002,16 +3625,6 @@
             :color="temas.forms_btn_add_bg"
             :dark="temas.forms_btn_add_bg==true" rigth>
           </v-badge>
-        </template>
-        <template v-slot:item.pendientes[0].pendiente="{ item }">
-          <span class="fg">
-            <b>$ {{ formatoImporte(item.pendientes[0] ? item.pendientes[0].pendiente : 0) }}</b>
-          </span>
-        </template>
-        <template v-slot:item.tercero.direcciones[0].zona[0].zonas.nombre="{ item }">
-          <span class="fg">
-            {{ sayZona(item) }}
-          </span>
         </template>
         <template v-slot:item.observaciones="{ item }">
           <span class="fg">
@@ -4028,14 +3641,12 @@
             x-small readonly>
           </v-rating>
           <v-chip v-else
-            label
-            class="fg85"
-            @mouseover="sayMessage(item, true)"
-            @mouseleave="sayMessage(item, false)"
-            :color="getEstado(item.estado,'c',item.pendientes[0], item)"
-            :dark="getEstado(item.estado,'k',item.pendientes[0], item)">
-            <b>{{ getEstado(item.estado,'e',item.pendientes[0], item) }}</b>
-          </v-chip>
+              label
+              class="fg85"
+              :color="getEstado(item.estado,'c', item)"
+              :dark="getEstado(item.estado,'k', item)">
+              <b>{{ getEstado(item.estado,'e', item) }}</b>
+            </v-chip>
           <v-badge v-if="tieneRemito(item)"
             class="pt-2"
             :content="'r'"
@@ -4058,11 +3669,6 @@
         <template v-slot:item.ndc="{ item }">
           <span class="fg">$ {{ formatoImporte(item.ndc) }}</span>
         </template>
-        <!--
-        <template v-slot:item.recibos="{ item }">
-          <span class="fg">({{item.valores}}/{{item.rendidos}}) $ {{ formatoImporte(item.recibos) }}</span>
-        </template>
-        -->
         <template v-slot:item.recibos="{ item }">
           <span class="fg">$ {{ formatoImporte(item.recibos) }}</span>
         </template>
@@ -4137,8 +3743,6 @@ import SBar from './Forms/snackbar.vue';
 import Confirmacion from "./Forms/confirmacion.vue";
 import impresiones from "./Forms/impresiones.vue";
 import Mail from "./Forms/mail.vue";
-import XLSX from 'xlsx'
-import jsPDF from 'jspdf'
 
 export default {
   components: {
@@ -4148,27 +3752,15 @@ export default {
     impresiones,
   },
   data: () => ({
-    //sayGrilla: true,
     vuelto: false,
     yaEnviado: false,
-    tabMaletin: 'aunnorecibidos',
+    maletines: [],
     totMaletines: [], // total de maletines
     maletinesCli: [], // maletines del cliente en recibos
     maletinesCliPos: 0, // Poscion del maletin seleccionado
-    totalMaletin: 0,  // importe total de maletines en recibos
-
     reciboVinculado: false,
     clienteVinculado: false,
     idPagoAAnular: null,
-    
-    //chkMaletin: [],
-    //chkMaletinOk: [],
-    maletines: [],
-
-    //maletinesRecep: [],
-    //maletinesRecepOk: [],
-    
-    selectdId: -1,
     buscoPor: 'codigo',
     clickEnBoton: false,
     page: 1,
@@ -4176,7 +3768,6 @@ export default {
     electronica: false,
     electronicaOk: false,
     
-
     /*
       para la administracion de pedidos
       sucursalesPosibles: siempre en la posicion 1 va a estar la sucursal fiscal actual, y en la 2 la demo
@@ -4198,7 +3789,7 @@ export default {
     ivas: [],
     asociado: [],
     selected: [],
-    confirmarComprobanteMensaje: 'CONFIRMAR COMPROBANTE',
+    confirmarComprobanteMensaje: 'CONFIRMAR',
     progress: false,
     elMes: '',
     elAnio: '',
@@ -4211,17 +3802,14 @@ export default {
     sucManual: '0000',
     nroManual: '00000000',
     expanded: [],
-    expandedPedidos: [],
-    expandedRepartos: [],
     totalPedidos: 0,
     facturas: [],
     loading: true,
-
+    maxDiasChq: -1,
     cpr: '',                 // Pedido 
     pedProcesable: false,    // Si el pedido es procesable o no ( alguno de los items tiene stock )
     basadoEnCpr: false,      // si el comprobante actual esta basado en otro comprobante. ( fac/ped, rem/fac, etc)
-    notificaEnBaseAOtro: [], // arreglo para realizar la notificacion de comprobantes.
-    notificaOriginal: [],    // cuando es notificaEnBaseAOtro, debo marcar el comprobante padre.
+    notificaOriginal: [],    // debo marcar el comprobante padre.
     basadoEnOtroCpr: [],     // arreglo para grabar la en que comprobante esta basado el actual
     motivoAnularPedido: '¡Lamentamos informarles que nos quedamos sin stock!',
     cfUser: '',
@@ -4258,23 +3846,9 @@ export default {
     },
     cprDesdeReparto: false,
     envio: {
-      tipodeenvio: 'P',
-      adomicilio: 'S',
-      transporte_id: '',
-      puntoderetiro_id: '',
-      puntoderetirodireccion_id: '',
-      llegada: '',
-      generaremito: false,
-      remitogenerado: false,
-      remito_id : '',
-      remito_numero: '',
-      remito_msg: '',
-      importeflete: '',
-      bultos: '',
-      traking: '',
-      quienretira: '',
-      documento: '',
-      direccion_id: '',
+      tipodeenvio: 'P', adomicilio: 'S', transporte_id: '', puntoderetiro_id: '', puntoderetirodireccion_id: '', llegada: '',
+      generaremito: false, remitogenerado: false, remito_id : '', remito_numero: '', remito_msg: '', importeflete: '', bultos: '',
+      traking: '', quienretira: '', documento: '', direccion_id: ''
     },
     retiro: { quienretira:'',documento:'',generaremito:false,remitogenerado:false,remito_id:'',remito_numero:'',remito_msg:'', bultos:''},
 
@@ -4285,12 +3859,14 @@ export default {
     comoPaga: "1",          // 1-> Todo Efectivo, 2-> Otros
     medioDePagoNombre: '',
     anchoDelDialogDeValores: 450,
-    totCancelado: 0,
+    totACobrar: 0,
     totValores: 0,
     valDiferencia: 0,
+    ndcPorPP: 0,
     totCheTerSel: 0,
     rentabilidad: 0,
-    medpagwidth: 0,
+    medpagWidth: 0,
+    ndcfacWidth: 0,
     medpag: [
       {id:1, nombre: 'Efectivo',         activo: true,  tipo:'CAJ', total: 0, abrev: 'EF'},
       {id:2, nombre: 'Tarj.de Crédito',  activo: true,  tipo:'TDC', total: 0, abrev: 'TC' },
@@ -4307,14 +3883,17 @@ export default {
     ndcMotivos: [{id:1, nombre: 'BONIFICACION'}, {id: 2, nombre: 'DEVOLUCION'}, {id: 3, nombre: 'ANULACION'}],
     ndcMotivoSel: 1,
     ndcTasaDescuento: 0,
+    ndcEstado: '',
     ndcTotal: 0,
     ndcItemsDevueltos: [],
+    ndcPorDescEnPagos: [],
+    ndcPorProntoPago: false,
+    ndcPorPP: 0,
 
-    nddMotivos: [{id:1, nombre: 'CHEQUES RECHAZADOS'}, {id: 2, nombre: 'MORA'}, {id: 3, nombre: 'CAMBIO DE PRECIO'}],
+    nddMotivos: [{id: 1, nombre: 'MORA'}, {id: 2, nombre: 'CAMBIO DE PRECIO'}],
     nddMotivoSel: 1,
     nddTasaDescuento: 0,
     nddTotal: 0,
-    nddChequesDevueltos: [],
 
     comprobantes: [
       { nombre: 'Facturas',     total: 0, ctt: 0, bg: '', dark: '', activo: true },
@@ -4338,7 +3917,7 @@ export default {
     creditomaximo: 0,
     saldoctacte: 0,
     valorespendientes: 0,
-    tienesaldo: 0,
+    tienesaldo: false,
     disponible: 0,
     formTitle: '',
     formTitleArt: '',
@@ -4352,6 +3931,7 @@ export default {
     itemActualViaje: null,
     itemActualCliente: null,
     tl: "text-lowercase",
+    clientes: [],
     banItems: [],
     cueItems: [],
     cueNewItems: [],
@@ -4375,6 +3955,10 @@ export default {
     iRAll: [],
     itemsRepartoPedidoUnds: [],
     itemsRepartoPedidoCual: 'R',
+
+    condicionDePago: [],
+    condicionesDePago: [],
+
     articulos: [],
     cheques: [],
     artPed: [],
@@ -4386,7 +3970,6 @@ export default {
     valores: [],
     pendientes: [],
     pend: [],
-    rastreo: [],
     acciones: [],
     timeLine: [],
     msg: {
@@ -4424,27 +4007,25 @@ export default {
     porcentajeATransferir: [
       v => (v && v > 0 && v < 101) || 'Debe ingresar entre el 1% al 100%',
     ],
-    //footerProps: {'items-per-page-options': [5, 5, 15, 100]},
-    footerProps: {'items-per-page-options': [6]},
-    footerProps3: {'items-per-page-options': [3]},
-    footerProps4: {'items-per-page-options': [4]},
-    footerProps10: {'items-per-page-options': [10]},
+    footerProps: {
+      itemsPerPageOptions: [0],
+      showFirstLastPage:true,
+      showCurrentPage:true,
+      pageText:'Páginas',
+      nextIcon:'mdi-arrow-right-drop-circle-outline',
+      prevIcon:'mdi-arrow-left-drop-circle-outline',
+    },
     busArt: '',
     busArtSave: '',
     search: '',
     searchBancos: '',
-    searchTerceros: '',
-    searchTercerosRec: '',
     searchTercerosPdr: '',
-    searchTercerosEquipo: '',
     searchTercerosTrans: '',
     searchTercerosPrdDir: '',
-    searchTercerosRetirosMerc: '',
     esTexto: false,
     dialog: false,
     dialogMed: false,
     dialogPed: false,
-    dialogRas: false,
     dialogNot: false,
     dialogRem: false,
     dialogRec: false,
@@ -4458,8 +4039,8 @@ export default {
     dialogEnvios: false,
     dialogBultos: false,
     dialogNdcxDev: false,
-    dialogNddxDev: false,
     dialogTimeLine: false,
+    dialogClientes: false,
     dialogSelTurnos: false,
     dialogRetiroMerc: false,
     dialogSelFacturas: false,
@@ -4472,32 +4053,108 @@ export default {
     verOSelMaletines: 'V',
     editadoNombre: '',
     editadoCpr: '',
+
+    editedIndex: -1,
+    editedIndexArt: -1,
+    editedIndexMed: -1,
+    editedIndexNot: -1,
+    editedIndexRetiroMer: -1,
+    editado: {
+      id: '', cpr: '', fecha: '', ctacte: '', vencimiento: '', tercero_id: '', nombre: '', comprobante_id: '', documento_id: '',
+      documentoCodigo: '', mediodepago_id: '', deposito_id: '', vendedor: {id: null, nombre: 'MOSTRADOR'}, moneda_id: 51, direccion_id: '',
+      documento: '', documentoNumero: '', responsableAbrev: '', letra: '', activo: true, tasadescuento: 0, importedescuento: 0, gravado: 0,
+      exento: 0, iva: 0, total: 0, rentabilidad: 0, texto: '', estado: '', observaciones: '', quienpidio: '', viaje_id: null, hayMaletin: null,
+      usaElSistema: false, facid: null
+    },
+    defaultItem: {
+      id: '', cpr: '', fecha: '', ctacte: '', vencimiento: '', tercero_id: '', nombre: '', comprobante_id: '', documento_id: '',
+      documentoCodigo: '', mediodepago_id: '', deposito_id: '', vendedor: {id: null, nombre: 'MOSTRADOR'}, moneda_id: 51, direccion_id: '',
+      documento: '', documentoNumero: '', responsableAbrev: '', letra: '', activo: true, tasadescuento: 0, importedescuento: 0, gravado: 0,
+      exento: 0, iva: 0, total: 0, rentabilidad: 0, texto: '', estado: '', observaciones: '', quienpidio: '', viaje_id: null, hayMaletin: null,
+      usaElSistema: false, facid: null, 
+    },
+    editadoArt: {
+      id: '', articulo_id: '', codigo: '', codbar: '', nombre: '', deposito_id: '', unidad_id: '', moneda_id: 51, iva_id: '', cantidad: 1,
+      cantidadoriginal: 1, stock: 0, costo: 0, precio: 0, preciooriginal: 0, undstock: 0, sinstock: 'C', tasadescuento: 0, importedescuento: 0,
+      decimales: 0, total: 0, texto: '', vencimiento: '', ofeprecio: 0, ofetasdes: 0, ofeenvio: 0, ofeunidades: 0, ofeestado: '',
+      padre_id: null, undenvase: 1, escombo: false, preciomediocobro: false, tasaproprecargo: 0, adevolver: 0, turno_id: null, loTengo: false,
+      desc1: 0, desc2: 0,
+    },
+    defaultItemArt: {
+      id: '', articulo_id: '', codigo: '', codbar: '', nombre: '', deposito_id: '', unidad_id: '', moneda_id: 51, iva_id: '', cantidad: 1,
+      cantidadoriginal: 1, stock: 0, costo: 0, precio: 0, preciooriginal: 0, undstock: 0, sinstock: 'C', tasadescuento: 0, importedescuento: 0,
+      decimales: 0, total: 0, texto: '', vencimiento: '', ofeprecio: 0, ofetasdes: 0, ofeenvio: 0, ofeunidades: 0, ofeestado: '',
+      padre_id: null, undenvase: 1, escombo: false, preciomediocobro: false, tasaproprecargo: 0, adevolver: 0, turno_id: null, loTengo: false,
+      desc1: 0, desc2: 0,
+    },
+    editadoPend: {
+      acancelar: '',
+    },
+    editadoTransfItem: {
+      cttOriginal: 0,
+      cttATransferir: 0,
+    },
+    editadoMed: {
+      id: null, caja_id: null, medio_id: null, cuentaorigen_id: null, cuentadestino_id: null, cuentacheque_id: null, cuentatarjeta_id: null,
+      banco_id: null, tarjeta_id: null, cpringreso_id: null, cpregreso_id: null, chequera_id: null, cheque_id: null, echeq: null,
+      fechafinanciera: null, fechasalida: null, importe: null, nrovalor: null, tipo: null, observ: null, importe: 0, cuenta: null, cuit: null,
+      nombre: null, cuotas: null, importecuotas: null, interes: null, recargo: null, nombrecuenta: null, propiodelcliente: null,
+      domicilioFiscal: [], maletinitem_id: null,
+    },
+    defaultItemMed: {
+      id: null, caja_id: null, medio_id: null, cuentaorigen_id: null, cuentadestino_id: null, cuentacheque_id: null, cuentatarjeta_id: null,
+      banco_id: null, tarjeta_id: null, cpringreso_id: null, cpregreso_id: null, chequera_id: null, cheque_id: null, echeq: null,
+      fechafinanciera: null, fechasalida: null, importe: null, nrovalor: null, tipo: null, observ: null, importe: 0, cuenta: null, cuit: null,
+      nombre: null, cuotas: null, importecuotas: null, interes: null, recargo: null, nombrecuenta: null, propiodelcliente: null,
+      domicilioFiscal: [], maletinitem_id: null,
+    },
+    selArt: [],
+    seleccionarArticulo: false,
+    descriptionLimit: 80,
+    entriesBancos: [],
+    entriesTerceros: [],
+    entriesArticulos: [],
+    entriesTercerosTrans: [],
+    entriesTercerosPdr: [],
+    entriesTercerosEquipo: [],
+    
+    tercerosUserId: [],
+    isLoadingBancos: false,
+    isLoadingTercerosTrans: false,
+    isLoadingTercerosPdr: false,
+    isLoadingTercerosRetirosMerc: false,
+    isLoadingArticulos: false,
+    selArtPedErr: [],
+
+    filtrosEstados: [],
+    filtroEstadoSel: 'Todos',
+    filtrosEstadosCprs: [],
+    filtroEstadoCprsSel: 'Todos',
+
+    precioOrigen: 'Lista',    // Lista, Promocion: por defecto Lista = precios.precio
+    promoDescuento: 0,        // Descuento por Promo ( si hay )
+    precioDescuento: 0,       // Descuento de Promocion o de Item ( ingresado en Compras )
+    cttMinima: 1,             // Cabtidad minima para aplicar la regla
+    turnosFacturar: [],       // Levanta turnos pendientes de facturar
+    encontroElCliente: false, // Si encontro el cliente o no en la cabecera de facturacion
+
     headers: [
       { text: 'COMPROBANTE', value:'cpr', align: 'left', width: 175 },
       { text: 'FECHA', value:'fecha', align: 'left', width: 89 },
       { text: 'CLIENTE', value: 'tercero.razon_social', align: 'left', width: 210 },
       { text: 'DESC', value:'importedescuento', align: 'end', width: 110 },
-      { text: 'TRN', value:'rentabilidad', align: 'end', width: 110 },
-      { text: 'PENDIENTE', value:'pendientes[0].pendiente', align: 'end', width: 120 },
       { text: 'TOTAL', value:'total', align: 'end', width: 150 },
       { text: 'ESTADO', value:'estado', align: 'left', width: 110 },
       { text: 'ACCIONES', value: 'accion', sortable: false, width: 90 },
     ],
     headersItems: [
-      { text: 'Código', value:'articulo.codigo', width: 130, class: 'grey lighten-3'},
-      { text: 'Descripción', value:'articulo.nombre', width: 353, class: "grey lighten-3"},
-      { text: 'Ctt', value:'cantidad', width: 90, align: 'end', class: "grey lighten-3"},
-      { text: 'Precio', value:'precio', width: 100, align: 'end', width: 120, class: "grey lighten-3"},
-      { text: '%Des', value:'tasadescuento', width: 80, align: 'end', class: "grey lighten-3"},
-      { text: 'Des', value:'importedescuento', width: 110, align: 'end', class: "grey lighten-3"},
-      { text: 'Total', value:'total', width: 130, align: 'end', width: 120, class: "grey lighten-3"},
-    ],
-    headersCancelaciones: [
-      { text: 'Cpr', value:'cancelado.comprobante.cpr', align: 'left', width: 150},
-      { text: 'Observaciones', value:'concepto', align: 'left', width: 200},
-      { text: 'Fecha', value:'cancelado.comprobante.fecha', align: 'end', width: 90},
-      { text: 'Cancelado', value:'importe', align: 'end', width: 120},
-      { text: 'Pendiente', value:'cancelado.pendiente', align: 'end', width: 120},
+      { text: 'Código', value:'articulo.codigo', width: 130},
+      { text: 'Descripción', value:'articulo.nombre', width: 353},
+      { text: 'Ctt', value:'cantidad', width: 90, align: 'end'},
+      { text: 'Precio', value:'precio', width: 100, align: 'end', width: 120},
+      { text: '%Des', value:'tasadescuento', width: 80, align: 'end'},
+      { text: 'Des', value:'importedescuento', width: 110, align: 'end'},
+      { text: 'Total', value:'total', width: 130, align: 'end', width: 120},
     ],
     headersArt: [
       { text: 'Código', value:'codigo', align: 'left', width: 140},
@@ -4530,14 +4187,6 @@ export default {
       { text: 'STOCK', value:'stock', align: 'end', width: 100},
       { text: 'PRECIO', value:'precio', align: 'end', width: 100},
     ],
-    headersRas: [
-      { text: 'PADRE',     value:'padre_id'}, 
-      { text: 'ORIGEN',    value:'cpr1'},
-      { text: 'TERCERO 1', value:'nombre1'},
-      { text: 'HIJO',      value:'hijo_id'},
-      { text: 'DESTINO',   value:'cpr2'},
-      { text: 'TERCERO 2', value:'nombre2'}
-    ],
     headersPed: [
       { text: 'Código', value:'codigo', align: 'left', width: 120},
       { text: 'Descripción', value:'nombre', align: 'left', width: 440},
@@ -4560,7 +4209,7 @@ export default {
     ],
     headersTransfPed: [
       { text: 'CODIGO', value:'codigo', align: 'left', width: 120},
-      { text: 'DESCRIPCION', value:'nombre', align: 'left', width: 450},
+      { text: 'DESCRIPCION', value:'nombre', align: 'left', width: 350},
       { text: 'Ctt.Ori.', value:'cttori', align: 'end', width: 80},
       { text: 'Ctt.Fac.', value:'cttfac', align: 'end', width: 80},
       { text: 'Ctt.Transf.', value:'ctttransf', align: 'end', width: 80},
@@ -4570,31 +4219,20 @@ export default {
       { text: 'CODIGO', value:'codigo', align: 'left', width: 120},
       { text: 'DESCRIPCION', value:'nombre', align: 'left', width: 400},
       { text: 'Facturado', value:'cantidad', align: 'end', width: 90},
-      { text: 'A Devolver.', value:'adevolver', align: 'end', width: 90},
+      { text: 'Devolver', value:'adevolver', align: 'end', width: 90},
       { text: 'ACCIONES', value: 'accion', sortable: false, align: 'end', width: 140 },
-    ],
-    headersNddxDev: [
-      { text: 'BANCO',      value: 'nomban',           align: 'left', width: 140},
-      { text: 'CUIT',       value: 'cuitlib',          align: 'left', width: 90},
-      { text: 'LIBRADOR',   value: 'nomlib',           align: 'left', width: 150},
-      { text: 'NROVALOR',   value: 'nrovalor',         align: 'end',  width: 120},
-      { text: 'FEC.FIN.',   value: 'fechafinanciera',  align: 'left', width: 90},
-      { text: 'DIAS',       value: 'dias',             align: 'end',  width: 90},
-      { text: 'IMPORTE',    value: 'importe',          align: 'end',  width: 120},
     ],
     headersMed: [
       { text: 'MEDIO', value:'medioNombre',    align: 'left', width: 170},
-      { text: 'OBSERVACIONES', value:'observ', align: 'left', width: 700},
+      { text: 'OBSERVACIONES', value:'observ', align: 'left', width: 520},
       { text: 'TOTAL', value:'importe',        align: 'end',  width: 120},
       { text: 'ACCIONES', value: 'accion', sortable: false },
     ],
     headersPend: [
       { text: 'CPR',         value:'cpr'}, 
       { text: 'VENCIMIENTO', value:'vencimiento'},
+      { text: 'DIAS',        value:'dias'},
       { text: 'IMPORTE',     value:'importe', align: 'end'},
-      { text: 'PENDIENTE',   value:'pendiente', align: 'end'},
-      { text: 'A CANCELAR',  value:'acancelar', align: 'end'},
-      { text: 'ACCIONES',    value:'accion', sortable: false },
     ],
     headersRetirosMerc: [
       { text: 'Código', value:'codigo', align: 'left', width: 120},
@@ -4606,6 +4244,11 @@ export default {
       { text: 'Factura', value:'cpr', align: 'left', width: 190},
       { text: 'Fecha', value:'fecha', align: 'left', width: 90},
       { text: 'Total', value:'total', align: 'end', width: 90},
+    ],
+    headersClientes: [
+      { text: 'Id', value:'id', align: 'left', width: 90},
+      { text: 'Nombre', value:'nombre', align: 'left', width: 250},
+      { text: 'CUIT', value:'cuit', align: 'left', width: 110},
     ],
     headersSelTurnos: [
       { text: 'Fecha Hora', value:'fecha', align: 'left', width: 150},
@@ -4625,10 +4268,7 @@ export default {
       { text: 'Cliente', value: 'tercero.razon_social', align: 'left', width: 260 },
       { text: 'Pedido', value:'cprsA.pedido.cpr', align: 'left', width: 125 },
       { text: 'Factura', value:'cprsA.factura.cpr', align: 'left', width: 140 },
-      { text: 'NDD', value:'cprsA.ndd.cpr', align: 'left', width: 140 },
-      { text: 'NDC', value:'cprsA.ndc.cpr', align: 'left', width: 140 },
       { text: 'Remito', value:'remito.cpr', align: 'left', width: 115 },
-      { text: 'Recibo/s', value:'cprsA.recibo.cpr', align: 'left', width: 220 },
     ],
     headersRepartoArticulos: [
       { text: 'ID', value:'id', align: 'left', width: 100},
@@ -4639,243 +4279,21 @@ export default {
       { text: 'Peso', value:'peso', align: 'left', width: 90},
       { text: 'Kgs', value:'kgs', align: 'left', width: 90},
     ],
-
-    editedIndex: -1,
-    editedIndexArt: -1,
-    editedIndexMed: -1,
-    editedIndexNot: -1,
-    editedIndexRetiroMer: -1,
-    editado: {
-      id: '',
-      cpr: '',
-      fecha: '',
-      tercero_id: '',
-      nombre: '',
-      comprobante_id: '',
-      documento_id: '',
-      documentoCodigo: '',
-      mediodepago_id: '',
-      deposito_id: '',
-      vendedor: {id: null, nombre: 'MOSTRADOR'},
-      moneda_id: 51,
-      direccion_id: '',
-      documento: '',
-      documentoNumero: '',
-      responsableAbrev: '',
-      letra: '',
-      activo: true,
-      tasadescuento: 0,
-      importedescuento: 0,
-      gravado: 0,
-      exento: 0,
-      iva: 0,
-      total: 0,
-      rentabilidad: 0,
-      texto: '',
-      estado: '',
-      observaciones: '',
-      quienpidio: '',
-      viaje_id: null,
-      hayMaletin: null,
-      usaElSistema: false,
-    },
-    defaultItem: {
-      id: '',
-      cpr: '',
-      fecha: '',
-      tercero_id: '',
-      nombre: '',
-      comprobante_id: '',
-      documento_id: '',
-      documentoCodigo: '',
-      mediodepago_id: '',
-      deposito_id: '',
-      vendedor: {id: null, nombre: 'MOSTRADOR'},
-      moneda_id: 51,
-      direccion_id: '',
-      documento: '',
-      documentoNumero: '',
-      responsableAbrev: '',
-      letra: '',
-      activo: true,
-      tasadescuento: 0,
-      importedescuento: 0,
-      gravado: 0,
-      exento: 0,
-      iva: 0,
-      total: 0,
-      rentabilidad: 0,
-      texto: '',
-      estado: '',
-      observaciones: '',
-      quienpidio: '',
-      viaje_id: null,
-      hayMaletin: null,
-      usaElSistema: false,
-    },
-    editadoArt: {
-      id: '', articulo_id: '', codigo: '', codbar: '', nombre: '', deposito_id: '', unidad_id: '', moneda_id: 51, iva_id: '', cantidad: 1,
-      cantidadoriginal: 1, stock: 0, costo: 0, precio: 0, preciooriginal: 0, undstock: 0, sinstock: 'C', tasadescuento: 0, importedescuento: 0,
-      decimales: 0, total: 0, texto: '', vencimiento: '', ofeprecio: 0, ofetasdes: 0, ofeenvio: 0, ofeunidades: 0, ofeestado: '',
-      padre_id: null, undenvase: 1, escombo: false, preciomediocobro: false, tasaproprecargo: 0, adevolver: 0, turno_id: null, loTengo: false,
-    },
-    defaultItemArt: {
-      id: '', articulo_id: '', codigo: '', codbar: '', nombre: '', deposito_id: '', unidad_id: '', moneda_id: 51, iva_id: '', cantidad: 1,
-      cantidadoriginal: 1, stock: 0, costo: 0, precio: 0, preciooriginal: 0, undstock: 0, sinstock: 'C', tasadescuento: 0, importedescuento: 0,
-      decimales: 0, total: 0, texto: '', vencimiento: '', ofeprecio: 0, ofetasdes: 0, ofeenvio: 0, ofeunidades: 0, ofeestado: '',
-      padre_id: null, undenvase: 1, escombo: false, preciomediocobro: false, tasaproprecargo: 0, adevolver: 0, turno_id: null, loTengo: false,
-    },
-    editadoPend: {
-      acancelar: '',
-    },
-    editadoTransfItem: {
-      cttOriginal: 0,
-      cttATransferir: 0,
-    },
-    editadoMed: {
-      id: null,
-      caja_id: null,
-      medio_id: null,
-      cuentaorigen_id: null,
-      cuentadestino_id: null,
-      cuentacheque_id: null,
-      cuentatarjeta_id: null,
-      banco_id: null,
-      tarjeta_id: null,
-      cpringreso_id: null,
-      cpregreso_id: null,
-      chequera_id: null,
-      cheque_id: null,
-      echeq: null,
-      fechafinanciera: null,
-      fechasalida: null,
-      importe: null,
-      nrovalor: null,
-      tipo: null,
-      observ: null,
-      importe: 0,
-      cuenta: null,
-      cuit: null,
-      nombre: null,
-      cuotas: null,
-      importecuotas: null,
-      interes: null,
-      recargo: null,
-      nombrecuenta: null,
-      propiodelcliente: null,
-      domicilioFiscal: [],
-      maletinitem_id: null,
-    },
-    defaultItemMed: {
-      id: null,
-      caja_id: null,
-      medio_id: null,
-      cuentaorigen_id: null,
-      cuentadestino_id: null,
-      cuentacheque_id: null,
-      cuentatarjeta_id: null,
-      banco_id: null,
-      tarjeta_id: null,
-      cpringreso_id: null,
-      cpregreso_id: null,
-      chequera_id: null,
-      cheque_id: null,
-      echeq: null,
-      fechafinanciera: null,
-      fechasalida: null,
-      importe: null,
-      nrovalor: null,
-      tipo: null,
-      observ: null,
-      importe: 0,
-      cuenta: null,
-      cuit: null,
-      nombre: null,
-      cuotas: null,
-      importecuotas: null,
-      interes: null,
-      recargo: null,
-      nombrecuenta: null,
-      propiodelcliente: null,
-      domicilioFiscal: [],
-      maletinitem_id: null,
-    },
-    selArt: [],
-    seleccionarArticulo: false,
-    descriptionLimit: 80,
-    entriesBancos: [],
-    entriesTerceros: [],
-    entriesArticulos: [],
-    entriesTercerosTrans: [],
-    entriesTercerosPdr: [],
-    entriesTercerosPdrDir: [],
-    entriesTercerosEquipo: [],
-    
-    tercerosUserId: [],
-    isLoadingTerceros: false,
-    isLoadingBancos: false,
-    isLoadingTercerosRec: false,
-    isLoadingTercerosTrans: false,
-    isLoadingTercerosPdr: false,
-    isLoadingTercerosPdrDir: false,
-    isLoadingTercerosEquipo: false,
-    isLoadingTercerosRetirosMerc: false,
-    isLoadingArticulos: false,
-    selArtPedErr: [],
-
-    filtrosEstados: [],
-    filtroEstadoSel: 'Todos',
-    filtrosEstadosCprs: [],
-    filtroEstadoCprsSel: 'Todos',
-
-    precioOrigen: 'Lista',  // Lista, Promocion: por defecto Lista = precios.precio
-    promoDescuento: 0,      // Descuento por Promo ( si hay )
-    precioDescuento: 0,     // Descuento de Promocion o de Item ( ingresado en Compras )
-    cttMinima: 1,           // Cabtidad minima para aplicar la regla
-    turnosFacturar: [],     // Levanta turnos pendientes de facturar
-
+    headersCondDePagos: [
+      { text: 'Detalles', value:'nombre', align: 'left', width:260},
+      { text: 'A Pagar', value:'apagar', align: 'end', width: 120},
+    ],
   }),
   
   computed: {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId']),
     ...mapState([
-      'anotaciones',
-      'caja',
-      'centrales',
-      'codigooid',
-      'comprobantesm',
-      'cuit',
-      'datosEmpresa',
-      'descuentos',
-      'dolar',
-      'empresa',
-      'externo',
-      'hayPedidos',
-      'level',
-      'notificaciones',
-      'operario',
-      'operarioArea',
-      'operarioEsVendedor',
-      'operarioTerceroId',
-      'operarioUserId',
-      'pedTransfAVend',
-      'responsable',
-      'roles',
-      'soloArtComprados',
-      'sucursal',
-      'sucursales',
-      'sucursalDemo',
-      'sucursalFiscal',
-      'sucursalManual',
-      'tema',
-      'temas',
-      'tipo',
-      'turnos',
-      'vinculosHijos',
-      'vinculosPadres', 
-      'vinculosPadresAll',
-      'vinculosPadresLic',
-      'transition',
+      'anotaciones', 'caja', 'centrales', 'codigooid', 'comprobantesm', 'cuit', 'datosEmpresa', 'descuentos',
+      'dolar', 'empresa', 'externo', 'hayPedidos', 'level', 'notificaciones', 'operario', 'operarioArea',
+      'operarioEsVendedor', 'operarioTerceroId', 'operarioUserId', 'pedTransfAVend', 'responsable', 'roles',
+      'soloArtComprados', 'sucursal', 'sucursales', 'sucursalDemo', 'sucursalFiscal', 'sucursalManual', 'tema',
+      'temas', 'tipo', 'turnos', 'vinculosHijos', 'vinculosPadres', 'vinculosPadresAll', 'vinculosPadresLic',
+      'transition', 'dark',
     ]),
 
     mediosFiltrado() {
@@ -4885,15 +4303,6 @@ export default {
         return this.medios.filter(item => item.debito === 1 )
       }
     },
-
-    itemsTerceros () {
-      return this.entriesTerceros.map(entry => {
-        const nombre = entry.nombre.length > this.descriptionLimit
-          ? entry.nombre.slice(0, this.descriptionLimit) + '...'
-          : entry.nombre
-        return Object.assign({}, entry, { nombre })
-        })
-      },
 
     itemsTercerosTrans () {
       return this.entriesTercerosTrans.map(entry => {
@@ -4906,15 +4315,6 @@ export default {
 
     itemsTercerosPdr () {
       return this.entriesTercerosPdr.map(entry => {
-        const nombre = entry.nombre.length > this.descriptionLimit
-          ? entry.nombre.slice(0, this.descriptionLimit) + '...'
-          : entry.nombre
-        return Object.assign({}, entry, { nombre })
-        })
-      },
-
-    itemsTercerosEquipo () {
-      return this.entriesTercerosEquipo.map(entry => {
         const nombre = entry.nombre.length > this.descriptionLimit
           ? entry.nombre.slice(0, this.descriptionLimit) + '...'
           : entry.nombre
@@ -4986,15 +4386,15 @@ export default {
     },
 
     balanceDelPago() {
-      let xxx = this.editado.cpr;
       let totPen = 0
       let totVal = 0
       for (let i=0; i<=this.pend.length-1; i++) {
-        totPen += Number(this.pend[i].acancelar)
+        totPen += Number(Number(this.pend[i].pendiente))
       }
       for (let i=0; i<=this.valores.length-1; i++) {
-        totVal += Number(this.valores[i].importe)
+        totVal += Number(Number(this.valores[i].importe))
       }
+      this.valDiferencia = this.roundTo(totPen-totVal,2)
       if (totVal==0) {
         return '¡Debes ingresar Valores!'
       } else if (this.valDiferencia==0) {
@@ -5017,11 +4417,6 @@ export default {
   },
 
   watch: {
-    /*
-    dialog (val) {
-      val || this.cancelar();
-    },
-    */
     '$store.state.sucursal' () {
       for (let i=0; i<=8; i++) {
         this.comprobantes[i].bg    = this.$store.state.temas.cen_panelcpr_bg
@@ -5034,14 +4429,9 @@ export default {
         this.comprobantes[5].activo = true
         this.selectTipoDeComprobante('Pedidos', true)
       } else {
-
         this.comprobantes[0].activo = !this.sucursalDemo
-  
         this.comprobantes[1].activo = true
         this.comprobantes[2].activo = true
-  
-        //this.comprobantes[1].activo = !this.sucursalDemo
-        //this.comprobantes[2].activo = !this.sucursalDemo
         if (this.sucursalDemo) {
           if (this.centrales.ventas_panel == 'Facturas' ||
               this.centrales.ventas_panel == 'Créditos' ||
@@ -5061,98 +4451,11 @@ export default {
       this.listarHTTP(false)
     },
 
-    searchTerceros (val) {
-      if (this.isLoadingTerceros) return
-      this.isLoadingTerceros = true
-      this.userDelTercero = 0
-      this.userDelterceroDatos = null
-      this.dondeEstoy = 'F'
-      this.dialogSelFacturas = false  //para remitos
-      this.buscoPor = 'nombre'
-
-      return HTTP().get('/indexter/false/1/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/%'+val+'%').then(({ data })=>{
-        this.entriesTerceros = []
-        this.tercerosUserId = []
-        for (let i=0; i<= data.length-1; i++) {
-          this.entriesTerceros.push(data[i].tercero)
-          this.tercerosUserId.push(data[i].tercero_id)
-        }
-        if (val !== null && val !== '') {
-          let ipos = this.entriesTerceros.findIndex(i => i.nombre == val || i.id == val );
-          if (ipos!=-1) {
-            let valor = this.tercerosUserId[ipos]
-            this.userDelTercero = data[ipos].tercero.user!=null ? data[ipos].tercero.user.id : 0
-            this.editado.tercero_id = data[ipos].tercero.id
-            this.searchTercerosMetodo(valor, true)
-          }
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
-      .finally(() => (this.isLoadingTerceros = false))
-    },
-
-    searchTercerosRec (val) {
-      if (this.isLoadingTercerosRec || this.editado.cpr!='REC') return
-      this.isLoadingTercerosRec = true
-      this.dondeEstoy = 'R'
-      return HTTP().get('/indexter/false/1/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/%'+val+'%').then(({ data })=>{
-
-        this.entriesTerceros = []
-        this.tercerosUserId = []
-        for (let i=0; i<= data.length-1; i++) {
-          this.entriesTerceros.push(data[i].tercero)
-          this.tercerosUserId.push(data[i].tercero_id)
-        }
-        if (val !== null && val !== '') {
-
-          let ipos = this.entriesTerceros.findIndex(i => i.id === this.editado.tercero_id);
-          if (ipos!=-1) {
-
-            this.userDelTercero = data[ipos].tercero.user!=null ? data[ipos].tercero.user.id : 0
-            this.clienteVinculado = false
-            return HTTP().get('/user/'+this.userDelTercero).then(({ data }) => {
-              
-              let pos = this.vinculosHijos.findIndex(x=>x==this.userDelTercero)
-              if (pos!=-1&&data[0].usaelsistema) {
-
-                this.msg.msgTitle = 'Cliente Vinculado'
-                let msg = 'El cliente esta vinculado, debes pedirle que te realice un '
-                msg += this.editado.cpr=='FAC'?'pedido.':'pago.'
-                this.msg.msgBody = msg
-                this.msg.msgVisible = true
-                this.msg.msgAccion = 'cliente vinculado'
-                this.msg.msgButtons = ['Aceptar']
-                this.clienteVinculado = true
-                return true
-
-              } else {
-
-                let valor = this.tercerosUserId[ipos]
-                //this.userDelTercero = data[ipos].tercero.user!=null ? data[ipos].tercero.user.id : 0
-                return HTTP().get('/tercero/'+valor+'/1/false/'+this.sucursal).then(({ data }) => {
-                  this.itemActualCliente = data
-                  this.maletinesCli = data.maletin==null?[]:data.maletin
-                  this.setDatosRecibo(this.hayMaletin()?this.maletinesCli:null)
-                })
-
-              }
-            })
-
-          }
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
-      .finally(() => (this.isLoadingTercerosRec = false))
-    },
-
     searchTercerosTrans (val) {
       if (this.isLoadingTercerosTrans) return
       this.isLoadingTercerosTrans = true
-      return HTTP().get('/indexter/false/4').then(({ data }) => {
+      return HTTP().get('/indexter/false/4/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/'+val)
+        .then(({ data })=>{
         this.entriesTercerosTrans = []
         this.tercerosUserId = []
         for (let i=0; i<= data.length-1; i++) {
@@ -5169,134 +4472,13 @@ export default {
     searchTercerosPdr (val) {
       if (this.isLoadingTercerosPdr) return
       this.isLoadingTercerosPdr = true
-      return HTTP().get('/indexter/false/5').then(({ data }) => {
+      return HTTP().get('/indexter/false/5/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/'+val)
+        .then(({ data })=>{        
         this.entriesTercerosPdr = []
         this.tercerosUserId = []
         for (let i=0; i<= data.length-1; i++) {
           this.entriesTercerosPdr.push(data[i].tercero)
           this.tercerosUserId.push(data[i].id)
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
-      .finally(() => (this.isLoadingTercerosPdr = false))
-    },
-
-    searchTercerosEquipo (val) {
-      if (this.isLoadingTercerosEquipo) return
-      this.isLoadingTercerosEquipo = true
-      return HTTP().get('/indexter/false/3/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/%'+val+'%').then(({ data })=>{
-        this.entriesTercerosEquipo = []
-        this.tercerosUserId = []
-        for (let i=0; i<= data.length-1; i++) {
-          this.entriesTercerosEquipo.push(data[i].tercero)
-          this.tercerosUserId.push(data[i].id)
-        }
-        if (val !== null && val !== '') {
-          let ipos = this.entriesTercerosEquipo.findIndex(i => i.id === this.editadoViaje.tercero_id);
-          if (ipos!=-1) {
-            let valor = this.tercerosUserId[ipos]
-            this.userDelTercero = data[ipos].tercero.user!=null ? data[ipos].tercero.user.id : 0
-            //let entro = false;
-
-            this.zonas = []
-            return HTTP().post('zonassinviajes', {tercero_id: data[ipos].tercero.id, usertercero_id: valor}).then(({ data }) => {
-              if (data.zonasdisponibles.length+data.zcr.length==0) {
-                this.msg.msgTitle = 'No hay Zonas definidas'
-                this.msg.msgBody = 'Debes defnir zonas para luego asignarlas a tus clientes.'
-                this.msg.msgVisible = true
-                this.msg.msgAccion = 'error en viaje'
-                this.msg.msgButtons = ['Aceptar']
-              } else if (data.zonasdisponibles.length<1) {
-                this.msg.msgTitle = 'No hay Zonas disponibles'
-                let m = 'No hay Zonas disponibles para realizar Viajes<br>'
-                m += 'Debes finalizar Viajes para habilitar nuevamente sus zonas.'
-                this.msg.msgBody = m
-                this.msg.msgVisible = true
-                this.msg.msgAccion = 'error en reparto'
-                this.msg.msgButtons = ['Aceptar']
-              } else {
-                for (let i=0; i<=data.zonasdisponibles.length-1; i++) {
-                  this.zonas.push({
-                    id: data.zonasdisponibles[i].zona.id,
-                    nombre: data.zonasdisponibles[i].zona.nombre
-                  })
-                }
-              }
-            })
-          }
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
-      .finally(() => (this.isLoadingTercerosEquipo = false))
-    },
-
-    searchTercerosRetirosMerc (val) {
-      if (this.isLoadingTercerosRetirosMerc || this.editado.cpr.substring(0,3)!='RTV') return
-      this.isLoadingTercerosRetirosMerc = true
-      this.dondeEstoy = 'R'
-      return HTTP().get('/indexter/false/1/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/%'+val+'%').then(({ data })=>{
-        this.entriesTerceros = []
-        this.tercerosUserId = []
-        for (let i=0; i<= data.length-1; i++) {
-          this.entriesTerceros.push(data[i].tercero)
-          this.tercerosUserId.push(data[i].tercero_id)
-        }
-        if (val !== null && val !== '') {
-          
-          let ipos = this.entriesTerceros.findIndex(i => i.id === this.editado.tercero_id);
-          if (ipos!=-1) {
-
-            let valor = this.tercerosUserId[ipos]
-            this.userDelTercero = data[ipos].tercero.user!=null ? data[ipos].tercero.user.id : 0
-            //let entro = false;
-            return HTTP().get('/tercero/'+valor+'/1/false/'+this.sucursal).then(({ data }) => {
-
-              let rid = data.t[0].tercero.responsable.id
-              if (this.responsable===1) { //EL USUARIO ES RESPONSABLE INSCRIPTO ( VIENE DEL STORE )
-                if(rid===1 || rid===2 || rid===6 || rid===9 || rid===11) {
-                  this.editado.letra = this.comprobantesm?'M':'A'
-                  this.editado.comprobante_id = this.comprobantesm?51:4
-                } else {
-                  this.editado.letra = 'B'
-                  this.editado.comprobante_id = 9
-                }
-              } else if (this.responsable===6) { //EL USUARIO ES MONOTRIBUTISTA ( VIENE DEL STORE )
-                this.editado.letra = 'C'
-                this.editado.comprobante_id = 17
-              }
-
-              this.editado.documento = data.t[0].tercero.documento.nombre;
-              this.editado.documento_id = data.t[0].tercero.documento.id;
-              this.editado.documentoCodigo = data.t[0].tercero.documento.codigo;
-              this.editado.documentoNumero = data.t[0].tercero.cuit;
-              this.editado.responsableAbrev = data.t[0].tercero.responsable.abrev;
-
-              this.dirItems = []
-              for (let i=0; i<= data.t[0].tercero.direcciones.length-1; i++) {
-                this.dirItems.push(data.t[0].tercero.direcciones[i])
-              }
-              this.editado.direccion_id = this.dirItems[0].id
-            })
-          }
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
-      .finally(() => (this.isLoadingTercerosRetirosMerc = false))
-    },
-
-    searchTercerosPdrDir (val) {
-      if (this.isLoadingTercerosPdrDir) return
-      this.isLoadingTercerosPdrDir = true
-      return HTTP().get('/indexter/'+this.envio.direccion_id+'/'+this.envio.puntoderetiro_id).then(({ data }) => {
-        this.entriesTercerosPdrDir = []
-        for (let i=0; i<= data.length-1; i++) {
-          this.entriesTercerosPdrDir.push(data[i].tercero)
         }
       })
       .catch(err => {
@@ -5329,7 +4511,6 @@ export default {
       })
       .finally(() => (this.isLoadingBancos = false))
     },
-
   },
 
   mounted () {
@@ -5356,8 +4537,6 @@ export default {
     } else {
       if (this.sucursalDemo) {
         this.comprobantes[0].activo = false
-        this.comprobantes[1].activo = false
-        this.comprobantes[2].activo = false
       } else {
         this.comprobantes[0].activo = this.rol(5, 'ver')  //0
         this.comprobantes[1].activo = this.rol(6, 'ver')  //1
@@ -5369,16 +4548,11 @@ export default {
       this.comprobantes[6].activo = this.rol(11,  'ver')  //6
       this.comprobantes[7].activo = this.rol(104, 'ver')  //7
       this.comprobantes[8].activo = true                  // ver
-      //this.comprobantes[7].activo = this.roles[11].acceder
-
       this.filtrosEstadosCprs = []
       this.filtrosEstadosCprs.push({tip: 'Todos', ctt: '1'})
-      this.filtrosEstadosCprs.push({tip: 'Facturas Pendientes', ctt: '0'})
-      this.filtrosEstadosCprs.push({tip: 'NDD Pendientes', ctt: '0'})
-      this.filtrosEstadosCprs.push({tip: 'NDC Pendientes', ctt: '0'})
-      this.filtrosEstadosCprs.push({tip: 'Remitos Pendientes', ctt: '0'})
+      this.filtrosEstadosCprs.push({tip: 'Fac/Pendientes', ctt: '0'})
+      this.filtrosEstadosCprs.push({tip: 'Rem/Pendientes', ctt: '0'})
       this.filtroEstadoCprsSel = 'Todos'
-
       this.$store.commit('closeAlert')
       moment.locale('es');
       if (!this.isLoggedIn) {
@@ -5419,6 +4593,8 @@ export default {
           this.headersItems[0].value = this.$store.state.codigooid == 'C'?'articulo.codigo':'articulo.id'
           this.headersArt[0].text = this.$store.state.codigooid    == 'C'?'Código':'ID'
           this.headersArt[0].value = this.$store.state.codigooid   == 'C'?'codigo':'articulo_id'
+          this.headersNot[0].text = this.$store.state.codigooid   == 'C'?'Código':'ID'
+          this.headersNot[0].value = this.$store.state.codigooid   == 'C'?'codigo':'articulo_id'
           this.headersSelArtPedErr[0].text = this.$store.state.codigooid   == 'C'?'Código':'ID'
           this.headersSelArtPedErr[0].value = this.$store.state.codigooid   == 'C'?'codigo':'art_id'
           this.headersTransfPed[0].text = this.$store.state.codigooid   == 'C'?'Código':'ID'
@@ -5427,7 +4603,6 @@ export default {
           this.headersNdcxDev[0].value = this.$store.state.codigooid   == 'C'?'codigo':'articulo_id'
           this.headersRetirosMerc[0].text = this.$store.state.codigooid   == 'C'?'Código':'ID'
           this.headersRetirosMerc[0].value = this.$store.state.codigooid   == 'C'?'codigo':'articulo_id'
-          // hev021
         })
       }
     }
@@ -5438,22 +4613,16 @@ export default {
       this.comprobantes[i].bg    = this.$store.state.temas.cen_panelcpr_bg
       this.comprobantes[i].dark  = this.$store.state.temas.cen_panelcpr_dark
     }
-
     return HTTP().post('/iniventas').then(({ data }) => {
-
       this.equipo = data.equipo
       this.medios = data.tarjetascobros
       this.banItems = data.bancos
       this.ivaTasas = data.afipiva
       this.monItems = data.afipmonedas
-
       let psuc = data.sucursales.findIndex(x=>x.id==this.sucursal);
       for (let i=0; i<= data.sucursales[psuc].depositos.length-1; i++) {
         this.depItems.push(data.sucursales[psuc].depositos[i])
       }
-
-      //this.listarHTTP(false);
-      // CUANDO ES DEMO sucursalesPosibles VA VACIA, SINO CARGO LA ACTUAL EN [0] Y LA DEMO en [1]. 
       if (this.sucursalDemo) {
         this.sucursalesPosibles = []
       } else {
@@ -5511,10 +4680,6 @@ export default {
       return (this.maletinesCli.length>0?true:false)
     },
 
-    maletinDe() {
-      return (this.maletinesCli.length>0?this.maletinesCli.username:'')
-    },
-
     clickChipMaletin(val) {
       if (this.maletinesCli[val].sel) {
         this.maletinesCli[val].sel = false
@@ -5531,11 +4696,6 @@ export default {
       }
     },
 
-    buscarCliente() {
-      this.buscoPor = 'codigo'
-      this.searchTercerosMetodo(this.editado.tercero_id, true);
-    },
-
     cargoItemsComprobante({item}) {
       let pos = this.items.findIndex(x=>x.id == item.id)
       if (pos==-1) return
@@ -5544,143 +4704,322 @@ export default {
           return HTTP().post('comprobanteitems', { id: item.id }).then(({ data }) => {
             this.items[pos].items = data.items
           })
-        } else {
-          return HTTP().post('comprobante', { id: item.id }).then(({ data }) => {
-            this.items[pos].cancelaciones = data.c.cancelaciones
-          })
         }
       }
     },
 
-    searchTercerosMetodo(valor, buscoSiEstaVinculado) {
+    seleccionDelCliente(value) {
+      this.clientes = []
+      this.dialogClientes = false
+      this.editado.tercero_id = value.id
+      this.buscarCliente()
+    },
 
-      return HTTP().get('/tercero/'+valor+'/1/true/'+this.sucursal).then(({ data }) => {
-
-        if (data=='inexistente') {
-          this.mensaje('¡Cliente inexistente!', this.temas.snack_error_bg, 1500)
-          this.$nextTick(() => {
-            const f = this.buscarPor='codigo'?this.$refs.codigocliente:this.$refs.cliente
-            f.focus();
-          });
-        } else {
-          if (data.pedPend.id!=null && this.editado.cpr=='PED' &&  this.editedIndex==-1) {
-            this.msg.msgTitle = '¡Pedido Abierto!'
-            let m = '<br><b>'+data.t[0].tercero.nombre+'</b> tiene un pedido abierto: el '
-            m += '<b>'+data.pedPend.cpr+'</b>. '
-            m += '¡Revisa sus Artículos y Cantidades!<br><br>'
-            m += 'Puedes continuar con este nuevo o puedes solicitarle a <b>'+data.t[0].tercero.nombre+'</b> '
-            m += 'que anule su pedido y unifica todo en este nuevo.<br><br>'
-            this.msg.msgBody = m
-            this.msg.msgVisible = true
-            this.msg.msgAccion = 'pedido abierto'
-            this.msg.msgButtons = ['Aceptar']
-            this.seleccionarArticulo = false;
-          }
-
-          this.entriesTerceros = []
-          this.entriesTerceros.push(data.t[0].tercero)
-          this.itemActual = data.t[0]
-          this.userDelTercero = this.itemActual.tercero.user!=null ? this.itemActual.tercero.user.id : 0
-          this.editado.nombre = this.itemActual.tercero.nombre
-          this.userDelTerceroDatos = data.t           // para cuando es un pedido de un vendedor
-          this.lisObj = [];
-          let rid = data.t[0].tercero.responsable.id
-          if (!(this.editado.comprobante_id >= 124 && this.editado.comprobante_id <= 126)) {     // AGREGADO 4/8/21
-            if (this.responsable===1) { //EL USUARIO ES RESPONSABLE INSCRIPTO ( VIENE DEL STORE )
-              if(rid===1 || rid===2 || rid===6 || rid===9 || rid===11) {
-                this.editado.letra = this.comprobantesm?'M':'A'
-              } else {
-                this.editado.letra = 'B'
-              }
-            } else if (this.responsable===6) { //EL USUARIO ES MONOTRIBUTISTA ( VIENE DEL STORE )
-              this.editado.letra = 'C'
-            }
-          }
-  
-          debugger
-          this.editado.tercero_id = data.t[0].tercero.id;
-          this.editado.nombre = data.t[0].tercero.nombre;
-          this.editado.documento = data.t[0].tercero.documento.nombre;
-          this.editado.documento_id = data.t[0].tercero.documento.id;
-          this.editado.documentoCodigo = data.t[0].tercero.documento.codigo;
-          this.editado.documentoNumero = data.t[0].tercero.cuit;
-          this.editado.responsableAbrev = data.t[0].tercero.responsable.abrev;
-
-          this.editado.vendedor = {id: null, nombre: 'MOSTRADOR'}
-          if (data.t[0].vendedor!=undefined) {
-            this.editado.vendedor = data.t[0].vendedor
-          }
-
-          this.editado.usaElSistema = false
-          if (data.t[0].tercero.user!=undefined) {
-            this.editado.usaElSistema = data.t[0].tercero.user.usaelsistema
-          }
-
-          this.dirItems = []
-          for (let i=0; i<= data.t[0].tercero.direcciones.length-1; i++) {
-            this.dirItems.push(data.t[0].tercero.direcciones[i])
-          }
-
-          this.editado.direccion_id = this.dirItems[0].id
-          this.ctacte = data.t[0].ctacte
-          this.diasvenc = data.t[0].diasvenc
-          this.bonificacionmaxima = data.t[0].bonificacionmaxima
-          this.creditomaximo = data.t[0].creditomaximo
-
-          this.medpag[3].activo = false       // tarjeta de credito desabilitada
-          if (this.editado.cpr=='REM') {
-          } else if (this.editado.cpr!='REC') {
-            this.medpag[3].activo = this.ctacte
-          }
-
-          this.editado.mediodepago_id = 1
-          this.editado.deposito_id = this.depItems[0].id
-          this.cargoSaldosYValoresPendientes(this.editado.tercero_id)
-  
-          // PEDIDOS: EL CLIENTE DEL VENDEDOR DEBE ESTAR REGISTRADO EN GOHU
-          if (this.editado.cpr.substring(0,3)=='PED' &&
-              this.editado.vendedor.id!=null && this.userDelTerceroDatos[0].tercero.user==null) {
-            this.msg.msgTitle = '¡Cliente no Registrado!'
-            let m = '<br>Debes registrar a este Cliente en <b>gohu</b> para que puedas ingresarle pedidos.<br><br>'
-            m += 'Invita a '+data.t[0].tercero.razon_social+' a registrarse, '
-            m += 'o bien puedes generarle un registro como <b><i>Cliente Exclusivo</i></b> desde la opción <i>Clientes</i>/'
-            m += '<i>Menú Acciones</i>/<i>Generar Cuenta Exclusiva en gohu</i>.'
-            this.msg.msgBody = m
-            this.msg.msgVisible = true
-            this.msg.msgAccion = 'cliente no registrado'
-            this.msg.msgButtons = ['Aceptar']
-            this.seleccionarArticulo = false;
+    buscarCliente() {
+      this.dialogClientes = false
+      let facturasDescuentos = []
+      if (this.editado.tercero_id=='') {
+        this.$nextTick(() => {
+          const f = this.$refs.codigocliente;
+          f.focus();
+        });
+      } else {
+        this.encontroElCliente = false
+        return HTTP().get('/buscartercero/'+this.editado.tercero_id+'/CLI/true/'+this.sucursal).then(({ data }) => {
+          if (data=='inexistente') {
+            this.mensaje('¡Cliente inexistente!', this.temas.snack_error_bg, 1500)
             this.$nextTick(() => {
-              const f = this.$refs.cliente;
+              const f = this.buscarPor='codigo'?this.$refs.codigocliente:this.$refs.cliente
               f.focus();
             });
-          }
-  
-          this.turnosFacturar = []
-          if (this.$store.state.turnos) {
-            if ((!this.sucursalDemo && this.editado.cpr=='FAC') || (this.sucursalDemo && this.editado.cpr=='PRE')) {
-              if (this.editado.tercero_id!='') {
-                return HTTP().get('/turnosfacturar/'+this.editado.tercero_id).then(({ data }) => {
-                  for (let i=0; i<=data.length-1; i++) {
-                    this.turnosFacturar.push({
-                      id: data[i].id,
-                      fecha: moment(data[i].fecha).format('DD-MM-YYYY HH:mm'),
-                      articulo_id: data[i].articulo.id,
-                      codigo: data[i].articulo.codigo,
-                      nombre: data[i].articulo.nombre,
-                      costo: data[i].articulo.precios[0].costo,
-                      precio: data[i].articulo.precios[0].precio,
-                      iva_id: data[i].articulo.iva_id,
-                      moneda_id: data[i].articulo.moneda_id,
+          } else {
+            if (data.t.length>1) {
+              this.clientes = []
+              for (let i=0; i<=data.t.length-1; i++) {
+                this.clientes.push({
+                  id: data.t[i].tercero.id,
+                  nombre: data.t[i].tercero.nombre,
+                  cuit: data.t[i].tercero.cuit
+                })
+              }
+              this.dialogClientes = true
+            } else {
+              if (this.editado.cpr.substring(0,3)=='REC') {
+                let lista_id = data.t[0].lista_id
+                this.itemActualCliente = data
+                this.maletinesCli = data.maletin==null?[]:data.maletin
+                this.encontroElCliente = true
+                let rid = this.itemActualCliente.t[0].tercero.responsable.id
+                if (this.responsable===1) { //EL USUARIO ES RESPONSABLE INSCRIPTO ( VIENE DEL STORE )
+                  if(rid===1 || rid===2 || rid===6 || rid===9 || rid===11) {
+                    this.editado.letra = this.comprobantesm?'M':'A'
+                    this.editado.comprobante_id = 4
+                  } else {
+                    this.editado.letra = 'B'
+                    this.editado.comprobante_id = 9
+                  }
+                } else if (this.responsable===6) { //EL USUARIO ES MONOTRIBUTISTA ( VIENE DEL STORE )
+                  this.editado.letra = 'C'
+                  this.editado.comprobante_id = 15
+                }
+                /*
+                  ver si el usuario esta en estado M de AFIP
+                */
+                this.editado.nombre = this.itemActualCliente.t[0].tercero.nombre;
+                this.editado.documento = this.itemActualCliente.t[0].tercero.documento.nombre;
+                this.editado.tercero_id = this.itemActualCliente.t[0].tercero.id;
+                this.editado.documento_id = this.itemActualCliente.t[0].tercero.documento.id;
+                this.editado.documentoCodigo = this.itemActualCliente.t[0].tercero.documento.codigo;
+                this.editado.documentoNumero = this.itemActualCliente.t[0].tercero.cuit;
+                this.editado.responsableAbrev = this.itemActualCliente.t[0].tercero.responsable.abrev;
+                this.dirItems = []
+                for (let i=0; i<= this.itemActualCliente.t[0].tercero.direcciones.length-1; i++) {
+                  this.dirItems.push(this.itemActualCliente.t[0].tercero.direcciones[i])
+                }
+                this.editado.direccion_id = this.dirItems[0].id
+                this.userDelTercero = data.t[0].tercero.user!=null ? data.t[0].tercero.user.id : 0
+                return HTTP().get('/user/'+this.userDelTercero).then(({ data }) => {
+                  let pos = this.vinculosHijos.findIndex(x=>x==this.userDelTercero)
+                  if (pos!=-1&&data[0].usaelsistema) {
+                    this.msg.msgTitle = 'Cliente Vinculado'
+                    let msg = 'El cliente esta vinculado y utiliza el sistema.<br'
+                    msg += '¡Debes pedirle que te realice un Pago!'
+                    this.msg.msgBody = msg
+                    this.msg.msgVisible = true
+                    this.msg.msgAccion = 'cliente vinculado'
+                    this.msg.msgButtons = ['Aceptar']
+                    this.clienteVinculado = true
+                    return true
+                  } else {
+                    return HTTP().get('/datosmaletin/'+this.editado.tercero_id+'/'+this.sucursal).then(({ data }) => { 
+                      // busco lista_id, arriba asigne la que tiene el cliente, pero puede haber utilizado otra
+                      for (let i=0; i<=data.maletinitems.length-1; i++) {
+                        if (data.maletinitems[i].sucursal_id==this.sucursal) {
+                          lista_id = data.maletinitems[i].lista_id
+                          break
+                        }
+                      }
+                      // Agrego los pendientes
+                      this.pend = []
+                      this.pendientes = []
+                      if (data.pendientes[0]!=undefined) {
+                        if (data.pendientes[0].det!=undefined) {
+                          for (let i=0; i<=data.pendientes[0].det.length-1; i++) {
+                            let fecha = moment(data.pendientes[0].det[i].fecha);
+                            let dias = moment(data.pendientes[0].det[i].vencimiento).diff(fecha, 'days')
+                            this.pendientes.push({
+                              id: data.pendientes[0].det[i].id,
+                              cpr: data.pendientes[0].det[i].cpr,
+                              importe: data.pendientes[0].det[i].total,
+                              vencimiento: moment(data.pendientes[0].det[i].vencimiento).format('YYYY-MM-DD'),
+                              dias: dias,
+                              pendiente: data.pendientes[0].det[i].pendiente,
+                              descuentos: 0,
+                              acancelar: 0,
+                              lista_id: null,
+                              desc1: 0,
+                              desc2: 0,
+                              espejo_id: data.pendientes[0].det[i].espejo_id,
+                              sucursal_id: data.pendientes[0].det[i].sucursal_id,
+                            })
+                          }
+                        }
+                      }
+                      // agrego las condiciones comerciales
+                      this.condicionDePago = []
+                      this.condicionesDePago = []
+                      for (let i=0; i<=data.condDePagos.length-1; i++) {
+                        this.condicionesDePago.push({
+                          id: data.condDePagos[i].id,
+                          nombre: data.condDePagos[i].nombre,
+                          desc1: data.condDePagos[i].desc1,
+                          desc2: data.condDePagos[i].desc2,
+                          medio_id: data.condDePagos[i].medio_id,
+                          dias: data.condDePagos[i].dias,
+                          apagar: 0,
+                          selected: lista_id==data.condDePagos[i].id?true:false,
+                        })
+                      }
+                      // busco la condicion comercial por defecto y calculo los descuentos
+                      pos = this.condicionesDePago.findIndex(x=>x.selected==true)
+                      if (pos!=-1) {
+                        for (let i=0; i<=this.pendientes.length-1; i++) {
+                          this.pendientes[i].desc1 = this.condicionesDePago[pos].desc1
+                          this.pendientes[i].desc2 = this.condicionesDePago[pos].desc2
+                          this.pendientes[i].lista_id = this.condicionesDePago[pos].id
+                          let facConDesc = 0
+                          if (this.pendientes[i].cpr.substring(0,3)=='FAC'||this.pendientes[i].cpr.substring(0,3)=='PRE') {
+                            let aux = this.pendientes[i].pendiente
+                            facConDesc = (aux-(aux*(this.condicionesDePago[pos].desc1/100)))
+                            facConDesc = this.roundTo((facConDesc-(aux*(this.condicionesDePago[pos].desc2/100))),2)
+                          }
+                          this.pendientes[i].descuentos = this.pendientes[i].pendiente - facConDesc
+                          this.pendientes[i].acancelar = facConDesc
+                        }
+                      }
+                      for (let i=0; i<=this.pendientes.length-1; i++) {
+                        if (data.pendientes[0].det[i].sucursal_id==this.sucursal) {
+                          this.pend.push(this.pendientes[i])
+                        }
+                      }
+                      this.totAPagar = 0
+                      let totSinDescuentos = 0
+                      let aPagar = 0
+                      for (let i=0; i<=this.pendientes.length-1; i++) {
+                        if (this.pendientes[i].sucursal_id==this.sucursal) {
+                          totSinDescuentos += this.pendientes[i].pendiente
+                        }
+                      }
+                      // calculo el total sin descuentos
+                      for (let i=0; i<=this.condicionesDePago.length-1; i++) {
+                        aPagar = totSinDescuentos - (totSinDescuentos*(this.condicionesDePago[i].desc1/100))
+                        aPagar = aPagar - (aPagar*(this.condicionesDePago[i].desc2/100))
+                        this.condicionesDePago[i].apagar = this.roundTo(aPagar,2)
+                      }
+                      pos = this.condicionesDePago.findIndex(x=>x.id==lista_id)
+                      if (pos!=-1) {
+                        this.condicionDePago = this.condicionesDePago[pos]
+                        this.condicionDePagoOriginal = this.condicionDePago
+                        aPagar =  this.condicionesDePago[pos].apagar
+                        this.ndcPorPP = this.roundTo(totSinDescuentos-aPagar,2);
+                        this.asignoDescuentosEnFacturasParaElPago()
+                      } else {
+                        this.ndcPorPP = 0
+                        this.totACobrar = totSinDescuentos
+                        this.editado.total = totSinDescuentos
+                      }
+                      if (this.hayMaletin()) {
+                        for (let i=0; i<=this.medpag.length-1; i++) {
+                          this.medpag[i].activo = false
+                        }
+                        for (let i=0; i<=this.maletinesCli.length-1; i++) {
+                          let pos = this.medpag.findIndex(x=>x.id==this.maletinesCli[i].medio_id)
+                          if (pos!=-1) {
+                            this.medpag[pos].activo = true
+                          }
+                        }
+                      }
                     })
                   }
-                  this.dialogSelTurnos = this.turnosFacturar.length ? true : false;
+                })
+
+              } else {
+
+                this.encontroElCliente = true
+                if (data.pedPend.id!=null && this.editado.cpr=='PED' &&  this.editedIndex==-1) {
+                  this.msg.msgTitle = '¡Pedido Abierto!'
+                  let m = '<br><b>'+data.t[0].tercero.nombre+'</b> tiene un pedido abierto: el '
+                  m += '<b>'+data.pedPend.cpr+'</b>. '
+                  m += '¡Revisa sus Artículos y Cantidades!<br><br>'
+                  m += 'Puedes continuar con este nuevo o puedes solicitarle a <b>'+data.t[0].tercero.nombre+'</b> '
+                  m += 'que anule su pedido y unifica todo en este nuevo.<br><br>'
+                  this.msg.msgBody = m
+                  this.msg.msgVisible = true
+                  this.msg.msgAccion = 'pedido abierto'
+                  this.msg.msgButtons = ['Aceptar']
+                  this.seleccionarArticulo = false;
+                }
+                this.entriesTerceros = []
+                this.entriesTerceros.push(data.t[0].tercero)
+                this.userDelTercero = data.t[0].tercero.user!=null ? data.t[0].tercero.user.id : 0
+                this.editado.nombre = data.t[0].tercero.nombre
+                this.userDelTercero = data.t[0].tercero.user!=null ? data.t[0].tercero.user.id : 0
+                this.editado.nombre = data.t[0].tercero.nombre
+                this.userDelTerceroDatos = data.t           // para cuando es un pedido de un vendedor
+                this.lisObj = [];
+                let rid = data.t[0].tercero.responsable.id
+                if (!(this.editado.comprobante_id >= 124 && this.editado.comprobante_id <= 126)) {     // AGREGADO 4/8/21
+                  if (this.responsable===1) { //EL USUARIO ES RESPONSABLE INSCRIPTO ( VIENE DEL STORE )
+                    if(rid===1 || rid===2 || rid===6 || rid===9 || rid===11) {
+                      this.editado.letra = this.comprobantesm?'M':'A'
+                    } else {
+                      this.editado.letra = 'B'
+                    }
+                  } else if (this.responsable===6) { //EL USUARIO ES MONOTRIBUTISTA ( VIENE DEL STORE )
+                    this.editado.letra = 'C'
+                  }
+                }
+                this.editado.tercero_id = data.t[0].tercero.id;
+                this.editado.nombre = data.t[0].tercero.nombre;
+                this.editado.documento = data.t[0].tercero.documento.nombre;
+                this.editado.documento_id = data.t[0].tercero.documento.id;
+                this.editado.documentoCodigo = data.t[0].tercero.documento.codigo;
+                this.editado.documentoNumero = data.t[0].tercero.cuit;
+                this.editado.responsableAbrev = data.t[0].tercero.responsable.abrev;
+                this.editado.vendedor = {id: null, nombre: 'MOSTRADOR'}
+                if (data.t[0].vendedor!=undefined) {
+                  this.editado.vendedor = data.t[0].vendedor
+                }
+                this.editado.usaElSistema = false
+                if (data.t[0].tercero.user!=undefined) {
+                  this.editado.usaElSistema = data.t[0].tercero.user.usaelsistema
+                  this.clienteVinculado = true
+                }
+                this.dirItems = []
+                for (let i=0; i<= data.t[0].tercero.direcciones.length-1; i++) {
+                  this.dirItems.push(data.t[0].tercero.direcciones[i])
+                }
+                this.editado.direccion_id = this.dirItems[0].id
+                this.editado.ctacte = data.t[0].ctacte
+                this.editado.vencimiento = moment().format('YYYY-MM-DD')
+                this.diasvenc = data.t[0].diasvenc
+                this.bonificacionmaxima = data.t[0].bonificacionmaxima
+                this.creditomaximo = data.t[0].creditomaximo
+                this.medpag[3].activo = false       // tarjeta de credito desabilitada
+                if (this.editado.cpr=='REM') {
+                } else if (this.editado.cpr!='REC') {
+                  this.medpag[3].activo = this.editado.ctacte
+                }
+                this.editado.mediodepago_id = 1
+                this.editado.deposito_id = this.depItems[0].id
+                this.cargoSaldosYValoresPendientes(this.editado.tercero_id).then( data => {
+                  // PEDIDOS: EL CLIENTE DEL VENDEDOR DEBE ESTAR REGISTRADO EN GOHU
+                  if (this.editado.cpr.substring(0,3)=='PED' &&
+                      this.editado.vendedor.id!=null && this.userDelTerceroDatos[0].tercero.user==null) {
+                    this.msg.msgTitle = '¡Cliente no Registrado!'
+                    let m = '<br>Debes registrar a este Cliente en <b>gohu</b> para que puedas ingresarle pedidos.<br><br>'
+                    m += 'Invita a '+data.t[0].tercero.razon_social+' a registrarse, '
+                    m += 'o bien puedes generarle un registro como <b><i>Cliente Exclusivo</i></b> desde la opción <i>Clientes</i>/'
+                    m += '<i>Menú Acciones</i>/<i>Generar Cuenta Exclusiva en gohu</i>.'
+                    this.msg.msgBody = m
+                    this.msg.msgVisible = true
+                    this.msg.msgAccion = 'cliente no registrado'
+                    this.msg.msgButtons = ['Aceptar']
+                    this.seleccionarArticulo = false;
+                    this.$nextTick(() => {
+                      const f = this.$refs.cliente;
+                      f.focus();
+                    });
+                  }
+                  this.turnosFacturar = []
+                  if (this.$store.state.turnos) {
+                    if ((!this.sucursalDemo && this.editado.cpr=='FAC') || (this.sucursalDemo && this.editado.cpr=='PRE')) {
+                      if (this.editado.tercero_id!='') {
+                        return HTTP().get('/turnosfacturar/'+this.editado.tercero_id).then(({ data }) => {
+                          for (let i=0; i<=data.length-1; i++) {
+                            this.turnosFacturar.push({
+                              id: data[i].id,
+                              fecha: moment(data[i].fecha).format('DD-MM-YYYY HH:mm'),
+                              articulo_id: data[i].articulo.id,
+                              codigo: data[i].articulo.codigo,
+                              nombre: data[i].articulo.nombre,
+                              costo: data[i].articulo.precios[0].costo,
+                              precio: data[i].articulo.precios[0].precio,
+                              iva_id: data[i].articulo.iva_id,
+                              moneda_id: data[i].articulo.moneda_id,
+                            })
+                          }
+                          this.dialogSelTurnos = this.turnosFacturar.length ? true : false;
+                        })
+                      }
+                    }
+                  }
                 })
               }
             }
           }
-        }
-      })
+        })
+      }
     },
 
     editadoArtStock(stock) {
@@ -5707,56 +5046,6 @@ export default {
         say += ' y un interés del ' + this.roundTo(inf.interes,2)+'%'
       }
       return say
-    },
-
-    buscoSiElTerceroEstaVinculado() {
-
-      this.clienteVinculado = false
-      if (this.editado.tercero_id!=null && (this.editado.cpr=='FAC' || this.editado.cpr=='REC')) {
-
-        if (this.editado.vendedor.id!=null && this.editado.cpr=='FAC') {
-
-          /*
-          this.msg.msgTitle = 'Cliente con Vendedor'
-          let msg = '<b>'+this.editado.nombre+'</b> pertenece al vendedor '+this.editado.vendedor.nombre+'. ';
-          if (this.editado.usaElSistema) {
-            msg += 'El cliente usa el sistema, él o '+this.editado.vendedor.nombre+' deberán realizar el pedido correspondiente.' 
-          } else {
-            msg += 'El cliente no usa el sistema, por lo tanto ' 
-            msg += this.editado.vendedor.nombre+' deberá realizar el pedido correspondiente.' 
-          }
-          this.msg.msgBody = msg
-          this.msg.msgVisible = true
-          this.msg.msgAccion = 'cliente vinculado'
-          this.msg.msgButtons = ['Aceptar']
-          */
-
-          // SE PUEDEN REALIZAR FACTURAS A CLIENTES VINCULADOS SIN PEDIDOS PREVIOS
-          // LA API DA DE ALTA EL PEDIDO Y REALIZA LA VINCULACION DE COMPROBANTES
-          this.clienteVinculado = true
-
-        } else {
-
-          return HTTP().get('/user/'+this.userDelTercero).then(({ data }) => {
-            let pos = this.vinculosHijos.findIndex(x=>x==this.userDelTercero)
-//          if (pos!=-1&&data[0].usaelsistema&&data[0].userexclusivo_id!=this.userId) {
-            if (pos!=-1&&data[0].usaelsistema) {
-              this.msg.msgTitle = 'Cliente Vinculado'
-              let msg = 'El cliente esta vinculado, debes pedirle que te realice un '
-              msg += this.editado.cpr=='FAC'?'pedido.':'pago.'
-              this.msg.msgBody = msg
-              this.msg.msgVisible = true
-              this.msg.msgAccion = 'cliente vinculado'
-              this.msg.msgButtons = ['Aceptar']
-              this.clienteVinculado = true
-              return true
-            }
-
-          })
-
-        }
-
-      }
     },
 
     arreglarPedido() {
@@ -5820,7 +5109,7 @@ export default {
         if (this.selArtPedErr.length>0) {
           this.dialogError = true
         } else {
-          return HTTP().post('comprobante', { id: item.id }).then(({ data }) => {
+          return HTTP().post('comprobanteventa', { id: item.id }).then(({ data }) => {
             this.preguntoEnvio(data.c) 
           })
         }
@@ -5849,37 +5138,57 @@ export default {
       this.itemActual = item;
     },
 
-    cargoSaldosYValoresPendientes(tercero) {
+    async cargoSaldosYValoresPendientes(tercero) {
+
+      debugger
       this.saldoctacte = 0
       this.valorespendientes = 0
       this.disponible = 0
-      return HTTP().get('/saldo/'+tercero).then(({ data }) => { 
-
+      return HTTP().get('/saldo/'+tercero+'/null').then(({ data }) => { 
+        
+        debugger
         if (data.saldo.length) {
-          this.saldoctacte = data.saldo[0].pendientes
+          this.saldoctacte = data.saldo[0].saldo
         }
         if (data.valorespendientes.length) {
           this.valorespendientes = data.valorespendientes[0].valorespendientes
         }
-
         if (this.creditomaximo == null) {
           this.creditomaximo = 999999999999
         }
-        this.disponible        = this.roundTo(this.creditomaximo-(this.saldoctacte+this.valorespendientes),2)
+        let aux = this.creditomaximo
+        if (this.saldoctacte<0) { // tiene saldo a favor
+          aux += (this.saldoctacte*-1)
+        } else {
+          aux -= this.saldoctacte
+        }
+        aux -= this.valorespendientes
+        let creditoTotal       = this.formatoImporte(this.creditomaximo+Math.abs(this.saldoctacte))
+        this.disponible        = this.roundTo(aux,2)
         this.creditomaximo     = this.formatoImporte(this.roundTo(this.creditomaximo,2))
         this.saldoctacte       = this.formatoImporte(this.roundTo(this.saldoctacte,2))
         this.valorespendientes = this.formatoImporte(this.roundTo(this.valorespendientes,2))
         this.calculos()
         this.tienesaldo = true
-        if (this.editado.texto == 'FACPED' && this.disponible < this.editado.total) {
+        if (this.editado.texto == 'FACPED' && (this.editado.total > this.disponible)) {
           this.msg.msgTitle = 'Saldo Insuficiente'
           let msg = 'El cliente no posee saldo suficiente para poder realizar esta operación.<br><br>'
-          msg += 'El crédito asignado es: $'+this.creditomaximo+'<br>'
-          msg += 'El saldo disponible es: $'+this.formatoImporte(this.disponible)+' * <br>'
-          msg += 'Y el total del pedido es: $'+this.formatoImporte(this.editado.total)+'<br>'
-          msg += 'Faltan $'+this.formatoImporte(this.editado.total-this.disponible)+' para poder seguir.<br><br>'
-          msg += '* La deuda se compone de las facturas con saldos pendientes ($'+this.saldoctacte+') '
-          msg += 'mas los valores aún no acreeditados en pagos realizados.<br><br>'
+          msg += '<table>'
+          msg += '<tr><td>Crédito asignado</td>'
+          msg += '<td style="text-align:right"><b>$'+this.creditomaximo+'</b></td></tr>'
+          msg += '<tr><td>Saldo de la Cuenta</td>'
+          msg += '<td style="text-align:right"><b>$'+this.saldoctacte+'</b></td></tr>'
+          msg += '<tr><td>Crédito Total</td>'
+          msg += '<td style="text-align:right"><b>$'+creditoTotal+'</b></td></tr>'
+          msg += '<tr><td>Valores aún no acreeditados</td>'
+          msg += '<td style="text-align:right"><b>$'+this.valorespendientes+'</b></td></tr>'
+          msg += '<tr><td>Crédito disponible</td>'
+          msg += '<td style="text-align:right"><b>$'+this.formatoImporte(this.disponible)+'</b></td></tr>'
+          msg += '<tr><td>Pedido por</td>'
+          msg += '<td style="text-align:right"><b>$'+this.formatoImporte(this.editado.total)+'</b></td></tr>'
+          msg += '<tr><td>Faltan</td>'
+          msg += '<td style="text-align:right"><b>$'+this.formatoImporte(this.disponible- this.editado.total)+'</b></td></tr>'
+          msg += '</table>'
           msg += 'Las alternativas son dos:<br>'
           msg += '1) Incrementar el crédito máximo asignado a este cliente.<br>'
           msg += '2) Pedirle al cliente que cancele deuda por el monto indicado para poder continuar.<br>'
@@ -5890,36 +5199,6 @@ export default {
           this.tienesaldo = false
         }
       })
-    },
-
-    leerDirPdr() {
-      /*
-      VER ESTO YA QUE NO ESTA EL userspuntosderetirosdir en el controlador
-      return HTTP().get('/userspuntosderetirosdir/'+this.envio.puntoderetiro_id).then(({ data }) => {
-        this.dirItemsPdrDir = []
-        for (let i=0; i<= data[0].direcciones.length-1; i++) {
-          this.dirItemsPdrDir.push(data[0].direcciones[i])
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
-      .finally(() => (this.isLoadingTercerosPdr = false))
-      */
-    },
-
-    sayZona(item) {
-      if (item.tercero) {
-        if (item.tercero.usersterceros.length>0) {
-          if (item.tercero.usersterceros[0].zona.length>0) {
-            if (item.tercero.usersterceros[0].zona[0].zona_id!=null) {
-              return item.tercero.usersterceros[0].zona[0].zonas.nombre.substring(0,14)
-            } else {
-              return 'sin zona'
-            }
-          }            
-        }
-      }
     },
 
     sayItemActualViaje(datoSay) {
@@ -5935,26 +5214,6 @@ export default {
       }
     },
 
-    sayMessage(item, open) {
-      if (item.cpr==undefined) { return }
-      if (item.estado == 'F' && 
-        (item.cpr.substring(0,3)=='FAC' || item.cpr.substring(0,3)=='NDD' || item.cpr.substring(0,3)=='NDC')) {
-        if (item.pendientes.length) {
-          if (item.pendientes[0].cancelaciones.length) {
-            return item.pendientes[0].cancelaciones[0].cancelador.cpr+' $'+this.formatoImporte(item.pendientes[0].cancelaciones[0].importe)
-          }
-        }
-      }
-    },
-
-    descuentoProbable(item, open) {
-      if (item.estado == 'F' && item.importedescuento==0 && (item.cpr.substring(0,3)=='FAC' || item.cpr.substring(0,3)=='PRE')) {
-        if (item.pendientes.length&&item.tercero.usersterceros.length) {
-          return (item.tercero.usersterceros[0].usermedio_id!=null&&item.pendientes[0].importe==item.pendientes[0].pendiente)?'des?':''
-        }
-      }
-    },
-
     rol (i, accion) {
       if (this.externo && accion=='acceder') {
         return (i==5) ? true : false
@@ -5962,7 +5221,6 @@ export default {
       if (this.sucursalDemo && i < 3) { return false }
       if (this.$store.state.level<=2) { return true }
       const op = this.$store.state.roles.map(el => el.opcion_id);
-//    const po = op.indexOf(i+5);
       const po = op.indexOf(i);
       if (po==-1 && accion=='ver') {
         return false
@@ -6015,12 +5273,9 @@ export default {
     setAcciones(item) {
       this.acciones = []
       if (this.$store.state.tipo=='PP') {
-
         this.acciones.push({nombre: 'Detalles', icon: 'mdi-glasses'})
         this.acciones.push({nombre: 'Imprimir', icon: 'mdi-printer'})
-
       } else if (this.filtroComprobanteSel=='Viajes') {
-
         this.itemActualViaje = item
         if (this.itemActualViaje.estado=='P'||this.itemActualViaje.estado=='I'||this.itemActualViaje.estado=='D') {
           this.acciones.push({nombre: 'Administrar', icon: 'mdi-nut'})
@@ -6029,15 +5284,10 @@ export default {
           }
         } else if (this.itemActualViaje.estado=='R') {
           this.acciones.push({nombre: 'Administrar', icon: 'mdi-nut'})
-//      } else if (this.itemActualViaje.estado=='F'||!this.itemActualViaje.todocobrado) {
-//        this.acciones.push({nombre: 'Recepción de Maletines', icon: 'mdi-18px mdi-briefcase-check'})
-        } else {
         } 
         this.acciones.push({nombre: 'Planilla Resúmen', icon: 'mdi-content-paste'})
         this.acciones.push({nombre: 'Planilla de Stock', icon: 'mdi-content-paste'})
-
       } else {
-
         this.itemActual = item
         if (!this.operarioEsVendedor) {      
           this.acciones.push({nombre: 'Detalles', icon: 'mdi-glasses'})
@@ -6045,7 +5295,7 @@ export default {
           this.acciones.push({nombre: 'Imprimir', icon: 'mdi-printer'})
           this.acciones.push({nombre: 'Rastrear', icon: 'mdi-move-resize-variant'})
         }
-        if (item.cpr.substring(0,3)=='RTV') {
+        if (item.cpr.substring(0,3)=='RTV') { // RTV = RETIRO DE MERCADERIA
           if (item.estado=='P') {
             this.acciones.push({nombre: 'Editar', icon: 'mdi-backup-restore'})
             this.acciones.push({nombre: 'Facturar', icon: 'mdi-file-document'})
@@ -6062,12 +5312,10 @@ export default {
               if(this.pedTransfAVend) {
                 this.acciones.push({nombre: 'Tomar Control', icon: 'mdi-file-check'})  
               }
-              this.acciones.push({nombre: 'Timeline', icon: 'mdi-filmstrip'})
+              this.acciones.push({nombre: 'Rastrear', icon: 'mdi-filmstrip'})
             }
-
           } else {
             if (item.rating==null&&item.estado!='I') {
-
               if (item.quienpidio=='C'||item.observaciones=='PARTICIONADO') {
                 if (item.estado=='R') {
                   this.acciones.push({nombre: 'Dar por concluido', icon: 'mdi-file-document'})
@@ -6077,6 +5325,7 @@ export default {
               }
               if (item.estado=='L'||item.estado=='R'||item.estado=='P') {
                 this.acciones.push({nombre: 'Modificar Pedido', icon: 'mdi-playlist-check'})
+                this.acciones.push({nombre: 'Anular', icon: 'mdi-backup-restore'})
                 if (this.sucursales.length>1 && item.observaciones!='PARTICIONADO') {
                   this.acciones.push({nombre: 'Transferir a otra Sucursal', icon: 'mdi-file-document'})
                 }
@@ -6088,53 +5337,42 @@ export default {
                   this.acciones.push({nombre: 'Facturar', icon: 'mdi-file-document'})
                 }
               }
-  /*
-              if (item.estado!='E'&&item.reparto_id==null&&item.tercero.direcciones[0].zona.length>0) {
-                this.acciones.push({nombre: 'A Reparto', icon: 'mdi-truck-delivery'})
-              }
-  */
- /*
-              if (item.estado!='E'&&item.estado!='R'&&item.tercero.direcciones[0].zona.length>0) {
-                this.acciones.push({nombre: 'A Reparto', icon: 'mdi-truck-delivery'})
-              }
-*/
-//            if (item.estado=='B'&&item.reparto_id==null) {
               if (item.estado=='T'&&item.reparto_id==null) {
                 this.acciones.push({nombre: 'Enviar', icon: 'mdi-truck'})
                 this.acciones.push({nombre: 'Retira', icon: 'mdi-account-check'})
               }
+
             }
- 
-            this.acciones.push({nombre: 'Timeline', icon: 'mdi-filmstrip'})
           }
         }
         if (item.cae) {
           this.acciones.push({nombre: 'Ver en AFIP', icon: 'mdi-bank'})
         }
-        if ((!this.sucursalDemo && item.cpr.substring(0,3)=='FAC') ||
-           (this.sucursalDemo && item.cpr.substring(0,3)=='PRE')) {
-          if (this.cobrar(item)) {
-            this.acciones.push({nombre: 'Cobrar', icon: 'mdi-sticker-emoji'})
-            this.acciones.push({nombre: 'Solicitar Pago', icon: 'mdi-email-outline'})
-          }
-        }
         if (item.cpr.substring(0,3)=='FAC' && item.estado=='F') {
           if (!this.tieneRemito(item)) {
             this.acciones.push({nombre: 'Aplicar Remito', icon: 'mdi-truck'})
-          } else {
-            this.acciones.push({nombre: 'Ir al Remito', icon: 'mdi-truck'})
           }
         }
         if ((item.cpr.substring(0,3)=='FAC'||(item.cpr.substring(0,3)=='PRE'&&this.sucursalDemo)) && item.estado=='F') {
           if (this.roles.length>0) {
             if (this.roles[6].acceder) {
-              this.acciones.push({nombre: 'Aplicar NDC', icon: 'mdi-file-percent'})
-            }
-            if (this.roles[5].acceder) {
+              if (item.ndcPPTot==0) {
+                this.acciones.push({nombre: 'Aplicar NDC x Descuento', icon: 'mdi-file-percent'})
+              } else {
+                this.acciones.push({nombre: 'Aplicar NDC Dcto x Lista', icon: 'mdi-file-percent'})
+              }
+              this.acciones.push({nombre: 'Aplicar NDC x Devolución', icon: 'mdi-file-percent'})
+              this.acciones.push({nombre: 'Aplicar NDC x Anulación', icon: 'mdi-file-percent'})
               this.acciones.push({nombre: 'Aplicar NDD', icon: 'mdi-file-plus'})
             }
           } else {
-            this.acciones.push({nombre: 'Aplicar NDC', icon: 'mdi-file-percent'})
+            if (item.ndcPPTot==0) {
+              this.acciones.push({nombre: 'Aplicar NDC x Descuento', icon: 'mdi-file-percent'})
+            } else {
+              this.acciones.push({nombre: 'Aplicar NDC Dcto x Lista', icon: 'mdi-file-percent'})
+            }
+            this.acciones.push({nombre: 'Aplicar NDC x Devolución', icon: 'mdi-file-percent'})
+            this.acciones.push({nombre: 'Aplicar NDC x Anulación', icon: 'mdi-file-percent'})
             this.acciones.push({nombre: 'Aplicar NDD', icon: 'mdi-file-plus'})
           }
         }
@@ -6148,7 +5386,7 @@ export default {
           this.acciones.push({nombre: 'Anular', icon: 'mdi-autorenew'})
         }
         if (item.cpr.substring(0,3)=='REC' && item.estado=='F') {
-          return HTTP().post('comprobante', { id: item.id }).then(({ data }) => {
+          return HTTP().post('comprobanteventa', { id: item.id }).then(({ data }) => {
             this.itemActual = data.c
             this.acciones.push({nombre: 'Anular', icon: 'mdi-backup-restore'})
             let hayCheques = false
@@ -6157,9 +5395,6 @@ export default {
                 hayCheques = true
               }
             }
-            if (hayCheques) {
-              this.acciones.push({nombre: 'Generar NDD', icon: 'mdi-file-plus'})
-            }
           })
         }
       }
@@ -6167,7 +5402,6 @@ export default {
 
     async selAccion(item) {
       if (item.nombre=='Administrar') {
-        debugger
         this.administracionPedidos(this.itemActualViaje)
       } else if (item.nombre=='Enviar a Reparto') {
         this.viajeListoParaReparto(this.itemActualViaje)
@@ -6185,8 +5419,6 @@ export default {
         this.chequearArtPed(this.itemActual)
       } else if (item.nombre=='Transferir a otra Sucursal') {
         this.chequearTransfPed(this.itemActual,1)
-//    } else if (item.nombre=='A Reparto') {
-//      this.aRepartoHTTP(this.itemActual)
       } else if (item.nombre=='Modificar') {
         this.modificarPedido(this.itemActual)
       } else if (item.nombre=='Artículos') {
@@ -6199,9 +5431,22 @@ export default {
         this.prepararEnvioRetiro(this.itemActual, 'R')
       } else if (item.nombre=='Abrir') {
         this.selVjeClick(this.itemActualViaje)
-      } else if (item.nombre=='Facturar') {
-
-        return HTTP().post('comprobante', { id: this.itemActual.id }).then(({ data }) => {
+      } else if (item.nombre=='Aplicar Remito') {
+        this.nuevo('remfac', this.itemActual)
+      } else if (item.nombre=='Solicitar Pago') {
+        this.solicitarPago(this.itemActual)
+      } else if (item.nombre==='Ver en AFIP') {
+        this.verCprEnAFIPHTTP(this.itemActual)
+      } else if (item.nombre==='Editar') {
+        this.editarRetiroDeMercaderia(this.itemActual)
+      } else if (item.nombre==='Planilla Resúmen') {
+        this.printViaje(this.itemActual)
+      } else if (item.nombre==='Planilla de Stock') {
+        this.printViajeStock(this.itemActual)
+      } else if (item.nombre==='Dar por concluido') {
+        this.concluirPedido(this.itemActual)
+      } else if (item.nombre=='Facturar'||item.nombre=='Presupuestar') {
+        return HTTP().post('comprobanteventa', { id: this.itemActual.id }).then(({ data }) => {
           this.itemActual = data.c
           if (!this.sucursalDemo) {
             if (this.itemActual.cpr.substring(0,3)=='PRE') {
@@ -6218,19 +5463,12 @@ export default {
               }
               this.nuevo(this.itemActual)
             }
+          } else {
+            if (this.itemActual.cpr.substring(0,3)=='PED' || this.itemActual.cpr.substring(0,3)=='RTV') {
+              this.nuevo(this.itemActual)
+            }
           }
         })
-
-      } else if (item.nombre=='Presupuestar') {
-        if (this.itemActual.cpr.substring(0,3)=='PED' || this.itemActual.cpr.substring(0,3)=='RTV') {
-          this.nuevo(this.itemActual)
-        }
-      } else if (item.nombre=='Cobrar') {
-        this.nuevo('REC',this.itemActual)
-      } else if (item.nombre=='Aplicar Remito') {
-        this.nuevo('remfac', this.itemActual)
-      } else if (item.nombre=='Ir al Remito') {
-        this.irAlRemito(this.itemActual)
       } else if (item.nombre=='Anular') {
         if (this.itemActual.cpr.substring(0,3)=='REC') {
           this.anularRecibo(this.itemActual)
@@ -6239,81 +5477,29 @@ export default {
         } else if (this.itemActual.cpr.substring(0,3)=='PED') {
           this.anularPedido(this.itemActual)
         }
-      } else if (item.nombre=='Aplicar NDC') {
-
-        this.ndcMotivoSel  = 1
+      } else if (item.nombre.substring(0,11)=='Aplicar NDC') {
         this.dialogNdcxDev = false
-        let b = await this.controlNdc(this.itemActual)
-        if (!b) {
-          this.msg.msgTitle = 'ERROR'
-          if (this.sucursalDemo) {
-            this.msg.msgBody = 'Este presupuesto no posee saldo ni items para devolver. No podra realizar Notas de Crédito.'
-          } else {
-            this.msg.msgBody = 'Esta factura no posee saldo ni items para devolver. No podra realizar Notas de Crédito.'
-          }
-          this.msg.msgVisible = true
-          this.msg.msgAccion = 'Saldo insuficiente'
-          this.msg.msgButtons = ['Aceptar']
-          this.dialogNdcFac = false
-          return
+        this.ndcPorProntoPago = false
+        if (item.nombre=='Aplicar NDC x Descuento') {
+          this.ndcfacWidth = 850
+          this.ndcMotivoSel  = 1
+        } else if (item.nombre=='Aplicar NDC x Devolución') {
+          this.ndcfacWidth = 1100
+          this.ndcMotivoSel  = 2
+        } else if (item.nombre=='Aplicar NDC x Anulación') {
+          this.ndcfacWidth = 850
+          this.ndcMotivoSel  = 3
+        } else if (item.nombre=='Aplicar NDC Dcto x Lista') {
+          this.ndcfacWidth = 550
+          this.ndcMotivoSel  = 1
+          this.ndcPorProntoPago = true
         }
-        this.nuevo('ndcfac', this.itemActual)
-
+        this.nuevo('ndcfac', this.itemActual, item.nombre)
       } else if (item.nombre=='Aplicar NDD') {
-
-        this.dialogNddxDev = false
         if (this.itemActual.cpr.substring(0,3)=='FAC') {
-          this.nddMotivos = [
-            {id: 2, nombre: 'MORA'}, {id: 3, nombre: 'CAMBIO DE PRECIO'}
-          ]
-        } else if (this.itemActual.cpr.substring(0,3)=='REC') {
-          this.nddMotivos = [
-            {id:1, nombre: 'CHEQUES RECHAZADOS'}
-          ]
-          HTTP().get('/chequesarechazar/'+this.itemActual.id).then(({ data }) =>{
-            this.selected = []
-            this.cheques = []
-            for (let i=0; i<=data.length-1; i++) {
-              let d = 0
-              let hoy = moment()
-              d = hoy.diff(data[i].fechafinanciera, 'days')
-              this.cheques.push({
-                id:               data[i].id,
-                codban:           data[i].codigo,
-                nomban:           data[i].nomban==null ? '' : data[i].nomban.substring(0,12),
-                cuitlib:          data[i].cuitlib,
-                nomlib:           data[i].nomlib==null ? '' : data[i].nomlib.substring(0,12),
-                cuenta:           data[i].cuenta,
-                nrovalor:         data[i].nrovalor,
-                fechafinanciera:  data[i].fechafinanciera,
-                dias:             d,
-                importe:          data[i].importe,
-                cuentaorigen_id:  data[i].cuentaorigen_id,
-                cuentadestino_id: data[i].cuentadestino_id,
-                banco_id:         data[i].banco_id,
-                cheque_id:        data[i].cheque_id,
-                observ:           data[i].observ,
-                seleccionado:     0,
-              })
-            }
-            this.dialogNddxDev = true
-          })
+          this.nddMotivos = [{id: 1, nombre: 'MORA'}, {id: 2, nombre: 'CAMBIO DE PRECIO'}]
         }
         this.nuevo('nddfac', this.itemActual)
-      } else if (item.nombre=='Solicitar Pago') {
-        this.solicitarPago(this.itemActual)
-      } else if (item.nombre==='Timeline') {
-        this.leerTimeLine(this.itemActual)
-      } else if (item.nombre==='Ver en AFIP') {
-        this.verCprEnAFIPHTTP(this.itemActual)
-      } else if (item.nombre==='Editar') {
-        this.editarRetiroDeMercaderia(this.itemActual)
-      } else if (item.nombre==='Planilla Resúmen') {
-        this.printViaje(this.itemActual)
-      } else if (item.nombre==='Planilla de Stock') {
-        this.printViajeStock(this.itemActual)
-      } else if (item.nombre==='Dar por concluido') {
-        this.concluirPedido(this.itemActual)
       }
     },
 
@@ -6322,13 +5508,6 @@ export default {
         this.itemActualViaje = item
         this.administracionPedidos(item)
       }
-    },
-
-    selMaletinClick (item, row) {
-      this.dialogVerSelMaletines = false
-
-      debugger
-      this.setDatosRecibo(item)
     },
 
     setDatosRecibo(maletin) {
@@ -6346,8 +5525,6 @@ export default {
         this.editado.letra = 'C'
         this.editado.comprobante_id = 17
       }
-      
-      this.itemActual = this.itemActualCliente.t[0]
       this.editado.cpr = 'REC'
       this.editado.tercero_id = this.itemActualCliente.t[0].tercero.id;
       this.editado.nombre = this.itemActualCliente.t[0].tercero.nombre;
@@ -6356,13 +5533,14 @@ export default {
       this.editado.documentoCodigo = this.itemActualCliente.t[0].tercero.documento.codigo;
       this.editado.documentoNumero = this.itemActualCliente.t[0].tercero.cuit;
       this.editado.responsableAbrev = this.itemActualCliente.t[0].tercero.responsable.abrev;
-      
       this.dirItems = []
       for (let i=0; i<= this.itemActualCliente.t[0].tercero.direcciones.length-1; i++) {
         this.dirItems.push(this.itemActualCliente.t[0].tercero.direcciones[i])
       }
       this.editado.direccion_id = this.dirItems[0].id
-      
+      this.pend = []
+      let totPend = 0
+      let totDebito = 0
       let totACancelar = 0
       let pendMaletin = 0
       let cancelando = 0
@@ -6376,45 +5554,64 @@ export default {
         pendMaletin = totACancelar
         cancelando = totACancelar
       }
-
-      return HTTP().get('/pendientes/'+this.itemActualCliente.t[0].tercero.id+'/'+this.sucursal).then(( { data }) => {
-
-        this.pend = []
-        let totPend = 0
-        for ( let i=0; i<= data.length-1; i++) {
-          if (this.hayMaletin()) {               // HAY MALETIN
-            if (data[i].pendiente>=cancelando) {
+      return HTTP().get('/pendientes/'+this.itemActualCliente.t[0].tercero.id+'/'+this.sucursal+'/C').then(( { data }) => {
+        for ( let i=0; i<= data[0].det.length-1; i++) {
+          let hoy = moment()
+          let d = hoy.diff(data[0].det[i].vencimiento, 'days')
+          if (this.hayMaletin()) {                        // HAY MALETIN
+            if (data[0].det[i].pendiente>=cancelando) {   // PAGO MENOR
               this.pend.push({
-                id: data[i].id, cpr: data[i].cpr, importe: data[i].importe,
-                vencimiento: moment(data[i].vencimiento).format('YYYY-MM-DD'),
-                pendiente: data[i].pendiente, acancelar: cancelando, acciones: '' 
+                id: data[0].det[i].id,
+                cpr: data[0].det[i].cpr,
+                importe: data[0].det[i].total,
+                vencimiento: moment(data[0].det[i].vencimiento).format('YYYY-MM-DD'),
+                dias: d,
+                pendiente: data[0].det[i].pendiente,
+                acancelar: cancelando,
+                acciones: '',
+                updated_at: moment(data[0].det[i].updated_at).format('YYYY-MM-DD HH:mm:ss'),
               })
               totPend += cancelando
+              totDebito += data[0].det[i].total
               break
             } else {
               this.pend.push({
-                id: data[i].id, cpr: data[i].cpr, importe: data[i].importe,
-                vencimiento: moment(data[i].vencimiento).format('YYYY-MM-DD'),
-                pendiente: data[i].pendiente, acancelar: data[i].pendiente, acciones: ''
+                id: data[0].det[i].id,
+                cpr: data[0].det[i].cpr,
+                importe: data[0].det[i].total,
+                vencimiento: moment(data[0].det[i].vencimiento).format('YYYY-MM-DD'),
+                dias: d,
+                pendiente: data[0].det[i].pendiente,
+                acancelar: data[0].det[i].pendiente,
+                acciones: '',
+                updated_at:  moment(data[0].det[i].updated_at).format('YYYY-MM-DD HH:mm:ss'),
               })
-              totPend += data[i].pendiente
+              totPend += data[0].det[i].pendiente
+              totDebito += data[0].det[i].total
             }
           } else {
             this.pend.push({
-              id: data[i].id, cpr: data[i].cpr, importe: data[i].importe,
-              vencimiento: moment(data[i].vencimiento).format('YYYY-MM-DD'),
-              pendiente: data[i].pendiente, acancelar: 0, acciones: ''
+              id: data[0].det[i].id,
+              cpr: data[0].det[i].cpr,
+              importe: data[0].det[i].total,
+              vencimiento: moment(data[0].det[i].vencimiento).format('YYYY-MM-DD'),
+              dias: d,
+              pendiente: data[0].det[i].pendiente,
+              acancelar: 0,
+              acciones: '',
+              updated_at:  moment(data[0].det[i].updated_at).format('YYYY-MM-DD HH:mm:ss'),
             })
-            totPend += data[i].pendiente
+            totPend += data[0].det[i].pendiente
+            totDebito += data[0].det[i].total
           }
-          cancelando -= data[i].pendiente
+          cancelando -= data[0].det[i].pendiente
         }
-
         this.editado.total = this.roundTo(this.hayMaletin()?pendMaletin:totPend,2)
-        this.totCancelado = 0
+        this.totACobrar = 0
         this.totValores = 0
         this.valDiferencia = this.hayMaletin()?pendMaletin*-1:totPend*-1
-
+        this.valDiferencia = this.roundTo(this.valDiferencia, 2)
+        this.ndcPorPP = this.roundTo(totDebito-pendMaletin,2)
         if (this.pend.length==0) {
           this.msg.msgTitle = 'Sin deuda'
           this.msg.msgBody = 'El cliente no posee deuda!'
@@ -6422,21 +5619,19 @@ export default {
           this.msg.msgAccion = 'cliente sin deuda'
           this.msg.msgButtons = ['Aceptar']
         }
-
         if (this.hayMaletin()) {
           for (let i=0; i<=this.medpag.length-1; i++) {
             this.medpag[i].activo = false
           }
           for (let i=0; i<=this.maletinesCli.length-1; i++) {
+            totValMaletin += this.maletinesCli[i].importe
             let pos = this.medpag.findIndex(x=>x.id==maletin[i].medio_id)
             if (pos!=-1) {
               this.medpag[pos].activo = true
             }
           }
         }
-
       })
-
     },
 
     solicitarPago() {
@@ -6481,7 +5676,6 @@ export default {
         message => alert(message)
       );
       */
-
       let body = ''
       this.mail.token = "4a720391-3103-4352-ac74-d48f13f1a13b"
       this.mail.Host = "smtp.gmail.com"
@@ -6492,9 +5686,8 @@ export default {
       this.mail.subject = "Solicitud de Pago del comprobante: "+this.itemActual.cpr
       this.mail.title = 'Envío de mail para Solicitud de Pago'
       this.mail.visible = true
-
       let f1 = moment().format('YYYY-MM-DD')
-      let f2 = moment(this.itemActual.pendientes[0].vencimiento).format('YYYY-MM-DD')
+      let f2 = moment(this.itemActual.vencimiento).format('YYYY-MM-DD')
       let hoy = moment(f1)
       let ven = moment(f2)
       let d = hoy.diff(ven, 'days')
@@ -6506,7 +5699,7 @@ export default {
       body  = '\nEstimados Sres:'+this.itemActual.tercero.nombre+'\n\n'
       body += 'Enviamos este correo para informales que el comprobante: '+this.itemActual.cpr+' '
       body += 'por un total de $ '+this.formatoImporte(this.itemActual.total)+'\n'
-      body += 'esta '+dias+' vencido ('+moment(this.itemActual.pendientes[0].vencimiento).format('DD/MM/YYYY')+')\n'
+      body += 'esta '+dias+' vencido ('+moment(this.itemActual.vencimiento).format('DD/MM/YYYY')+')\n'
       body += 'Lo invitamos a realizar la cancelación del mismo para evitar costos por mora.\n\n'
       body += 'Sin otro particular, aprovechamos para saludarlos muy atte.\n\n'
       body += this.datosEmpresa.razon_social
@@ -6516,17 +5709,14 @@ export default {
       this.mail.buttons = ['Enviar','Cancelar']
     },
 
-    getEstado (estado, accion, pend, item) {
+    getEstado (estado, accion, item) {
       let c = ''
       let e = ''
       let d = 0
       let f = false
       let ped = false
-
       if (this.filtroComprobanteSel=='Viajes') {
-
         if (accion=='k') {   //para el dark
-
           if (estado==='P') {
             return this.temas.cen_estado_pendiente_dark
           } else if (estado==='L') {
@@ -6573,9 +5763,7 @@ export default {
           c = this.temas.cen_estado_anulado_bg
         }
         return accion==='c'?c:e
-
       } else {
-
         if (item!=null) {
           if (item.cpr!=undefined) {
             ped = item.cpr.substring(0,3)=='PED'?true:false
@@ -6602,30 +5790,9 @@ export default {
             return this.temas.cen_estado_pendiente_dark
           }
         }
-        if (pend!==null&&pend!=undefined) {       // ctacte
-          if (estado==='P') {
-            e = 'A Facturar'
-            c = this.temas.cen_estado_finalizado_bg
-          } else {
-            let f1 =  moment().format('YYYY-MM-DD')
-            let f2 =  moment(pend.vencimiento).format('YYYY-MM-DD')
-            let hoy = moment(f1)
-            let ven = moment(f2)
-            d = hoy.diff(ven, 'days')
-            if (pend.pendiente==0) {
-              e = 'Finalizado'
-              c = this.temas.cen_estado_finalizado_bg
-            } else if (d>0) {
-              e = 'Vencido('+d+')'
-              c = this.temas.cen_estado_vencido_bg
-            } else if (d==0) {
-              e = 'Vence Hoy'
-              c = this.temas.cen_estado_vencehoy_bg
-            } else {
-              e = 'A Vencer('+d*-1+')'
-              c = this.temas.cen_estado_avencer_bg
-            }
-          }
+        if (item.ndcPPTot!=0&&item.ndcPPTot!=null) {
+          e = 'Dctos x Lista'
+          c = this.temas.cen_estado_pendiente_bg 
         } else if (estado==='A') {
           e = 'Anulado'
           c = this.temas.cen_estado_anulado_bg
@@ -6695,7 +5862,6 @@ export default {
         } else if (data[0].cerrada==1) {
           this.mensaje('¡La caja nro '+data[0].id+' esta cerrada. Debes reabrir la misma y volver a intentar!.', this.temas.snack_error_bg, 3500)
         } else {
-
           // que pasa cuando necesito anular un recibo
           // 1) si el cliente no esta vinculado es una anulacion normal
           // 2) si el cliente esta vinculado debo generar la anulacion en ambos lados
@@ -6703,13 +5869,10 @@ export default {
           let pos = this.vinculosHijos.findIndex(x => x = this.itemActual.tercero.user.id)
           this.msg.msgTitle = 'Anular Recibo'
           if (pos!=-1) {
-            
             return HTTP().get('/comprobantesrastrear/'+item.id+'/up').then(({ data }) => {
               // VEO SI HAY UN PAGO
-
               let hayPago = ''
               this.idPagoAAnular = null
-
               for (let i=1; i<=data.length-1; i++) {
                 for (let j=0; j<=data[i].length-1; j++) {
                   if (this.isArray(data[i][j])==false) {
@@ -6745,7 +5908,6 @@ export default {
                   }
                 }
               }
-
               let t = ''
               if (this.idPagoAAnular==null) {
                 t += 'Se va a Anular el recibo '+this.itemActual.cpr+'<br><br>'
@@ -6757,11 +5919,9 @@ export default {
                 t += '<b>'+hayPago+'</b>.<br><br>'
                 this.reciboVinculado = true
               }
-
               if (hayMaletin) {
                 t += 'También se afectará el maletín Nro. <b>'+hayMaletin+'</b><br><br>'
               }
-
               t += '¿Confirmas?'
               this.msg.msgBody = t
               this.msg.msgVisible = true
@@ -6777,7 +5937,6 @@ export default {
         }
       })
     },
-
 
     anularPresupuesto(item) {
       return HTTP().get('/controlanularpresupuesto/'+item.id ).then(({ data }) => {
@@ -6803,30 +5962,24 @@ export default {
     },
 
     anularReciboHTTP(item) {
-
       // que pasa cuando necesito anular un recibo
       // 1) si el cliente no esta vinculado es una anulacion normal
       // 2) si el cliente esta vinculado debo generar la anulacion en ambos lados
       // primero cargo las fechas de ult actualizacion de cada tabla y las paso a la API
       // para ver si estas han sido modificadas.
-
       let userClien = this.itemActual.tercero.user!=null?this.itemActual.tercero.user.id:null
-
       // PARA EL CONTROL DEL BLOCK
       for (let i=0; i<=this.itemActual.valoresIngresos.length-1; i++) {
         this.itemActual.valoresIngresos[i].updated_at = moment(this.itemActual.valoresIngresos[i].updated_at).format('YYYY-MM-DD HH:mm:ss')
       }
-
       return HTTP().post('/anularrecibo', {
         id: this.itemActual.id,
         comprobante: {id: this.itemActual.id, updated_at: this.itemActual.updated_at},
-        cancelaciones: this.itemActual.cancelaciones,
         valores: this.itemActual.valoresIngresos,
         vinculado: this.reciboVinculado,
         userClien: userClien,
         idPagoAAnular:this.idPagoAAnular
         }).then(({ data }) => {
-
           if (data=='error') {
             this.mensaje('¡Se ha producido un error al intentar anular el Recibo!.', this.temas.snack_error_bg, 3500)
           } else if (data=='block valores') {
@@ -6923,15 +6076,8 @@ export default {
       this.editedIndex = this.items.findIndex(x=>x.id==item.id)
       if (this.items[this.editedIndex].tercero.user) { // esta modificando
         // TIENE QUE ENVIAR EL PEDIDO POR SISTEMA
-        let novedad = {
-          cpr_id: this.items[this.editedIndex].id,
-          novedad: 'Envio del Pedido',
-          rel_id: null,
-          estado: 'N'
-        }
         return HTTP().patch('/enviarpedido', {
           id: this.items[this.editedIndex].id,
-          novedad: novedad,
           vendedor: true,
           recorrido: null }).then(({ data })=>{
           if (data = 'ok') {
@@ -6953,8 +6099,6 @@ export default {
       this.articulos = []
       this.confirmarComprobanteMensaje = 'GUARDAR PEDIDO'
       this.formTitle = 'Modificar el Pedido '+item.cpr+' - ('+item.tercero.nombre+')'
-      this.searchTerceros           = ''
-      this.isLoadingTerceros        = true // PARA QUE NO BUSQUE EL TERCERO, YA LO TENGO
       this.basadoEnCpr              = true;   // SI EL CPR ESTA BASADO EN OTRO CPR. (FAC/PED, etc)
       this.editado.tercero_id       = item.tercero_id;
       this.editado.nombre           = item.tercero.nombre;
@@ -6966,9 +6110,9 @@ export default {
       this.editado.documentoNumero  = item.tercero.cuit
       this.editado.moneda_id        = item.moneda_id
       this.cfUser                   = this.responsable
-      this.ctacte = false
+      this.editado.ctacte           = false
+      this.editado.vencimiento      = moment().format('YYYY-MM-DD')
       if (item.tercero.usersterceros.length>0) {
-        this.ctacte = item.tercero.usersterceros[0].ctacte
         this.diasvenc = item.tercero.usersterceros[0].diasvenc
         this.bonificacionmaxima = item.tercero.usersterceros[0].bonificacionmaxima
         this.creditomaximo = item.tercero.usersterceros[0].creditomaximo
@@ -6981,11 +6125,10 @@ export default {
       this.editado.comprobante_id = 126
       this.editado.vendedor.id = item.vendedor_id
       this.editado.quienpidio = 'V'
-        
+       
       //Cargo los articulos del pepdido, pero primero tengo que ver si ya fueron cargados anteriormente
       //y quedo saldo (estado = 'L')
       //En ese caso tengo que buscar en vinuculados para sacar la diferencia
-
       // busco comprobantes que imputaron a este pedido.
       this.articulos = [];
       for (let i=0; i<=item.items.length-1; i++) {
@@ -6999,24 +6142,9 @@ export default {
           total: item.items[i].total, texto: item.items[i].texto, vencimiento: item.items[i].vencimiento, adevolver: 0, padre_id: null,
           undenvase: item.items[i].articulo.undenvase, escombo: item.items[i].articulo.escombo, ofeprecio: 0, ofetasdes: 0,
           ofeenvio: 0, ofeunidades: 0, ofeestado: '', turno_id: null, decimales: item.items[i].articulo.precios[0].decimales,
-          preciomediocobro: false, loTengo: item.items[i].loTengo, 
+          preciomediocobro: false, loTengo: item.items[i].loTengo, desc1: item.items[i].desc1, desc2: item.items[i].desc2,
         })
       }
-    },
-
-    enviarPedidoHTTP(item) {
-      let novedad = {
-        cpr_id: item.id,
-        novedad: 'Envío de Pedido',
-        rel_id: null,
-        estado: 'N'
-      }
-      return HTTP().post('/pedidoenvio', { pedido: item, novedad: novedad }).then(({ data }) => {
-        this.dialogEnvios = false
-        if (data) {
-          this.listarHTTP(false)
-        }
-      })
     },
 
     confirmarEnvioRetiro(como) {
@@ -7037,15 +6165,13 @@ export default {
 
     editarPedido(item) {
       this.editedIndex = this.items.indexOf(item)
-      return HTTP().post('comprobante', { id: item.id }).then(({ data }) => {
+      return HTTP().post('comprobanteventa', { id: item.id }).then(({ data }) => {
         item = data.c
         this.dialog = true;
         this.itemActual = item
         this.editado.id = item.id
         this.editado.cpr = item.cpr
         this.editado.fecha = item.fecha
-
-        debugger
         this.editado.tercero_id = item.user.tercero.id
         this.editado.nombre = item.user.tercero.razon_social
         this.editado.comprobante_id = item.comprobante_id
@@ -7066,11 +6192,9 @@ export default {
         this.editado.iva = item.iva
         this.editado.total = item.total
         this.editado.rentabilidad = item.rentabilidad
-        //this.texto = item.texto
         this.editado.estado = item.estado
         this.editado.observaciones = item.observaciones
         this.editado.quienpidio = item.quienpidio
-
         this.confirmarComprobanteMensaje = 'GUARDAR PEDIDO'
         this.formTitle = 'Editar Pedido'
         this.editado.cpr = 'PED'
@@ -7087,7 +6211,7 @@ export default {
             total: item.items[i].total, texto: item.items[i].texto, vencimiento: item.items[i].vencimiento, adevolver: 0, padre_id: null,
             undenvase: item.items[i].articulo.undenvase, escombo: item.items[i].articulo.escombo, ofeprecio: 0, ofetasdes: 0,
             ofeenvio: 0, ofeunidades: 0, ofeestado: '', turno_id: null, decimales: item.items[i].articulo.precios[0].decimales,
-            preciomediocobro: false, loTengo: item.items[i].loTengo,
+            preciomediocobro: false, loTengo: item.items[i].loTengo, desc1: item.items[i].desc1, desc2: item.items[i].desc2,
           })
         }
         this.seleccionarArticulo = false
@@ -7104,7 +6228,6 @@ export default {
       this.formTitle = 'Retiro de Mercadería'
       this.dialog = false
       this.dialogRetiroMerc = true
-      this.searchTercerosRetirosMerc = ''
       this.articulos = []
 
       if (item==undefined) {
@@ -7117,15 +6240,12 @@ export default {
 
       } else {
 
-        return HTTP().post('comprobante', { id: this.itemActual.id }).then(({ data }) => {
-
-          debugger
+        return HTTP().post('comprobanteventa', { id: this.itemActual.id }).then(({ data }) => {
           this.itemActual = data.c
           this.editedIndexRetiroMer = this.items.findIndex(x => x.id == item.id)
           this.editado.id = data.c.id
           this.editado.cpr = data.c.cpr
           this.editado.fecha = data.c.fecha
-
           this.editado.tercero_id = data.c.tercero_id
           this.editado.nombre = data.c.tercero.nombre
           this.editado.comprobante_id = data.c.comprobante_id
@@ -7151,7 +6271,6 @@ export default {
           this.editado.texto = data.c.texto
           this.editado.estado = data.c.estado
           this.editado.observaciones = data.c.observaciones
-  
           for (let i=0; i<=data.c.items.length-1; i++) {
             this.articulos.push({ 
               id: data.c.items[i].id, articulo_id: data.c.items[i].articulo_id, codigo: data.c.items[i].articulo.codigo, codbar: data.c.items[i].articulo.codbar,
@@ -7163,7 +6282,7 @@ export default {
               total: data.c.items[i].total, texto: data.c.items[i].texto, vencimiento: data.c.items[i].vencimiento, adevolver: 0, padre_id: null,
               undenvase: data.c.items[i].articulo.undenvase, escombo: data.c.items[i].articulo.escombo, ofeprecio: 0, ofetasdes: 0,
               ofeenvio: 0, ofeunidades: 0, ofeestado: '', turno_id: null, decimales: data.c.items[i].articulo.precios[0].decimales,
-              preciomediocobro: false, loTengo: data.c.items[i].loTengo,
+              preciomediocobro: false, loTengo: data.c.items[i].loTengo, desc1: data.c.items[i].desc1, desc2: data.c.items[i].desc2
             })
           }
         })
@@ -7217,21 +6336,28 @@ export default {
       this.dialogPedidoArticulos = true
     },
 
-    nuevo(que, item) {
-      this.clienteVinculado = false
-      this.yaEnviado = false
-      this.dialog = false
-      this.confirmarComprobanteMensaje = 'CONFIRMAR COMPROBANTE'
-      this.recargo = 0
-      this.facRet = 0
-      this.electronica = false
-      this.electronicaOk = false
-      this.cueMiasItems = []
-      this.rentabilidad = 0
-      this.facturas = []
-      this.turnosFacturar = []
-      this.selected = []
-      this.maletinesCli = []
+    nuevo(que, item, cual) {
+
+      debugger
+      // cual = tipo de ndc o ndd a realizar
+      this.clienteVinculado = false;
+      this.yaEnviado = false;
+      this.dialog = false;
+      this.confirmarComprobanteMensaje = 'CONFIRMAR';
+      this.recargo = 0;
+      this.facRet = 0;
+      this.electronica = false;
+      this.electronicaOk = false;
+      this.cueMiasItems = [];
+      this.rentabilidad = 0;
+      this.facturas = [];
+      this.turnosFacturar = [];
+      this.selected = [];
+      this.maletinesCli = [];
+      this.editado.tercero_id = '';
+      this.ndcPorPP = 0;
+      this.encontroElCliente = this.desdeAdmPedidos==true?true:false
+      
       for (let i=0; i<=this.datosEmpresa.cuentas.length-1; i++) {
         this.cueMiasItems.push({
           id: this.datosEmpresa.cuentas[i].id,
@@ -7243,19 +6369,13 @@ export default {
 
       // SI "que" VIENE CON DATOS, ES PORQUE ESTOY HACIENDO UN COMPROBANTE BASADO EN OTRO
       this.basadoEnCpr = false;         // SI EL CPR ESTA BASADO EN OTRO CPR. (FAC/PED, etc)
-      this.notificaEnBaseAOtro = [];    // LIMPIO NOTIFICACIONES PARA NO TENER PROBLEMAS
       this.notificaOriginal = [];
-      this.basadoEnOtroCpr = []
-
-      this.searchTerceros = '';
-      this.searchTercerosRec = '';
-      this.searchTercerosTrans = '',
+      this.basadoEnOtroCpr = [];
+      this.searchTercerosTrans = '';
       this.isLoadingBancos = false;
-      this.isLoadingTerceros = false;
-      this.isLoadingTercerosRec = false;
       this.isLoadingTercerosRetirosMerc = false;
-      this.sucManual = this.sucursalManual
-
+      this.sucManual = this.sucursalManual;
+      
       // LIMPIO MEDIOS DE PAGO
       for (let i=0; i<=this.medpag.length-1; i++) {
         this.medpag[i].total = 0
@@ -7284,7 +6404,7 @@ export default {
 
         this.editado = Object.assign({}, this.defaultItem)
         this.maletinesCli = []
-        this.formTitle = 'Nueva Factura - Sucursal ('+this.sucursal+')'+ ' - Caja ('+this.caja+')';
+        this.formTitle = 'Nueva Factura - Suc('+this.sucursal+')'+ '-Caja('+this.caja+')';
         this.editado.cpr = 'FAC'
         this.coef = 1
         this.medpag[1].activo = true
@@ -7295,7 +6415,7 @@ export default {
         
         this.editado = Object.assign({}, this.defaultItem)
         this.maletinesCli = []
-        this.formTitle = 'Nuevo Presupuesto - Sucursal ('+this.sucursal+')'+ ' - Caja ('+this.caja+')';
+        this.formTitle = 'Nuevo Presupuesto - Suc('+this.sucursal+')'+ '- Caja('+this.caja+')';
         this.editado.cpr = 'PRE'
         this.editado.comprobante_id = 124
         this.editado.letra = 'P'
@@ -7307,7 +6427,7 @@ export default {
         
         this.editado = Object.assign({}, this.defaultItem)
         this.maletinesCli = []
-        this.formTitle = 'Nuevo Remito - Sucursal ('+this.sucursal+')'+ ' - Caja ('+this.caja+')';
+        this.formTitle = 'Nuevo Remito - Suc('+this.sucursal+')'+ '-Caja('+this.caja+')';
         this.editado.cpr = 'REM'
         this.editado.comprobante_id = 125
         this.editado.letra = 'R'
@@ -7316,7 +6436,7 @@ export default {
         this.dialog = true;
 
       } else if (que === 'Pedidos') {
-  
+
         // cuando es un pedido es desde un vendedor
         // tengo que simular como que lo esta haciendo el cliente
         this.editado = Object.assign({}, this.defaultItem)
@@ -7331,105 +6451,105 @@ export default {
         this.editado.quienpidio = 'V'
         this.editado.comprobante_id = 126
         this.editado.vendedor.id = this.operarioTerceroId
-     
       } else if (que === 'facpre') {
-
+        this.encontroElCliente = true
         this.editado = Object.assign({}, this.defaultItem)
         this.maletinesCli = []
         this.dialog = true;
-        return HTTP().post('comprobante', { id: item.id }).then(({ data }) => {
-          this.itemActual = data.c
-          item = data.c
-          this.formTitle = 'Generar Factura sobre el Presupuesto '+item.cpr+' - ('+item.tercero.nombre+')'
-          this.searchTerceros           = ''
-          this.isLoadingTerceros        = true   // PARA QUE NO BUSQUE EL TERCERO, YA LO TENGO
-          this.basadoEnCpr              = true   // SI EL CPR ESTA BASADO EN OTRO CPR. (FAC/PED, etc)
-          this.editado.tercero_id       = item.tercero_id
-          this.editado.nombre           = item.tercero.nombre
-          this.editado.responsableAbrev = item.tercero.responsable.abrev
-          this.editado.documento        = item.tercero.documento.nombre
-          this.editado.documento_id     = item.documento_id
-          this.editado.documentoCodigo  = item.tercero.documento.codigo
-          this.editado.mediodepago_id   = item.mediodepago_id
-
-          this.editado.tasadescuento    = item.tasadescuento
-          this.editado.importedescuento = item.importedescuento
-          this.editado.documentoNumero  = item.tercero.cuit
-          this.editado.moneda_id        = item.moneda_id
-          let rid                       = item.tercero.responsable.id
-          this.cfUser                   = this.responsable
-
-          this.editado.cpr = 'FAC';
-          if (this.cfUser===1) { //EL USUARIO ES RESPONSABLE INSCRIPTO
-            if(rid===1 || rid===2 || rid===6 || rid===9 || rid===11) {
-              this.editado.letra = 'A'
-            } else {
-              this.editado.letra = 'B'
-            }
-          } else if (this.cfUser===6) { //EL USUARIO ES MONOTRIBUTISTA
-              this.editado.letra = 'C'
+        item = this.itemActual
+        this.formTitle = 'Generar Factura sobre el Presupuesto '+item.cpr+' - ('+item.tercero.nombre+')'
+        this.basadoEnCpr              = true   // SI EL CPR ESTA BASADO EN OTRO CPR. (FAC/PED, etc)
+        this.editado.tercero_id       = item.tercero_id
+        this.editado.nombre           = item.tercero.nombre
+        this.editado.responsableAbrev = item.tercero.responsable.abrev
+        this.editado.documento        = item.tercero.documento.nombre
+        this.editado.documento_id     = item.documento_id
+        this.editado.documentoCodigo  = item.tercero.documento.codigo
+        this.editado.mediodepago_id   = item.mediodepago_id
+        this.editado.tasadescuento    = item.tasadescuento
+        this.editado.importedescuento = item.importedescuento
+        this.editado.documentoNumero  = item.tercero.cuit
+        this.editado.moneda_id        = item.moneda_id
+        this.editado.facid            = item.id
+        this.basadoEnOtroCpr.push(item.id)
+        let rid                       = item.tercero.responsable.id
+        this.cfUser                   = this.responsable
+        this.cfUser = this.responsable
+        this.editado.ctacte = false
+        this.editado.vencimiento = moment().format('YYYY-MM-DD')
+        if (item.tercero.usersterceros.length>0) {
+          this.editado.ctacte = item.tercero.usersterceros[0].ctacte
+          this.diasvenc = item.tercero.usersterceros[0].diasvenc
+          if (this.editado.ctacte&&this.diasvenc>0) {
+            this.editado.vencimiento = moment(new Date).add(this.diasvenc, 'd').format('YYYY-MM-DD')
           }
-          this.dirItems.push(item.tercero.direcciones[0])
-          this.editado.direccion_id = this.dirItems[0].id
-          this.editado.deposito_id = this.depItems[0].id
-          this.electronica = !this.sucursalDemo
-
-          //Cargo los articulos del pedido
-          this.articulos = [];
-          let arts = [];
-
-          for (let i=0; i<=item.items.length-1; i++) {
-            arts.push(item.items[i].articulo_id)
-            this.articulos.push({ 
-              id: null, articulo_id: item.items[i].articulo_id, codigo: item.items[i].articulo.codigo, codbar: item.items[i].articulo.codbar,
-              nombre: item.items[i].articulo.nombre, deposito_id: this.editado.deposito_id, unidad_id: item.items[i].articulo.unidad_id,
-              moneda_id: item.items[i].articulo.moneda_id, iva_id: item.items[i].articulo.iva_id, cantidad: Number(item.items[i].cantidad),
-              cantidadoriginal: Number(item.items[i].cantidad), stock: Number(item.items[i].cantidad), undstock: item.items[i].articulo.undstock,
-              sinstock: item.items[i].sinstock, costo: item.items[i].costo, precio: item.items[i].precio, preciooriginal: item.items[i].precio,
-              tasadescuento: item.items[i].tasadescuento, importedescuento: item.items[i].importedescuento, tasaproprecargo: 0,
-              total: item.items[i].total, texto: item.items[i].texto, vencimiento: item.items[i].vencimiento, adevolver: 0, padre_id: null,
-              undenvase: item.items[i].articulo.undenvase, escombo: item.items[i].articulo.escombo, ofeprecio: 0, ofetasdes: 0,
-              ofeenvio: 0, ofeunidades: 0, ofeestado: '', turno_id: null, decimales: item.items[i].articulo.precios[0].decimales,
-              preciomediocobro: false, loTengo: item.items[i].loTengo,
-            })
+          this.bonificacionmaxima = item.tercero.usersterceros[0].bonificacionmaxima
+          this.creditomaximo = item.tercero.usersterceros[0].creditomaximo
+        }
+        this.editado.cpr = 'FAC';
+        if (this.cfUser===1) { //EL USUARIO ES RESPONSABLE INSCRIPTO
+          if(rid===1 || rid===2 || rid===6 || rid===9 || rid===11) {
+            this.editado.letra = 'A'
+          } else {
+            this.editado.letra = 'B'
           }
+        } else if (this.cfUser===6) { //EL USUARIO ES MONOTRIBUTISTA
+          this.editado.letra = 'C'
+        }
+        this.dirItems.push(item.tercero.direcciones[0])
+        this.editado.direccion_id = this.dirItems[0].id
+        this.editado.deposito_id = this.depItems[0].id
+        this.electronica = !this.sucursalDemo
 
-          // reviso si hubieron cambios de precios
-          return HTTP().post('/revisocostosparafacturar', { arts: arts }).then(({ data }) => {
-            //Cargo los articulos del pepdido, pero primero tengo que ver si ya fueron cargados anteriormente y quedo saldo (estado = 'L')
-            //En ese caso tengo que buscar en vinuculados para sacar la diferencia
-            //busco comprobantes que imputaron a este pedido.
-            for (let i=0; i<=this.articulos.length-1; i++) {
-              let pos = this.articulos.findIndex(x => x.articulo_id === data[i].articulo_id)
-              if (pos!=-1) {
-                this.articulos[i].costo = data[pos].costo
-                this.articulos[i].precio = data[pos].precio
-              }
-            }
-            this.notificaOriginal = [{
-              comprobante_id: item.id,
-              estado: 'F'
-            }]
-            this.calculos()
+        //Cargo los articulos del pedido
+        this.articulos = [];
+        let arts = [];
+        for (let i=0; i<=item.items.length-1; i++) {
+          arts.push(item.items[i].articulo_id)
+          this.articulos.push({ 
+            id: null, articulo_id: item.items[i].articulo_id, codigo: item.items[i].articulo.codigo, codbar: item.items[i].articulo.codbar,
+            nombre: item.items[i].articulo.nombre, deposito_id: this.editado.deposito_id, unidad_id: item.items[i].articulo.unidad_id,
+            moneda_id: item.items[i].articulo.moneda_id, iva_id: item.items[i].articulo.iva_id, cantidad: Number(item.items[i].cantidad),
+            cantidadoriginal: Number(item.items[i].cantidad), stock: Number(item.items[i].cantidad), undstock: item.items[i].articulo.undstock,
+            sinstock: item.items[i].sinstock, costo: item.items[i].costo, precio: item.items[i].precio, preciooriginal: item.items[i].precio,
+            tasadescuento: item.items[i].tasadescuento, importedescuento: item.items[i].importedescuento, tasaproprecargo: 0,
+            total: item.items[i].total, texto: item.items[i].texto, vencimiento: item.items[i].vencimiento, adevolver: 0, padre_id: null,
+            undenvase: item.items[i].articulo.undenvase, escombo: item.items[i].articulo.escombo, ofeprecio: 0, ofetasdes: 0,
+            ofeenvio: 0, ofeunidades: 0, ofeestado: '', turno_id: null, decimales: item.items[i].articulo.precios[0].decimales,
+            preciomediocobro: false, loTengo: item.items[i].loTengo, 
+            desc1: item.items[i].articulo.precios[0].desc1, desc2: item.items[i].articulo.precios[0].desc2,
           })
+        }
+        // reviso si hubieron cambios de precios
+        return HTTP().post('/revisocostosparafacturar', { arts: arts }).then(({ data }) => {
+          //Cargo los articulos del pepdido, pero primero tengo que ver si ya fueron cargados anteriormente y quedo saldo (estado = 'L')
+          //En ese caso tengo que buscar en vinuculados para sacar la diferencia
+          //busco comprobantes que imputaron a este pedido.
+          for (let i=0; i<=this.articulos.length-1; i++) {
+            let pos = this.articulos.findIndex(x => x.articulo_id === data[i].articulo_id)
+            if (pos!=-1) {
+              this.articulos[i].costo = data[pos].costo
+              this.articulos[i].precio = data[pos].precio
+            }
+          }
+          this.notificaOriginal = [{
+            comprobante_id: item.id,
+            estado: 'F'
+          }]
+          this.cargoSaldosYValoresPendientes(this.itemActual.tercero_id).then( data  => { })
         })
-
       } else if (que === 'remfac') {
-
         this.editado = Object.assign({}, this.defaultItem)
         this.maletinesCli = []
-        return HTTP().post('comprobante', { id: item.id }).then(({ data }) => {
+        return HTTP().post('comprobanteventa', { id: item.id }).then(({ data }) => {
           this.itemActual = data.c
           item = data.c
           this.formTitle = 'Aplicar Remito sobre la Factura '+item.cpr+' - ('+item.tercero.nombre+')'
           this.coef = 1
-
           this.valores = []
           this.yaEnviado = false
-          this.searchTerceros = ''
           this.dialogRem = true
           this.dialogNdcFac = false
-          this.isLoadingTerceros = true // PARA QUE NO BUSQUE EL TERCERO, YA LO TENGO
           this.basadoEnCpr = true;      // SI EL CPR ESTA BASADO EN OTRO CPR. (FAC/PED, etc)
           this.basadoEnOtroCpr.push(item.id)
           this.editado.tercero_id = item.tercero_id
@@ -7439,9 +6559,10 @@ export default {
           this.editado.documento_id = item.documento_id
           this.editado.documentoCodigo  = item.tercero.documento.codigo
           this.editado.deposito_id = item.deposito_id
+          this.editado.ctacte = false
+          this.editado.facid = item.id
           this.remitoItems = item.items.length
           this.articulos = item.items
-        
           // LOS REMITOS SOBRE FACTURAS NO GENERAN STOCK
           let unidades = 0
           let peso = 0
@@ -7450,7 +6571,6 @@ export default {
             unidades += this.articulos[i].cantidad
             peso += this.articulos[i].articulo.peso*this.articulos[i].cantidad
           }
-
           this.editado.direccion_id = item.direccion_id
           this.editado.cpr = item.cpr
           this.editado.total = item.total
@@ -7461,34 +6581,150 @@ export default {
           this.editado.mediodepago_id = null
           let rid = item.tercero.responsable.id
           this.cfUser = this.responsable
-
           this.remitoTexto = 'Artículos: '+this.articulos.length+'\n'
           this.remitoTexto += 'Unidades: '+unidades+'\n'
-          if (item.vinculoHijo) {
-//          if (item.vinculoHijo[0].padre) {
-//            this.remitoTexto += 'Bultos: '+item.vinculoHijo[0].padre.bultos+'\n'
-//          }
-          }
           this.remitoTexto += 'Peso: '+this.roundTo(peso,2)+' Kgs'
         })
-
-//      } else if (que === 'facnot') {
-//        
-//        this.formTitle = 'Facturar Anotaciones de Ventas'
-//        this.electronica = !this.sucursalDemo
-
+      } else if (que === 'ndcfac') {
+        // Si ya realizo devolucion o anulacion, debo buscar en el/los NDC vinculadas para descontar
+        // las cantidades ya devueltas.
+        let aRestar = []
+        this.articulos = []
+        let ndcImputadas = 0
+        this.ndcTotal = 0
+        return HTTP().get('/buscondcvinculadas/'+this.itemActual.id ).then(({ data }) => {
+          if (data.length>0) {
+            for (let i=0; i<=data.length-1; i++) {
+              aRestar.push({
+                articulo_id: data[i].articulo_id,
+                cantidad: data[i].cantidad,
+                total: data[i].total
+              })
+              ndcImputadas += data[i].total
+            }
+          }
+          this.editado = Object.assign({}, this.defaultItem)
+          this.maletinesCli = []
+          return HTTP().post('comprobanteventa', { id: this.itemActual.id }).then(({ data }) => {
+            this.itemActual = data.c
+            for (let i=0; i<=this.itemActual.items.length-1; i++) {
+              for (let j=0; j<=aRestar.length-1; j++) {
+                if (aRestar[j].articulo_id == this.itemActual.items[i].articulo_id) {
+                  this.itemActual.items[i].cantidad -= Math.abs(aRestar[j].cantidad)
+                }
+              }
+              if (this.itemActual.items[i].cantidad != 0) {
+                this.articulos.push({
+                  id: this.itemActual.items[i].id, articulo_id: this.itemActual.items[i].articulo_id, 
+                  codigo: this.itemActual.items[i].articulo.codigo, codbar: this.itemActual.items[i].articulo.codbar,
+                  nombre: this.itemActual.items[i].articulo.nombre,
+                  deposito_id: this.itemActual.items[i].deposito_id,
+                  unidad_id: this.itemActual.items[i].unidad_id, moneda_id: this.itemActual.items[i].moneda_id,
+                  iva_id: this.itemActual.items[i].iva_id, cantidad: Number(this.itemActual.items[i].cantidad),
+                  cantidadoriginal: Number(this.itemActual.items[i].cantidad), stock: this.itemActual.items[i].stock,
+                  undstock: this.itemActual.items[i].articulo.undstock, sinstock: this.itemActual.items[i].sinstock,
+                  costo: this.itemActual.items[i].costo, precio: this.itemActual.items[i].precio, preciooriginal: this.itemActual.items[i].preciooriginal,
+                  tasadescuento: this.itemActual.items[i].tasadescuento, importedescuento: this.itemActual.items[i].importedescuento, tasaproprecargo: 0,
+                  total: this.itemActual.items[i].total, texto: '', vencimiento: '', adevolver: 0, padre_id: this.itemActual.items[i].articulo.padre_id,
+                  undenvase: this.itemActual.items[i].articulo.undenvase, escombo: false, ofeprecio: 0, ofetasdes: 0, ofeenvio: 0,
+                  ofeunidades: 0, ofeestado: '', turno_id: null, decimales: this.itemActual.items[i].articulo.precios[0].decimales,
+                  preciomediocobro: false, loTengo: false,
+                  desc1: this.itemActual.items[i].desc1, desc2: this.itemActual.items[i].desc2,
+                })
+              }
+            }
+            item = data.c
+            if (this.sucursalDemo) {
+              this.formTitle = 'Aplicar Nota de Crédito al Presupuesto'+item.cpr+' - ('+item.tercero.nombre+')'
+            } else {
+              this.formTitle = 'Aplicar Nota de Crédito a la Factura'+item.cpr+' - ('+item.tercero.nombre+')'
+            }
+            this.dialogNdcxDev = cual == 'Aplicar NDC x Devolución'? true: false
+            this.dialogRem = false
+            this.dialogNddFac = false
+            this.dialogNdcFac = true
+            this.basadoEnCpr = true;      // SI EL CPR ESTA BASADO EN OTRO CPR. (FAC/PED, etc)
+            this.basadoEnOtroCpr.push(item.id)
+            this.editado.tercero_id = item.tercero_id
+            this.editado.nombre = item.tercero.nombre
+            this.editado.responsableAbrev = item.tercero.responsable.abrev
+            this.editado.documento = item.tercero.documento.nombre
+            this.editado.documento_id = item.documento_id
+            this.editado.documentoCodigo  = item.tercero.documento.codigo
+            this.editado.deposito_id = item.deposito_id
+            this.editado.facid = item.id
+            this.editado.ctacte = item.ctacte
+            this.remitoItems = item.items.length
+            for (let i=0; i<=this.articulos.length-1; i++) {
+              this.articulos[i].adevolver = this.articulos[i].cantidad
+            }
+            this.editado.direccion_id = item.direccion_id
+            this.editado.cpr = item.cpr
+            this.editado.total = item.total
+            this.editado.rentabilidad = this.rentabilidad
+            this.editado.documentoNumero = item.tercero.cuit
+            this.editado.moneda_id = item.moneda_id
+            this.editado.texto = 'NDCFAC'
+            this.editado.observaciones = 'NDC'
+            this.cfUser = this.responsable
+            this.ndcTasaDescuento = 0
+            this.ndcTotal = 0
+            this.ndcEstado = ''
+            this.electronica = !this.sucursalDemo
+            for (let i=0; i<=item.descuentos.length-1; i++) {
+              if (item.descuentos[i].estado=='P') {
+                this.ndcTotal += item.descuentos[i].descuento
+                this.ndcTasaDescuento = this.roundTo(((item.descuentos[i].descuento*100)/item.descuentos[i].total),2)
+              }
+            }
+          })
+        })
+      } else if (que === 'nddfac') {
+        this.editado = Object.assign({}, this.defaultItem)
+        this.maletinesCli = []
+        return HTTP().post('comprobanteventa', { id: item.id }).then(({ data }) => {
+          this.itemActual = data.c
+          item = data.c
+          this.formTitle = 'Aplicar Nota de Debito a Factura'+item.cpr+' - ('+item.tercero.nombre+')'
+          this.articulos = []
+          this.dialogRem = false
+          this.dialogNdcFac = false
+          this.dialogNddFac = true
+          this.basadoEnCpr = true;      // SI EL CPR ESTA BASADO EN OTRO CPR. (FAC/PED, etc)
+          this.basadoEnOtroCpr.push(item.id)
+          this.editado.tercero_id = item.tercero_id
+          this.editado.nombre = item.tercero.nombre
+          this.editado.responsableAbrev = item.tercero.responsable.abrev
+          this.editado.documento = item.tercero.documento.nombre
+          this.editado.documento_id = item.documento_id
+          this.editado.documentoCodigo  = item.tercero.documento.codigo
+          this.editado.deposito_id = item.deposito_id
+          this.editado.ctacte = item.ctacte
+          this.editado.facid = item.id
+          this.remitoItems = item.items.length
+          this.articulos = []
+          this.editado.direccion_id = item.direccion_id
+          this.editado.cpr = item.cpr
+          this.editado.total = item.total
+          this.editado.rentabilidad = this.rentabilidad
+          this.editado.documentoNumero = item.tercero.cuit
+          this.editado.moneda_id = item.moneda_id
+          this.editado.texto = 'NDDFAC'
+          this.editado.observaciones = 'NDD'
+          let rid = item.tercero.responsable.id
+          this.cfUser = this.responsable
+          this.nddTasaDescuento = 0
+          this.nddTotal = 0
+          this.electronica = !this.sucursalDemo
+        })
       } else if (que === 'Recibos' ) {
-
         this.editado = Object.assign({}, this.defaultItem)
         this.basadoEnCpr = false
         this.formTitle = 'Nuevo Recibo - Sucursal ('+this.sucursal+')'+ ' - Caja ('+this.caja+')';
         this.reciboDeUnSoloComprobante = false
-
         if (item==null) {
-
           this.desdeAdmPedidos = false
           this.maletinesCli = []
-          this.searchTercerosRec = ''
           this.dialogRem = false
           this.dialogRec = true
           this.dialogNdcFac = false
@@ -7496,27 +6732,20 @@ export default {
           this.coef = 1
           this.pend = []
           this.valores = []
-          this.totCancelado = 0
+          this.totACobrar = 0
           this.totValores = 0
           this.valDiferencia = 0
           this.editado.cpr = 'REC'
           this.medpag[1].activo = false  // para recibos deshabilito tarj de cred.
           this.medpag[3].activo = false  // para recibos deshabilito ctacte
-        
         } else {
-          
           this.desdeAdmPedidos = true
           this.dialogRec = true
           this.basadoEnCpr = true   // SI EL CPR ESTA BASADO EN OTRO CPR. (FAC/PED, etc)
-
-          return HTTP().post('comprobante', { id: item }).then(({ data }) => {
+          return HTTP().post('comprobanteventa', { id: item }).then(({ data }) => {
             this.itemActual = data.c
             que = data.c
-            this.searchTercerosRec = ''
-            this.isLoadingTercerosRec = true // PARA QUE NO BUSQUE EL TERCERO, YA LO TENGO
             this.editado.cpr = 'REC'
-
-            debugger
             this.editado.tercero_id = que.tercero_id;
             this.editado.nombre = que.tercero.nombre;
             this.editado.responsableAbrev = que.tercero.responsable.abrev
@@ -7528,265 +6757,15 @@ export default {
             this.editado.moneda_id = que.moneda_id
           })
         }
-
-      } else if (que === 'REC' ) {      //RECIBO DE UN SOLO COMPROBANTE
-
-        this.editado = Object.assign({}, this.defaultItem)
-        this.maletinesCli = []
-        return HTTP().post('comprobante', { id: item.id }).then(({ data }) => {
-
-          this.itemActual = data.c
-          this.maletinesCli = data.m
-          this.maletinesCli = data.m==null?[]:data.m
-          if (this.hayMaletin()) {
-
-            this.msg.msgTitle = 'Maletín Pendiente'
-            let m = ''
-            m = 'Este Cliente tiene uno o varios Maltínes pendientes, deberás realizar el recibo '
-            m += 'desde el panel de Recibos. '
-            this.msg.msgBody = m
-            this.msg.msgVisible = true
-            this.msg.msgAccion = 'cliente con maletin pendiente'
-            this.msg.msgButtons = ['Aceptar']
-
-          } else {
-
-            item = data.c
-            this.formTitle                 = 'Cobro del Comprobante '+item.cpr+' - ('+item.tercero.nombre+')'
-            this.reciboDeUnSoloComprobante = true
-            this.searchTerceros            = ''
-            this.dialogRem                 = false
-            this.dialogRec                 = true
-            this.dialogNdcFac              = false
-            this.esFiscal                  = false;
-            this.coef                      = 1;
-  
-            this.afipSuc                   = this.sucursalFiscal;
-            this.isLoadingTercerosRec      = true   // PARA QUE NO BUSQUE EL TERCERO, YA LO TENGO
-            this.basadoEnCpr               = true;  // SI EL CPR ESTA BASADO EN OTRO CPR. (FAC/PED, etc)
-            this.basadoEnOtroCpr.push(item.id)
-  
-            this.editadoCpr                = this.editado.cpr
-            this.editadoNombre             = item.tercero.nombre
-            this.editado.id                = ''
-            this.editado.fecha             = moment().format('YYYY-MM-DD')
-            this.editado.perfiscal         = moment().format('YYYY-MM');
-            this.editado.cpr               = 'REC-R '+this.sucursalFiscal+'-00000000'
-            this.editado.tipo              = 'RC'
-            this.editado.user_id           = this.userId
-            this.editado.sucursal_id       = this.sucursal
-
-            debugger
-            this.editado.tercero_id        = item.tercero_id                           // ver
-            this.editado.comprobante_id    = 127
-            this.editado.documento_id      = item.documento_id
-            this.editado.documentoCodigo   = item.tercero.documento.codigo
-            this.editado.nombre            = item.tercero.nombre
-            this.editado.documentoNumero   = item.tercero.cuit
-            this.editado.mediodepago_id    = 4
-            this.editado.deposito_id       = null
-          //this.editado.vendedor_id       = item.vendedor_id
-            this.editado.moneda_id         = item.moneda_id
-            this.editado.direccion_id      = item.direccion_id
-            this.editado.tasadescuento     = 0
-            this.editado.importedescuento  = 0
-            this.editado.retiva            = 0
-            this.editado.retgan            = 0
-            this.editado.retib             = 0
-            this.editado.gravado           = 0
-            this.editado.exento            = 0
-            this.editado.iva               = 0
-            this.editado.total             = item.pendientes[0].pendiente
-            this.editado.rentabilidad      = 0
-            this.editado.regstk            = 0
-            this.editado.estado            = 'F'
-            this.editado.carga             = 'M'
-            this.editado.cae               = null
-            this.editado.cae_vencimiento   = null
-            this.editado.cae_codbar        = null
-            this.editado.observaciones     = 'COBRO'
-            this.editado.activo            = true
-            this.editado.items             = []
-            this.medpag[1].activo          = false  // para recibos deshabilito tarj de cred.
-            this.medpag[3].activo          = false  // para recibos deshabilito ctacte
-  
-            // TOTALES DEL PAGO
-            this.totCancelado  = item.pendientes[0].pendiente
-            this.totValores    = item.pendientes[0].pendiente
-            this.valDiferencia = 0
-  
-            this.pend = []
-            this.valores = []
-            this.cueItems = []
-            this.cueNewIems = []
-  
-            this.pend.push({
-              id: item.pendientes[0].id,
-              cpr: item.cpr,
-              vencimiento: moment(item.pendientes[0].vencimiento).format('YYYY-MM-DD'),
-              importe: item.pendientes[0].importe,
-              pendiente: item.pendientes[0].pendiente,
-              acancelar: item.pendientes[0].pendiente,
-              acciones: ''
-            })
-  
-//          if (this.maletinesCli.length==0) {
-              this.cargoValorInicialEnValores(item.id, item.pendientes[0].pendiente, 1)
-              this.medpag[0].total = item.pendientes[0].pendiente
-//          } else {
-//            if (this.hayMaletin.efectivo!=0) {
-//              this.cargoValorInicialEnValores(item.id, this.hayMaletin.efectivo, 1)
-//              this.medpag[0].total = this.hayMaletin.efectivo
-//            }
-//          }
-  
-            this.notificaEnBaseAOtro = [{
-              user_id_desde: this.userId,
-              user_id_hasta: item.tercero_id,
-              cpr: item.cpr,     // Esto es para que en la API busque el PEDIDO original del cliente y lo marque como finalizado
-              comprobante_id: 0, // En la API debe grabar el venta.id del nuevo comprobante 
-              tipo: 'F',
-              detalles: 'Pago de Factura',
-              estado: 'P'
-            }]
-            // Como es EnBaseAOtro, debo marcar el comprobnate padre indicando que ya esta procesado
-            this.notificaOriginal = [{
-              comprobante_id: item.id,
-              estado: 'F'
-            }]
-  
-            // AL SER UN COBRO NO NECESITO CARGAR CUENTA ALGUNA
-            // NI CHEQUES DE TERCEROS, EN TODO CASO SE INGRESAN
-            // LO QUE SI, SE CARGARAN CHEQUES, Y EN ESE MOMENTO
-            // TAMBIEN LOS LIBRADORES DE LOS MISMOS.
-          }
-        })
-
-      } else if (que === 'ndcfac') {
-
-        this.editado = Object.assign({}, this.defaultItem)
-        this.maletinesCli = []
-        return HTTP().post('comprobante', { id: item.id }).then(({ data }) => {
-          this.itemActual = data.c
-          item = data.c
-          if (this.itemActual.pendientes.length>0) {
-            if (this.itemActual.pendientes[0].pendiente<=0) {
-              this.msg.msgTitle = '¡Comprobante sin Saldo!'
-              let msg = 'No se puede imputar Notas de Créditos a este comprobante, '
-              msg += 'ya no dispone de saldo imputable.<br>'
-              this.msg.msgBody = msg
-              this.msg.msgVisible = true
-              this.msg.msgAccion = 'comprobante sin saldo'
-              this.msg.msgButtons = ['Aceptar']
-              this.cuentaYaAsignada = true
-              this.dialog = false
-              return
-            }
-          }
-
-          if (this.sucursalDemo) {
-            this.formTitle = 'Aplicar Nota de Crédito al Presupuesto'+item.cpr+' - ('+item.tercero.nombre+')'
-          } else {
-            this.formTitle = 'Aplicar Nota de Crédito a la Factura'+item.cpr+' - ('+item.tercero.nombre+')'
-          }
-          this.dialogNdcxDev = false
-          this.articulos = []
-          this.searchTerceros = ''
-          this.dialogRem = false
-          this.dialogNddFac = false
-          this.dialogNdcFac = true
-          this.isLoadingTerceros = true // PARA QUE NO BUSQUE EL TERCERO, YA LO TENGO
-          this.basadoEnCpr = true;      // SI EL CPR ESTA BASADO EN OTRO CPR. (FAC/PED, etc)
-          this.basadoEnOtroCpr.push(item.id)
-          this.editado.tercero_id = item.tercero_id
-          this.editado.nombre = item.tercero.nombre
-          this.editado.responsableAbrev = item.tercero.responsable.abrev
-          this.editado.documento = item.tercero.documento.nombre
-          this.editado.documento_id = item.documento_id
-          this.editado.documentoCodigo  = item.tercero.documento.codigo
-          this.editado.deposito_id = item.deposito_id
-          this.remitoItems = item.items.length
-          this.articulos = item.items
-          
-          let posiva = 0
-          for (let i=0; i<=this.articulos.length-1; i++) {
-            this.articulos[i].adevolver = this.articulos[i].cantidad
-          }
-
-          this.editado.direccion_id = item.direccion_id
-          this.editado.cpr = item.cpr
-          this.editado.total = item.total
-          this.editado.rentabilidad = this.rentabilidad
-          this.editado.documentoNumero = item.tercero.cuit
-          this.editado.moneda_id = item.moneda_id
-          this.editado.observaciones = 'NDC'
-          let rid = item.tercero.responsable.id
-
-          this.cfUser = this.responsable
-          //this.cfUser = Number(item.tercero.responsable.codigo)
-
-          this.ndcTasaDescuento = 0
-          this.ndcTotal = 0
-          this.electronica = !this.sucursalDemo
-        
-        })
-
-      } else if (que === 'nddfac') {
-
-        this.editado = Object.assign({}, this.defaultItem)
-        this.maletinesCli = []
-        return HTTP().post('comprobante', { id: item.id }).then(({ data }) => {
-          this.itemActual = data.c
-          item = data.c
-          this.formTitle = 'Aplicar Nota de Debito a Factura'+item.cpr+' - ('+item.tercero.nombre+')'
-          //this.dialogNddxDev = false
-          this.articulos = []
-          this.searchTerceros = ''
-          this.dialogRem = false
-          this.dialogNdcFac = false
-          this.dialogNddFac = true
-          this.isLoadingTerceros = true // PARA QUE NO BUSQUE EL TERCERO, YA LO TENGO
-          this.basadoEnCpr = true;      // SI EL CPR ESTA BASADO EN OTRO CPR. (FAC/PED, etc)
-          this.basadoEnOtroCpr.push(item.id)
-          this.editado.tercero_id = item.tercero_id
-          this.editado.nombre = item.tercero.nombre
-          this.editado.responsableAbrev = item.tercero.responsable.abrev
-          this.editado.documento = item.tercero.documento.nombre
-          this.editado.documento_id = item.documento_id
-          this.editado.documentoCodigo  = item.tercero.documento.codigo
-          this.editado.deposito_id = item.deposito_id
-          this.remitoItems = item.items.length
-          this.articulos = []
-
-          this.editado.direccion_id = item.direccion_id
-          this.editado.cpr = item.cpr
-          this.editado.total = item.total
-          this.editado.rentabilidad = this.rentabilidad
-          this.editado.documentoNumero = item.tercero.cuit
-          this.editado.moneda_id = item.moneda_id
-          this.editado.observaciones = 'NDD'
-          let rid = item.tercero.responsable.id
-
-          this.cfUser = this.responsable
-          //this.cfUser = Number(item.tercero.responsable.codigo)
-          this.nddTasaDescuento = 0
-          this.nddTotal = 0
-          this.electronica = !this.sucursalDemo
-        
-        })
-
       } else if ( que.cpr.substring(0,3)=='PED' || que.cpr.substring(0,3)=='RTV' ) {
-
         this.editado = Object.assign({}, this.defaultItem)
         this.maletinesCli = []
-        return HTTP().post('comprobante', { id: que.id }).then(({ data }) => {
+        return HTTP().post('comprobanteventa', { id: que.id }).then(({ data }) => {
           this.itemActual = data.c
           que = data.c
-
           if (data.c.vendedor!=undefined) {
             this.editado.vendedor = que.vendedor
           }
-
           // TENGO QE VER SI EL CLIENTE TIENE O NO CUENTA CORRIENTE
           // SI TIENE, LA SUGUIERO COMO PRIORIDAD
           this.electronica = !this.sucursalDemo
@@ -7797,8 +6776,7 @@ export default {
             this.formTitle += ' el Retiro '+que.cpr+' - ('+que.tercero.nombre+')'
             this.facRet = que.id
           }
-          this.searchTerceros = ''
-          this.isLoadingTerceros = true // PARA QUE NO BUSQUE EL TERCERO, YA LO TENGO
+          this.encontroElCliente = true
           this.basadoEnCpr = true;   // SI EL CPR ESTA BASADO EN OTRO CPR. (FAC/PED, etc)
           this.editado.tercero_id = que.tercero_id;
           this.editado.nombre = que.tercero.nombre;
@@ -7809,15 +6787,18 @@ export default {
           this.editado.mediodepago_id = que.mediodepago_id
           this.editado.documentoNumero = que.tercero.cuit
           this.editado.moneda_id = que.moneda_id
+          this.editado.facid = que.id
+          this.basadoEnOtroCpr.push(que.id)
           let rid = que.tercero.responsable.id
-          
-          //this.cfUser = Number(que.tercero.responsable.codigo)
-          
           this.cfUser = this.responsable
-          this.ctacte = false
+          this.editado.ctacte = false
+          this.editado.vencimiento = moment().format('YYYY-MM-DD')
           if (que.tercero.usersterceros.length>0) {
-            this.ctacte = que.tercero.usersterceros[0].ctacte
+            this.editado.ctacte = que.tercero.usersterceros[0].ctacte
             this.diasvenc = que.tercero.usersterceros[0].diasvenc
+            if (this.editado.ctacte&&this.diasvenc>0) {
+              this.editado.vencimiento = moment(new Date).add(this.diasvenc, 'd').format('YYYY-MM-DD')
+            }
             this.bonificacionmaxima = que.tercero.usersterceros[0].bonificacionmaxima
             this.creditomaximo = que.tercero.usersterceros[0].creditomaximo
           }
@@ -7836,7 +6817,6 @@ export default {
           this.editado.deposito_id = this.depItems[0].id
           this.editado.texto = this.sucursalDemo ? 'PREPED' : 'FAC'+que.cpr.substring(0,3) // 'FACPED' o 'FACRTV'
           this.editado.comprobante_id = 126
-
           this.editado.vendedor.id = que.vendedor_id
           this.editado.observaciones = que.observaciones
           this.editado.viaje_id = que.viaje_id
@@ -7850,9 +6830,7 @@ export default {
             arts.push(que.items[i].articulo_id)
             ctt += que.items[i].cantidad
           }
-
           if (que.items.length>0&&ctt==0) {
-
             this.msg.msgTitle = 'Comprobante sin Unidades!'
             let msg = '¡Este comprobante no posee unidades en sus items!<br>'
             msg += 'No se puede realizar este comprobante.<br>'
@@ -7863,10 +6841,7 @@ export default {
             this.cuentaYaAsignada = true
             this.dialog = false
             return
-
           } else {
-
-            // huguito
             // actualizo precios si corresponde
             return HTTP().post('/articuloz', {
               search: arts,
@@ -7874,30 +6849,27 @@ export default {
               vinculosPadresAll: this.$store.state.vinculosPadresAll,
               proveedor: 0, stockProv: false, grupo: '', marca: '', userex: null, soloArtComprados: this.$store.state.soloArtComprados, descuentos: this.descuentos,
               dolar: this.$store.state.dolar, activos: true, limit: 300 }).then(({ data })=>{
-
               let data1 = data
               let loTengo = false
-
-            //  return HTTP().post('/revisocostosparafacturar', { arts: arts }).then(({ data }) => {
-
-                //Cargo los articulos del pedido, pero primero tengo que ver si ya fueron cargados anteriormente y quedo saldo (estado = 'L')
-                //En ese caso tengo que buscar en vinuculados para sacar la diferencia
-                //busco comprobantes que imputaron a este pedido.
-
+              //Cargo los articulos del pedido, pero primero tengo que ver si ya fueron cargados anteriormente y quedo saldo (estado = 'L')
+              //En ese caso tengo que buscar en vinuculados para sacar la diferencia
+              //busco comprobantes que imputaron a este pedido.
               this.articulos = [];
               for (let i=0; i<=que.items.length-1; i++) {
                 if (que.items[i].cantidad!=0) {
                   let pos = data1.findIndex(x => x.id === que.items[i].articulo_id)
+                  // vuelvo a calcular el precio, porque el proveedor lo puede haber cambiado
+                  // desde que se hizo el pedido y se factura
                   if (pos!=-1) {
                     let pre = data1[pos].precios[0].precio
-                    let tde = data1[pos].precios[0].ofetasadescuento||0
+                    let tde = que.items[i].tasadescuento
                     let ctt = que.items[i].cantidad
                     let ide = pre*(tde/100)
                     loTengo = data1[pos].precios[0].loTengo
                     que.items[i].costo = pre
                     que.items[i].precio = pre
                     que.items[i].total = (pre-ide)*(ctt)
-                    que.items[i].tasadescuento = tde
+                    //que.items[i].tasadescuento = tde
                     que.items[i].importedescuento = (ide*ctt)
                   }
                   this.articulos.push({ 
@@ -7912,7 +6884,6 @@ export default {
                     iva_id: que.items[i].articulo.iva_id,
                     cantidad: Number(que.items[i].cantidad),
                     cantidadoriginal: Number(que.items[i].cantidad), stock: Number(que.items[i].cantidad), undstock: que.items[i].articulo.undstock,
-                  //sinstock: que.items[i].articulo.precios[0].sinstock, 
                     costo: que.items[i].costo,
                     precio: que.items[i].precio,
                     preciooriginal: que.items[i].precio,
@@ -7935,10 +6906,11 @@ export default {
                     decimales: 2, //que.items[i].articulo.precios[0].decimales,
                     preciomediocobro: false,
                     loTengo: loTengo,
+                    desc1: que.items[i].desc1,
+                    desc2: que.items[i].desc2,
                   })
                 }
               }
-
               return HTTP().get('/buscocomprobantesvinculados/'+que.id ).then(({ data }) => {
                 if (data.length>0) {
                   for (let i=0; i<=data.length-1; i++) {
@@ -7957,19 +6929,7 @@ export default {
                     }
                   }
                 }
-
                 // Como es EnBaseAOtro, dejo listo el array para luego notificarlo, SOLO PEDIDOS
-                if (que.cpr.substring(0,3)=='PED') {
-                  this.notificaEnBaseAOtro = [{
-                    user_id_desde: this.userId,
-                    user_id_hasta: que.tercero_id,
-                    cpr: que.cpr,       // Esto es para que en la API busque el PEDIDO original del cliente y lo marque como finalizado 
-                    comprobante_id: 0,  // En la API debe grabar el venta.id del nuevo comprobante 
-                    tipo: 'F',
-                    detalles: que.cpr.substring(0,3)=='PED'?'Pedido Facturado':'Retiro Facturado',
-                    estado: 'P'
-                  }]
-                }
                 if (que.cpr.substring(0,3)=='PED' || que.cpr.substring(0,3)=='RTV') {
                   // Como es EnBaseAOtro, debo marcar el comprobnate padre indicando que ya esta procesado
                   this.notificaOriginal = [{
@@ -7977,25 +6937,26 @@ export default {
                     estado: 'F'
                   }]
                 }
-
                 this.dialog = true
-                this.cargoSaldosYValoresPendientes(que.tercero_id)
-                if (this.ctacte) {
-                  this.medpag[3].activo = true
-                  this.medpag[3].total = this.editado.total
-                }
-                if (que.cpr.substring(0,3)=='PED' && que.cpr.substring(11,20)=='00000001' && !this.ctacte) { 
-                  this.msg.msgTitle   = 'Aviso'
-                  let m = 'Vas a Facturar el primer pedido de este Cliente.<br>';
-                  m += 'En forma predeterminada el sistema va a realizar una Factura de ';
-                  m += 'Contado.<br>';
-                  m += 'Si deseas cambiar esta condición debes activar <i>Cuenta Corriente</i>';
-                  m += ' en la ficha de este Cliente<br>.';
-                  this.msg.msgBody    = m;
-                  this.msg.msgVisible = true
-                  this.msg.msgAccion  = 'cambiar condicion de venta'
-                  this.msg.msgButtons = ['Aceptar']
-                }
+                //this.cargoSaldosYValoresPendientes(que.tercero_id)
+                this.cargoSaldosYValoresPendientes(this.itemActual.tercero_id).then( data => {
+                  if (this.editado.ctacte) {
+                    this.medpag[3].activo = true
+                    this.medpag[3].total = this.editado.total
+                  }
+                  if (que.cpr.substring(0,3)=='PED' && que.cpr.substring(11,20)=='00000001' && !this.editado.ctacte) { 
+                    this.msg.msgTitle   = 'Aviso'
+                    let m = 'Vas a Facturar el primer pedido de este Cliente.<br>';
+                    m += 'En forma predeterminada el sistema va a realizar una Factura de ';
+                    m += 'Contado.<br>';
+                    m += 'Si deseas cambiar esta condición debes activar <i>Cuenta Corriente</i>';
+                    m += ' en la ficha de este Cliente<br>.';
+                    this.msg.msgBody    = m;
+                    this.msg.msgVisible = true
+                    this.msg.msgAccion  = 'cambiar condicion de venta'
+                    this.msg.msgButtons = ['Aceptar']
+                  }
+                })
               })
             })
           }
@@ -8005,18 +6966,10 @@ export default {
 
     administracionPedidos() {
       this.dialogAdministracionPedidos = true
-
       this.filtrosEstadosCprs[0].ctt = 0  //todos
       this.filtrosEstadosCprs[1].ctt = 0  //facturas
-      this.filtrosEstadosCprs[2].ctt = 0  //ndd
-      this.filtrosEstadosCprs[3].ctt = 0  //ndc
-      this.filtrosEstadosCprs[4].ctt = 0  //rem
-
-      debugger
+      this.filtrosEstadosCprs[2].ctt = 0  //rem
       return HTTP().post('/viajeadministracion', { viaje_id: this.itemActualViaje.id }).then(({ data }) => {
-
-        debugger
-
         // pueden haber recorridos sin pedidos, dejo en rec solo los que tuvieron pedidos
         let rec = []
         let cpr = ''
@@ -8024,8 +6977,8 @@ export default {
         let clave1 = ''
         let clave2 = ''
         this.viajesStatics = { 
-          a: { ped: 0,fac: 0, ndc: 0 }, 
-          b: { ped: 0,fac: 0, ndc: 0 }, 
+          a: { ped: 0,fac: 0 }, 
+          b: { ped: 0,fac: 0 }, 
           r: 0
         }
         this.viajesStaticsSay = 0
@@ -8039,22 +6992,14 @@ export default {
 
         // agrupo y armo los cprsA y cprsB
         for (let i=0; i<=data.viajes.length-1; i++) {
-
           let unds = 0
           for (let j=0; j<=data.viajes[i].items.length-1; j++) {
             unds += data.viajes[i].items[j].cantidad
           }
           if (unds!=0) {
-
             clave1 = data.viajes[i].cpr+data.viajes[i].tercero_id
             let aob = 'a'
-
-            // ¡IMPORTANTE! hay dos maletines, el que se carga para clientes ex/us, via recibos ( recibo: [] )
-            // y el que se carga para clientes ex/nus, no tienen recibos y va en maletin[] fuera de recibo: []
-            // y solo se carga para cprsA
-
             if (clave1!=clave2||clave2=='') {
-
               let lista = null
               if (data.viajes[i].tercero!=null) {
                 if (data.viajes[i].tercero.usersterceros!=null) {
@@ -8069,7 +7014,6 @@ export default {
                   }
                 }
               }
-
               rec.push({
                 tercero: data.viajes[i].tercero,
                 usaelsistema: data.viajes[i].tercero.user.usaelsistema,
@@ -8078,65 +7022,32 @@ export default {
                 cprsA: {
                   pedido: data.viajes[i],
                   factura: { id:null, cpr:'PENDIENTE', total:null, pendiente:null },
-                  ndc: { id:null, cpr:'?', total:null },
-                  ndd: { id:null, cpr:'?', total:null },
-                  recibo: [],
-                //recibo: { id:null, cpr:'PENDIENTE', total:null, maletin:null },
-                //maletin: [0,0,0],
                   demo: data.viajes[i].sucursal.sucursaldemo
                 },
                 cprsB: {
                   pedido: null,
                   factura: { id:null, cpr:'PENDIENTE', total:null, pendiente:null },
-                  ndc: { id:null, cpr:'?', total:null },
-                  ndd: { id:null, cpr:'?', total:null },
-                  recibo: [],
-                //recibo: { id:null, cpr:'PENDIENTE', total:null, maletin:null },
                   demo: false,
                 },
               })
-
               this.viajesStatics.a.ped ++
-
               clave2 = data.viajes[i].cpr+data.viajes[i].tercero_id
-
               cpr = rec[rec.length-1].cprsA.pedido.cpr
               cpr = cpr.substring(0,1)+cpr.substring(2,3)+cpr.substring(8,11)+cpr.substring(13,19)
               rec[rec.length-1].cprsA.pedido.cpr = cpr
-
             } else {
-
               rec[rec.length-1].cprsB.pedido = data.viajes[i] 
               rec[rec.length-1].cprsB.demo = data.viajes[i].sucursal.sucursaldemo
-
               cpr = rec[rec.length-1].cprsB.pedido.cpr
               cpr = cpr.substring(0,1)+cpr.substring(2,3)+cpr.substring(8,11)+cpr.substring(13,19)
               rec[rec.length-1].cprsB.pedido.cpr = cpr
-
               this.viajesStatics.b.ped ++
-
               aob = 'b'
-
             }
-
-            // Los maletines para clientes ex/nus se leen desde la tabla viajes_recorridos_maletin
-            // y se cargan en rec[i].cprsA.maletin[]
-            /*
-            if (data.viajes[i].recorrido!=null) {
-              if (data.viajes[i].recorrido.maletin[0]!=undefined) {
-                rec[rec.length-1].cprsA.maletin[0] = data.viajes[i].recorrido.maletin[0].efectivo+data.viajes[i].recorrido.maletin[0].efectivob
-                rec[rec.length-1].cprsA.maletin[1] = data.viajes[i].recorrido.maletin[0].cheques+data.viajes[i].recorrido.maletin[0].chequesb
-                rec[rec.length-1].cprsA.maletin[2] = data.viajes[i].recorrido.maletin[0].otros+data.viajes[i].recorrido.maletin[0].otrosb
-              }
-            }
-            */
-
-            for (let z=0; z<=4; z++) {
+            for (let z=0; z<=2; z++) {
               this.filtrosEstadosCprs[z].ctt ++
             }
-
             if (data.viajes[i].vinculoPadre.length>0) {
-
               let p = rec.length-1
               let cprid = data.viajes[i].vinculoPadre[0].hijo.comprobante_id
               cpr = data.viajes[i].vinculoPadre[0].hijo.cpr
@@ -8145,142 +7056,59 @@ export default {
                 rec[p].cprsA.factura.id = data.viajes[i].vinculoPadre[0].hijo.id
                 rec[p].cprsA.factura.cpr = cpr
                 rec[p].cprsA.factura.total = data.viajes[i].vinculoPadre[0].hijo.total
-                rec[p].cprsA.factura.pendiente = data.viajes[i].vinculoPadre[0].hijo.pendientes[0].pendiente
                 this.viajesStatics.a.fac ++
                 this.filtrosEstadosCprs[1].ctt--
               } else {
                 rec[p].cprsB.factura.id = data.viajes[i].vinculoPadre[0].hijo.id
                 rec[p].cprsB.factura.cpr = cpr
                 rec[p].cprsB.factura.total = data.viajes[i].vinculoPadre[0].hijo.total
-                rec[p].cprsB.factura.pendiente = data.viajes[i].vinculoPadre[0].hijo.pendientes[0].pendiente
                 this.viajesStatics.b.fac ++
                 this.filtrosEstadosCprs[1].ctt--
               }
-
               if (data.viajes[i].vinculoPadre[0].hijos.length>0) {
                 for (let j=0; j<=data.viajes[i].vinculoPadre[0].hijos.length-1; j++) {
                   let cprid = data.viajes[i].vinculoPadre[0].hijos[j].hijo.comprobante_id
                   anu = data.viajes[i].vinculoPadre[0].hijos[j].hijo.estado=='A'?true:false
                   cpr = data.viajes[i].vinculoPadre[0].hijos[j].hijo.cpr
                   cpr = cpr.substring(0,1)+cpr.substring(2,3)+cpr.substring(8,11)+cpr.substring(13,19)
-
                   if (cprid==125) {
                     rec[p].remito.id = data.viajes[i].vinculoPadre[0].hijos[j].hijo.id
                     rec[p].remito.cpr = cpr
                     rec[p].remito.total = data.viajes[i].vinculoPadre[0].hijos[j].hijo.total
                     this.viajesStatics.r ++
-                  } else if (cprid==2||cprid==7||cprid==12||cprid==52) {
-                    if (aob=='a') {
-                      rec[p].cprsA.ndd.id = data.viajes[i].vinculoPadre[0].hijos[j].hijo.id
-                      rec[p].cprsA.ndd.cpr = cpr
-                      rec[p].cprsA.ndd.total = data.viajes[i].vinculoPadre[0].hijos[j].hijo.total
-                      rec[p].cprsA.ndd.pendiente = data.viajes[i].vinculoPadre[0].hijos[j].hijo.pendientes[0].pendiente
-                    } else {
-                      rec[p].cprsB.ndd.id = data.viajes[i].vinculoPadre[0].hijos[j].hijo.id
-                      rec[p].cprsB.ndd.cpr = cpr
-                      rec[p].cprsB.ndd.total = data.viajes[i].vinculoPadre[0].hijos[j].hijo.total
-                      rec[p].cprsB.ndd.pendiente = data.viajes[i].vinculoPadre[0].hijos[j].hijo.pendientes[0].pendiente
-                    }
-                    this.filtrosEstadosCprs[2].ctt--
-                  } else if (cprid==3||cprid==8||cprid==13||cprid==53) {
-                    if (aob=='a') {
-                      rec[p].cprsA.ndc.id = data.viajes[i].vinculoPadre[0].hijos[j].hijo.id
-                      rec[p].cprsA.ndc.cpr = cpr
-                      rec[p].cprsA.ndc.total = data.viajes[i].vinculoPadre[0].hijos[j].hijo.total
-                      rec[p].cprsA.ndc.pendiente = data.viajes[i].vinculoPadre[0].hijos[j].hijo.pendientes[0].pendiente
-                      this.viajesStatics.a.ndc ++                      
-                    } else {
-                      rec[p].cprsB.ndc.id = data.viajes[i].vinculoPadre[0].hijos[j].hijo.id
-                      rec[p].cprsB.ndc.cpr = cpr
-                      rec[p].cprsB.ndc.total = data.viajes[i].vinculoPadre[0].hijos[j].hijo.total
-                      rec[p].cprsB.ndc.pendiente = data.viajes[i].vinculoPadre[0].hijos[j].hijo.pendientes[0].pendiente
-                      this.viajesStatics.b.ndc ++
-                    }
-                    this.filtrosEstadosCprs[3].ctt--
-
-                  } else if ((cprid==4||cprid==9||cprid==15||cprid==54)&&!anu) {
-
-                    let maletin = 0
-                    for (let k=0; k<=data.viajes[i].vinculoPadre[0].hijos[j].hijo.valoresIngresos.length-1; k++) {
-                      if (data.viajes[i].vinculoPadre[0].hijos[j].hijo.valoresIngresos[k].chequeado) {
-                        maletin += data.viajes[i].vinculoPadre[0].hijos[j].hijo.valoresIngresos[k].importe
-                      }
-                    }
-                    if (aob=='a') {
-                      rec[p].cprsA.recibo.push({
-                        id: data.viajes[i].vinculoPadre[0].hijos[j].hijo.id,
-                        cpr: cpr,
-                        total: data.viajes[i].vinculoPadre[0].hijos[j].hijo.total,
-                        maletin: maletin
-                      })
-                    } else {
-                      rec[p].cprsB.recibo.push({
-                        id: data.viajes[i].vinculoPadre[0].hijos[j].hijo.id,
-                        cpr: cpr,
-                        total: data.viajes[i].vinculoPadre[0].hijos[j].hijo.total,
-                        maletin: maletin
-                      })
-                    }
                   }
                 }
-
-                if (aob=='a') {
-                  if (rec[p].cprsA.recibo.length>1) {
-                    let totRec = 0
-                    for (let z=0; z<=rec[p].cprsA.recibo.length-1; z++) {
-                      totRec += rec[p].cprsA.recibo[z].total
-                    }
-                    rec[p].cprsA.recibo.push({ id: null, cpr: 'TOTAL', total: totRec, maletin: null })
-                  }
-                } else {
-                  if (rec[p].cprsB.recibo.length>1) {
-                    let totRec = 0
-                    for (let z=0; z<=rec[p].cprsB.recibo.length-1; z++) {
-                      totRec += rec[p].cprsB.recibo[z].total
-                    }
-                    rec[p].cprsB.recibo.push({ id: null, cpr: 'TOTAL', total: totRec, maletin: null })
-                  }
-                }
-
               }
             }
           }
         }
-
         // calculo los remitos faltantes, ya que en casos de a y b debe descontar * 2
         for (let i=0; i<=rec.length-1; i++) {
           if (rec[i].remito.id!=null) {
             if (rec[i].cprsA.factura.id!=null) {
-              this.filtrosEstadosCprs[4].ctt--
+              this.filtrosEstadosCprs[2].ctt--
             }
             if (rec[i].cprsB.factura.id!=null) {
-              this.filtrosEstadosCprs[4].ctt--
+              this.filtrosEstadosCprs[2].ctt--
             }
           }
         }
-        for (let i=0; i<=4; i++) {
+        for (let i=0; i<=2; i++) {
           this.filtrosEstadosCprs[i].ctt=this.filtrosEstadosCprs[i].ctt==0?'0':this.filtrosEstadosCprs[i].ctt
         } 
-
         let remitos = this.viajesStatics.a.ped>this.viajesStatics.b.ped?this.viajesStatics.a.ped:this.viajesStatics.b.ped
         let aRealizar = this.viajesStatics.a.ped+this.viajesStatics.b.ped+remitos
         let realizado = this.viajesStatics.a.fac+this.viajesStatics.b.fac+this.viajesStatics.r
         this.viajesStaticsSay = this.formatoImporte((realizado*100)/aRealizar);
-
         this.itemsRecorrido = rec
         this.iRAll = rec
         this.analisisDePedidos = []
         this.totalPedidos = 0
-
         let pos = this.filtrosEstadosCprs.findIndex(x=>x.tip==this.filtroEstadoCprsSel)
         if (pos!=-1) {
           this.setFiltroEstadoCprs(this.filtrosEstadosCprs[pos])
         }
-
-        debugger
         return HTTP().post('/haystockparalospedidos', { suc: this.sucursal }).then(({ data }) => {
-
-          debugger
           for (let i=0; i<= data.length-1; i++) {
             this.analisisDePedidos.push({
               articulo_id: data[i].articulo_id,
@@ -8295,10 +7123,6 @@ export default {
           }
         })
       })
-    },
-
-    selMaletin(data) {
-      this.verOSelMaletines = 'S'
     },
 
     verMaletines(accion) {
@@ -8374,77 +7198,40 @@ export default {
 
     viajeListoParaReparto() {
       return HTTP().post('/viajechequeotodofacturado',{ viaje_id: this.itemActualViaje.id }).then(({data})=>{
-
-        debugger
         this.msg.msgTitle   = 'Enviar Viaje a Reparto'
         let m = ''
         let faltan = false
         m += '<br><b>Comprobantes Emitidos</b><br>'
         m += '<b>'+data.ped+'</b> pedidos, <b>'+data.ped+'</b> facturas, <b>'+data.ndd+'</b> Notas de Débito, '
         m += '<b>'+data.ndc+'</b> Notas de Crédito y <b>'+data.rem+'</b> Remitos.<br><br>'
-
-        /*
-        if (data.ped>data.fac) {
-          m += '<b>¡Hay Pedidos sin Facturar!</b><br>'
-          m += '<b>ATENCION<br>¡Si no has facturado todos los pedidos podrás hacerlo mas tarde.<br>'
-          m += 'Pero es necesario que este todo facturado para que luego el repartidor pueda realizar la cobranza!.</b><br><br>'
-          faltan = true
-        }
-        if (data.ndc<data.lis) {
-          m += '<b>¡Hay descuentos no aplicados!</b><br>'
-          //faltan = true
-          if (data.lis==1) {
-            m += data.lis+' cliente tiene descuentos asignados por lista de precios,<br>'
-            m += 'pero no hay NDC emitidas.'
-          } else {
-            m += data.lis+' clientes tienen listas asignadas con descuentos.<br>'
-            if (data.ndc<1) {
-              m += 'Pero no hay NDCs emitidas.'
-            } else {
-              m += 'Pero solo hay '+data.ndc+ ' NDCs emitidas.'
-            }
-          }
-          m += '<br>(Esto si utilizas NDCs para realizar descuentos)'
-          m += '<br>'
-        }
-        if (data.rem<data.fac/2) {
-          m += '<b>¡Faltan Remitos!</b><br>'
-          faltan = true
-        }
-        */
         if (faltan) {
           m += '<br><b>ATENCION<br></b>¡Faltan comprobantes!.<br>'
           m += 'Es necesario que estén todos los comprobantes emitidos, el repartidor necesitará de ellos para iniciar el viaje.<br>'
           m += 'No obstante puedes dejar el viaje listo para reparto y luego emitir los comprobantes faltantes.<br>'
         }
-        if (data.ndc<data.lis) {
-          m += '<b>¡Hay descuentos no aplicados!</b><br>'
-          //faltan = true
-          if (data.lis==1) {
-            m += data.lis+' operaciones tiene descuentos asignados por lista de precios,<br>'
-            m += 'pero no hay NDC emitidas.'
+        if (data.lis>0) {
+          if (data.ndc<data.lis) {
+            m += '<b>¡Tienes descuentos por aplicar!</b><br>'
+            m += '<b>'+data.lis+'</b> Operacion/es a aplicar descuento/s.<br>'
+            m += '<b>'+data.ndc+'</b> NDC emitidas.<br><br>'
+            m += 'Los montos de NDC dependerán de como paguen los Clientes.<br>'
           } else {
-            m += data.lis+' operaciones tienen listas asignadas con descuentos.<br>'
-            if (data.ndc<1) {
-              m += 'Pero no hay NDCs emitidas.'
-            } else {
-              m += 'Pero solo hay '+data.ndc+ ' NDCs emitidas.'
-            }
+            m += '<b>¡Todas las NDC estan emitidas!</b><br>'
+            m += '<b>'+data.lis+'</b> Operacion/es a aplicar descuento/s.<br>'
+            m += '<b>'+data.ndc+'</b> NDC emitidas.<br>'
           }
-          m += '<br>(Esto si utilizas NDCs para realizar descuentos)'
-          m += '<br>'
         }
+        m += '<br>'
+
         if (data.rem<data.fac/2) {
           m += '<b>¡Faltan Remitos!</b><br>'
           faltan = true
         }
-
         if (faltan) {
           m += '<br><b>ATENCION<br></b>¡Faltan comprobantes!.<br>'
           m += 'Es necesario que estén todos los comprobantes emitidos, el repartidor necesitará de ellos para iniciar el viaje.<br>'
           m += 'No obstante puedes dejar el viaje listo para reparto y luego emitir los comprobantes faltantes.<br>'
         }
-
         m += '<br>¿Confirmas dejar este viaje listo para su Reparto?<br><br>'
         this.msg.msgBody    = m
         this.msg.msgVisible = true
@@ -8454,6 +7241,8 @@ export default {
     },
 
     cprDesdeAdminDePedidos(item, cpr, div) {
+
+      debugger
       this.cprDesdeReparto = true
       let id = null
       if (cpr=='FAC') {
@@ -8484,13 +7273,9 @@ export default {
       } else if (cpr=='REM') {
         this.nuevo('remfac', { id: id} )
       } else if (cpr=='REC') {
-        //this.nuevo('REC', { id: id} )
-
         return HTTP().get('/tercero/'+item.tercero.id+'/1/false/'+this.sucursal).then(({ data }) => {
           this.itemActualCliente = data
           this.maletinesCli = data.maletin==null?[]:data.maletin
-          
-          debugger
           this.setDatosRecibo(this.hayMaletin()?this.maletinesCli:null)
           this.nuevo('Recibos', id )
         })
@@ -8519,40 +7304,6 @@ export default {
       } else {
         return true
       }
-    },
-
-    faltanRecibos(item,aob) {
-      let totCpr = aob=='A'?item.cprsA.factura.total:item.cprsB.factura.total
-      let totRec = 0
-      let totNdd = 0
-      let totNdc = 0
-
-      if (aob=='A') {
-        if (item.cprsA.recibo) {
-          for (let i=0; i<=item.cprsA.recibo.length-1; i++) {
-            totRec += this.roundTo(item.cprsA.recibo[i].total,2)
-          }
-        }
-        if (item.cprsA.ndd) {
-          totNdd += this.roundTo(item.cprsA.ndd.total,2)
-        }
-        if (item.cprsA.ndc) {
-          totNdc += this.roundTo(item.cprsA.ndc.total,2)
-        }
-      } else {
-        if (item.cprsB.recibo) {
-          for (let i=0; i<=item.cprsB.recibo.length-1; i++) {
-            totRec += this.roundTo(item.cprsB.recibo[i].total,2)
-          }
-        }
-        if (item.cprsB.ndd) {
-          totNdd += this.roundTo(item.cprsB.ndd.total,2)
-        }
-        if (item.cprsB.ndc) {
-          totNdc += this.roundTo(item.cprsB.ndc.total,2)
-        }
-      }
-      return (totCpr+totNdd+totNdc)>totRec?true:false
     },
 
     viajeEnReparto() {
@@ -8666,53 +7417,8 @@ export default {
       })
     },
 
-    irAlRemito(item) {
-      return HTTP().get('/buscoremitovinculado/'+item.id ).then(({ data }) => {
-        if (data) {
-          this.selectTipoDeComprobante('Remitos', true)
-        }
-      })
-    },
-
-    controlNdc(item) {
-      return HTTP().post('comprobante', { id: item.id }).then(({ data }) => {
-        this.itemActual = data.c
-        item = data.c
-        return new Promise(function(fullfill, reject) {
-          return HTTP().get('/buscondcvinculadas/'+item.id ).then(({ data }) => {
-            let disp = []
-            if (data.length>0) {
-              for (let i=0; i<=data.length-1; i++) {
-                disp.push({ articulo_id: data[i].articulo_id, cantidad: data[i].cantidad, total: data[i].total })
-              }
-            }
-            for (let i=0; i<=item.items.length-1; i++) {
-              for (let j=0; j<=disp.length-1; j++) {
-                if (disp[j].articulo_id == item.items[i].articulo_id) {
-                  disp[j].cantidad += item.items[i].cantidad
-                }
-              }
-            }
-            // ahora si algun item de disp.cantidad es > 0 puedo hacer ndc.
-            let lDone = false
-            if (disp.length>0) {
-              for (let i=0; i<=disp.length-1; i++) {
-                if (disp[i].cantidad > 0) {
-                  lDone = true
-                }
-              }
-            } else {
-              lDone = true
-            }
-            fullfill( lDone )
-          })
-        })
-      })
-
-    },
-
-    setComoPaga(cual) {
-      if (this.editado.cpr.substring(0,3)=='FAC'&& this.editado.total > Number(this.disponible)&&this.ctacte&&this.medpag[3].total==0) {
+    setComoPaga() {
+      if (this.editado.cpr.substring(0,3)=='FAC'&& this.editado.total > Number(this.disponible)&&this.editado.ctacte&&this.medpag[3].total==0) {
         this.medpag[0].total = this.editado.total
       }
       this.dialogRec = true
@@ -8768,38 +7474,71 @@ export default {
       if (this.filtroComprobanteSel != 'Viajes') {
         return HTTP().post('/ventas', {
           suc: this.sucursal,
-          sucdemo: this.sucursalDemo,
           cpr: this.filtroComprobante,
           ope: this.operarioEsVendedor ? this.operarioTerceroId : null,
+          ven: this.$store.state.operarioTerceroId, 
           perfiscal: perfiscal,
           search: s }).then(({ data }) => {
-
+          this.ndcPorDescEnPagos = data.ndcs
           this.totMaletines = data.maletines==null?[]:data.maletines
           for (let i=0; i<=this.totMaletines.length-1; i++) { // ASIGNO PROPIEDAD 'sel'
             this.totMaletines[i].sel = false
           }
-
           for (let i=0; i<=this.comprobantes.length-1; i++) {
             this.comprobantes[i].total = 0
             this.comprobantes[i].ctt = 0
           }
-
+          this.$store.commit('setAnotaciones', data.anotacionesDeVentas, { root: true })
+          for (let i=0; i<=data.venta.length-1; i++) {
+            data.venta[i].ndcPPDet = []
+            data.venta[i].ndcPPTot = null
+            let des = data.ndcs.filter(function(u) {
+              return (u.debito_id==data.venta[i].id)
+            })
+            let totNDCPP = 0
+            for (let j=0; j<=des.length-1; j++) {
+              if (des[j].estado=='P') {
+                totNDCPP += des[j].descuento
+                data.venta[i].ndcPPDet.push( des[j]);
+              }
+            }
+            if (des.length>0) {
+              data.venta[i].ndcPPTot = totNDCPP
+            }
+            data.venta[i].zona = 'sin zona'
+            if (this.operarioEsVendedor) {
+              if (data.venta[i].user.tercero) {
+                if (data.venta[i].user.tercero.direcciones.length>0) {
+                  if (data.venta[i].user.tercero.direcciones[0].zona.length>0) {
+                    if (data.venta[i].user.tercero.direcciones[0].zona[0].zona_id!=null) {
+                      data.venta[i].zona = data.venta[i].user.tercero.direcciones[0].zona[0].zonas.nombre.substring(0,14)
+                    }
+                  }            
+                }
+              }
+            } else {
+              if (data.venta[i].tercero) {
+                if (data.venta[i].tercero.usersterceros.length>0) {
+                  if (data.venta[i].tercero.usersterceros[0].zona.length>0) {
+                    if (data.venta[i].tercero.usersterceros[0].zona[0].zona_id!=null) {
+                      data.venta[i].zona = data.venta[i].tercero.usersterceros[0].zona[0].zonas.nombre.substring(0,14)
+                    }
+                  }            
+                }
+              }
+            }
+          }
           if (data.venta.length>0) {
             this.itemActual = data.venta[0]
           }
-
           this.filtrosEstados = []
           for (let i=0; i<=data.venta.length-1; i++) {
-            let a = this.getEstado(data.venta[i].estado,'e',data.venta[i].pendientes[0],data.venta[i])
+            let a = this.getEstado(data.venta[i].estado,'e',data.venta[i])
             let b = ''
             if (a=='Finalizado') {
               b = 'Finalizados'
-            } else if (a.substring(0,7)=='Vencido') {
-              b = 'Vencidos'
-            } else if (a.substring(0,8)=='A Vencer') {
-              b = 'A Vencer'
-            } else if (a=='Vence Hoy') {
-              b = 'Vencen Hoy'
+            } else if (a=='Dctos x Lista') {
+              b = 'Dctos x Lista'
             } else if (a=='Facturado') {
               b = 'Facturados'
             } else if (a=='Anulado') {
@@ -8832,10 +7571,8 @@ export default {
           if (this.filtrosEstados.length>1) {
             this.filtrosEstados.unshift({tip: 'Todos', ctt: data.venta.length})
           }
-  
           this.itemsAll = data.venta
           if (this.filtrosEstados.length>0) {
-
             let pos = this.filtrosEstados.findIndex(x=>x.tip==this.filtroEstadoSel)
             if (pos!=-1) {
               this.filtroEstadoSel = this.filtrosEstados[pos].tip
@@ -8844,13 +7581,9 @@ export default {
               this.filtroEstadoSel = this.filtrosEstados[0].tip
               this.setFiltroEstado(this.filtrosEstados[0])
             }
-
           } else {
-
             this.items = data.venta
-
           }
-  
           for (let i=0; i<=data.sqlret.length-1; i++) {
             if (data.sqlret[i].id==1 || data.sqlret[i].id==6 || data.sqlret[i].id == 11 || data.sqlret[i].id == 51) {
               this.comprobantes[0].total += data.sqlret[i].total
@@ -8879,17 +7612,11 @@ export default {
             }
           }
           this.progress = false
-
-          //this.sayGrilla = true
-
         }).catch(function (error) {
           console.log(error);
         })
-      
       } else {
-
         let pf = perfiscal.substring(0,4)+'-'+perfiscal.substring(4,7)
-
         return HTTP().post('/listarviajes', { area: this.operarioArea, tercero_id: this.operarioTerceroId, perfiscal: pf}).then(({ data }) => {
           this.filtrosEstados = []
           for (let i=0; i<=data.length-1; i++) {
@@ -8928,7 +7655,6 @@ export default {
             data[i].remitos = 0
             data[i].valores = 0
             data[i].rendidos = 0
-
             let cprid = 0
             for (let j=0; j<=data[i].recorrido.length-1; j++) {
               if (data[i].recorrido[j].pedido) {
@@ -9005,9 +7731,6 @@ export default {
             this.items = data
           }
           this.progress = false
-
-          //this.sayGrilla = true
-
         }).catch(function (error) {
           console.log(error);
         })
@@ -9053,38 +7776,17 @@ export default {
         this.itemsRecorrido = this.iRAll
       } else {
         this.itemsRecorrido = []
-        if (fe.tip=='Facturas Pendientes') {
+        if (fe.tip=='Fac/Pendientes') {
           for (let i=0; i<=this.iRAll.length-1; i++) {
             if (this.iRAll[i].cprsA.factura.id==null||
                (this.iRAll[i].cprsB.factura.id==null)&&this.iRAll[i].cprsB.pedido!=null) {
               this.itemsRecorrido.push(this.iRAll[i])
             }
           }
-        } else if (fe.tip=='NDD Pendientes') {
-          for (let i=0; i<=this.iRAll.length-1; i++) {
-            if (((this.iRAll[i].cprsA.factura.id!=null)&&(this.iRAll[i].cprsA.ndd.id==null)&&(this.iRAll[i].cprsA.recibo.id==null))||
-               ((this.iRAll[i].cprsB.factura.id!=null)&&(this.iRAll[i].cprsB.ndd.id==null)&&(this.iRAll[i].cprsB.recibo.id==null))) {
-              this.itemsRecorrido.push(this.iRAll[i])
-            }
-          }
-        } else if (fe.tip=='NDC Pendientes') {
-          for (let i=0; i<=this.iRAll.length-1; i++) {
-            if (((this.iRAll[i].cprsA.factura.id!=null)&&(this.iRAll[i].cprsA.ndc.id==null)&&(this.iRAll[i].cprsA.recibo.id==null))||
-               ((this.iRAll[i].cprsB.factura.id!=null)&&(this.iRAll[i].cprsB.ndc.id==null)&&(this.iRAll[i].cprsB.recibo.id==null))) {
-              this.itemsRecorrido.push(this.iRAll[i])
-            }
-          }
-        } else if (fe.tip=='Remitos Pendientes') {
+        } else if (fe.tip=='Rem/Pendientes') {
           for (let i=0; i<=this.iRAll.length-1; i++) {
             if (((this.iRAll[i].cprsA.factura.id!=null)||(this.iRAll[i].cprsB.factura.id!=null))&&
               this.iRAll[i].remito.id==null) {
-              this.itemsRecorrido.push(this.iRAll[i])
-            }
-          }
-        } else if (fe.tip=='Recibos Pendientes') {
-          for (let i=0; i<=this.iRAll.length-1; i++) {
-            if ((this.iRAll[i].cprsA.factura.id!=null)&&(this.iRAll[i].cprsA.recibo.id==null)||
-              (this.iRAll[i].cprsB.factura.id!=null)&&(this.iRAll[i].cprsB.recibo.id==null)) {
               this.itemsRecorrido.push(this.iRAll[i])
             }
           }
@@ -9096,12 +7798,10 @@ export default {
     leoAnios() {
       let tipo = this.operarioEsVendedor?'A':'V'  // si es vendedor leo todos los tipos de comprobantes
       return HTTP().post('anios/', {tipo: tipo}).then(({ data }) => {
-        
         this.anios = []
         this.meses = []
         this.periodos = []
         let pos = -1
-
         // UN CASO ESPECIAL: SI ES VENDEDOR PUEDE ESTAR HACIENDO PEDIDOS POR CUENTA DE SUS CLIENTES
         // PERO SI CAMBIO EL MES Y EL CLIENTE NO HIZO MOVIMIENTOS AUN, NO TENDRA ACTUALIZADO EL PERIDODO
         // POR LO TANTO LO TENGO QUE AGREGAR A MANO.
@@ -9145,7 +7845,7 @@ export default {
     },
 
     listarAnotaciones() {
-      return HTTP().get('/anotadordeventas/'+this.sucursal).then(({ data }) => {
+      return HTTP().get('/anotadordeventas/'+this.sucursal+'/'+this.$store.state.operarioTerceroId).then(({ data }) => {
         this.anotadorId = data
         return HTTP().get('/ventasitems/'+this.anotadorId).then(({data})=> {
           this.articulos = []
@@ -9163,6 +7863,8 @@ export default {
               ofeprecio: 0, ofetasdes: 0, ofeenvio: 0, ofeunidades: 0, ofeestado: '', turno_id: null,
               decimales: data[i].articulo.precios.length>0?data[i].articulo.precios[0].decimales:2, preciomediocobro: false,
               loTengo: data[i].loTengo,
+              desc1: data[i].articulo.precios.length>0?data[i].articulo.precios[0].desc1:0,
+              desc2: data[i].articulo.precios.length>0?data[i].articulo.precios[0].desc2:0,
             })
           this.anotadorTotal += data[i].total
           this.rentabilidad += (data[i].preciooriginal-data[i].costo)*data[i].cantidad
@@ -9182,7 +7884,6 @@ export default {
     confirmarComprobante() {
       this.yaEnviado = true
       if (this.editedIndex!=-1) { // esta modificando
-
         return HTTP().patch('/updateitems/'+this.items[this.editedIndex].id, { articulos: this.articulos }).then(({data})=>{
           if (data==true) {
             this.mensaje('¡Pedido actualizado!', this.temas.forms_titulo_bg, 1500)
@@ -9192,9 +7893,7 @@ export default {
           this.dialog = false
           this.listarHTTP(false);
         })
-
       } else {
-
         if (!this.$refs.form.validate()) {
           this.mensaje('¡Debe completar todos los datos!', this.temas.snack_error_bg, 1500) 
           return this.dialog = true;
@@ -9225,16 +7924,6 @@ export default {
               recargo: null, interes: null, domicilioFiscal: [], vuelto: 0, maletin_id: null
             })
           }
-          if (this.medpag[3].total !== 0 && (this.editado.cpr!=='PRE' || this.sucursalDemo) && (this.editado.cpr!='REM')) {
-            // Si es ctacte agrego en 'pendientes' para que grabe la cuenta corriente
-            this.pendientes.push({ 
-              comprobante_id: null,
-              vencimiento: moment(new Date).add(this.diasvenc, 'd').format('YYYY-MM-DD'),
-              importe: this.medpag[3].total*this.coef,
-              pendiente: this.medpag[3].total*this.coef,
-              concepto: 'EN CUENTA CORRIENTE'
-            })
-          }
         }
         this.altaHTTP().then((data) => {
           if ((this.electronica && this.electronicaOk)||(!this.electronica)) {
@@ -9260,40 +7949,30 @@ export default {
       }
     },
 
-    async altaHTTP (que) {
+    async altaHTTP(que) {
       this.ivas = []
       this.asociado = []
       let espejo = []
-      let novedad = null
       let pf = moment().format('YYYYMM');
       this.coef = 1
       let s = this.sucursalFiscal
       this.electronicaOk = false
       this.editado.estado = 'F'
-      this.isLoadingTerceros = true       // para que no entre de nuevo en buscar clientes
-
+      let pedido_id = null
       // Si el cliente tiene vendedor lo asigno, sino asigno el operario actal
       this.editado.vendedor.id = this.editado.vendedor.id==null?this.operarioTerceroId:this.editado.vendedor.id
-
+      debugger
       if (que=='remfac') {
-
         this.valores = []
         this.editado.comprobante_id = 125
         this.editado.cpr = 'REM'
         this.editado.letra = 'R'
         this.editado.observaciones = 'REMITO'
-
-      } else if (this.editado.cpr.substring(0,3)=='PED') {
-
-        this.editado.estado = 'P'
-
       } else if (this.editado.cpr.substring(0,3)=='REM') {
-
         this.basadoEnOtroCpr = []
         for (let i=0; i<=this.selected.length-1; i++) {
           this.basadoEnOtroCpr.push(this.selected[i].id)
         }
-
         // Los remitos no mueven stock
         for (let i=0; i<=this.articulos.length-1; i++) {
           this.articulos[i].stock = 0
@@ -9306,44 +7985,53 @@ export default {
         this.editado.importedescuento = 0
         this.editado.mediodepago_id = null
         this.editado.deposito_id = null
-
+        this.editado.ctacte = false
+        this.editado.vencimiento = null
       } else if (this.editado.cpr=='PRE') {
-
         this.editado.comprobante_id = 124
         this.editado.cpr = 'PRE'
         this.editado.estado = this.sucursalDemo ? 'F' : 'P'
         this.editado.observaciones = 'PRESUPUESTO'
         if (!this.sucursalDemo) {
+          this.editado.ctacte = false
+          this.editado.vencimiento = null
           for (let i=0; i<=this.articulos.length-1; i++) {
             this.articulos[i].stock = 0
           }
-        }
-        if (this.editado.texto == 'PREPED') {
-          this.notificaOriginal[0].estado = 'T'
-          for (let i=0; i<=this.articulos.length-1; i++) {
-            if (this.articulos[i].cantidad < this.articulos[i].cantidadoriginal) {
-              if (this.notificaOriginal.length>0) {
-                this.notificaOriginal[0].estado = 'P'
+          pedido_id = null
+        } else {    // ES SUCURSAL DEMO!
+          // SI ES PRESUPUESTO EN DEMO Y ES UN CLIENTE VINCULADO, GENERO EL ESPEJO
+          if (this.clienteVinculado) {
+            // MANDO TODO NULL MENOS tercero_id y tipo
+            // LA API GENERARA EL COMPROBANTE DE VENTAS COMO UNA COMPRA EN EL CLIENTE.
+            espejo.push({ comprobante_id: null, tercero_id: this.editado.tercero_id, tipo: 'fac' })
+            if (this.editado.texto == 'PREPED') {
+              pedido_id = this.itemActual.id
+              this.notificaOriginal[0].estado = 'T'
+              for (let i=0; i<=this.articulos.length-1; i++) {
+                if (this.articulos[i].cantidad < this.articulos[i].cantidadoriginal) {
+                  if (this.notificaOriginal.length>0) {
+                    this.notificaOriginal[0].estado = 'P'
+                  }
+                }
               }
             }
           }
         }
-
       } else if (this.editado.cpr=='FAC') {
-
         this.cargoIvas()
         if (this.editado.letra=='A'||this.editado.letra=='M') { this.editado.comprobante_id = this.comprobantesm?51:1}
         else if (this.editado.letra=='B') { this.editado.comprobante_id = 6 }
         else if (this.editado.letra=='C') { this.editado.comprobante_id = 11 }
-
-        if (this.editado.texto == 'FACPED' || this.editado.texto == 'FACRTV') {
-          novedad = {
-            cpr_id: this.itemActual.id,
-            novedad: this.editado.texto == 'FACPED'?'Pedido Facturado':'Retiro Facturado',
-            rel_id: null,
-            estado: 'N',
-            accion: 'AGREGA',
+        // SI ES FACTURA O PRESUPUESTO ( EN DEMO ) Y ES UN CLIENTE VINCULADO, GENERO EL ESPEJO
+        if ((this.editado.cpr=='FAC'||(this.editado.cpr=='PRE'&&this.sucursalDemo))&&this.clienteVinculado) {
+          if (this.clienteVinculado) {
+            // MANDO TODO NULL MENOS tercero_id y tipo
+            // LA API GENERARA EL COMPROBANTE DE VENTAS COMO UNA COMPRA EN EL CLIENTE.
+            espejo.push({ comprobante_id: null, tercero_id: this.editado.tercero_id, tipo: 'fac' })
           }
+        }
+        if (this.editado.texto == 'FACPED' || this.editado.texto == 'FACRTV') {
           this.editado.observaciones = this.editado.texto
           let parcial = false
           if (this.notificaOriginal.length>0) {
@@ -9354,235 +8042,167 @@ export default {
             }
           }
           this.notificaOriginal[0].estado = parcial ? 'P' : 'T'
+          pedido_id = this.itemActual.id==undefined?null:this.itemActual.id
+          // EL ESPEJO SOLO VA CUANDO EL CLIENTE TAMBIEN PERTENECE A GOHU
+          if (this.itemActual.tercero.user) {
+            espejo.push({ comprobante_id: this.itemActual.id, tercero_id: this.itemActual.tercero_id, tipo: 'facped' })
+          }
         }
-       
-      } else if (que=='ndcfac') {
-
-        this.coef = -1
-        if (this.itemActual.comprobante_id==1||this.itemActual.comprobante_id==124) { this.editado.comprobante_id = 3 } 
-        else if (this.itemActual.comprobante_id==6) { this.editado.comprobante_id = 8 } 
-        else if (this.itemActual.comprobante_id==11) { this.editado.comprobante_id = 13 }
-        else if (this.itemActual.comprobante_id==51) { this.editado.comprobante_id = 53 } 
-
-        //NDC, puede ser por 1-bonif, 2-devol, o 3-anulacion. En todos los casos debe imputar 
-        //la cuenta corriente como si fuera un recibo.
-        //Tambien se puede dar el caso de una NDC por adelanto de dinero. ( A CUENTA. no imputa )
-        //let pend = this.itemActual.pendientes
+      } else if (que=='ndcfac'||que=='nddfac') {
+        this.coef = que=='ndcfac'? -1: 1
+        if (que=='ndcfac') {
+          if (this.itemActual.comprobante_id==1||this.itemActual.comprobante_id==124) { this.editado.comprobante_id = 3 } 
+          else if (this.itemActual.comprobante_id==6) { this.editado.comprobante_id = 8 } 
+          else if (this.itemActual.comprobante_id==11) { this.editado.comprobante_id = 13 }
+          else if (this.itemActual.comprobante_id==51) { this.editado.comprobante_id = 53 } 
+        } else {
+          if (this.itemActual.comprobante_id==1) { this.editado.comprobante_id = 2 } 
+          else if (this.itemActual.comprobante_id==6) { this.editado.comprobante_id = 7 } 
+          else if (this.itemActual.comprobante_id==11) { this.editado.comprobante_id = 12 }
+          else if (this.itemActual.comprobante_id==51) { this.editado.comprobante_id = 52 }
+        }
+        this.editado.cpr = que=='ndcfac'?'NDC':'NDD'
+        this.editado.letra = this.itemActual.cpr.substr(4,1)
+        if (que=='ndcfac') {
+          this.editado.observaciones = this.sucursalDemo?'PRE':'FAC'
+        } else {
+          this.editado.observaciones = 'FAC'
+        }
+        this.editado.sucursal_id = this.itemActual.sucursal_id
+        this.editado.direccion_id = this.itemActual.direccion_id
+        this.editado.documento_id = this.itemActual.documento_id
+        this.editado.documentoCodigo  = this.itemActual.tercero.documento.codigo
+        this.editado.mediodepago_id = this.itemActual.mediodepago_id
+        this.editado.deposito_id = this.itemActual.deposito_id
+        this.editado.tercero_id = this.itemActual.tercero_id
+        if (que=='ndcfac') {
+          if (!this.sucursalDemo) {
+            this.editado.gravado = this.roundTo(this.ndcTotal/1.21,2)
+            this.editado.iva = this.roundTo(this.ndcTotal-this.editado.gravado,2)
+          } else {
+            this.editado.gravado = 0
+            this.editado.iva = 0
+          }
+          this.editado.rentabilidad = this.roundTo(this.ndcTotal*(this.ndcTotal/this.editado.total),2)*-1
+          this.editado.total = this.roundTo(this.ndcTotal,2)
+        } else {
+          if (!this.sucursalDemo) {
+            this.editado.gravado = this.roundTo(this.nddTotal/1.21,2)
+            this.editado.iva = this.roundTo(this.nddTotal-this.editado.gravado,2)
+          } else {
+            this.editado.gravado = 0
+            this.editado.iva = 0
+          }
+          this.editado.rentabilidad = this.roundTo(this.nddTotal*(this.nddTotal/this.editado.total),2)*-1
+          this.editado.total = this.roundTo(this.nddTotal,2)
+        }
+        this.rentabilidad = this.editado.rentabilidad
+        let articulo_id = 0
+        let codigo = ''
+        let nombre = ''
+        if (que=='ndcfac') {
+          if (this.ndcMotivoSel==1) {           // SE GENERA UN CODIGO DE ARTICULO PREDETERMINADO
+            articulo_id = 2
+            codigo = '2@1'
+            nombre = 'NDC POR BONIFICACION'
+            this.articulos = []
+            this.articulos.push({
+              id: null, articulo_id: articulo_id, codigo: codigo, codbar: null, nombre: nombre, deposito_id: null, unidad_id: null, moneda_id: null,
+              iva_id: 5, cantidad: 1, cantidadoriginal: 1, stock: 0, undstock: 0, sinstock: 'C', costo: this.roundTo(this.ndcTotal/1.21,2),
+              precio: this.roundTo(this.ndcTotal/1.21,2), preciooriginal: this.roundTo(this.ndcTotal/1.21,2), tasadescuento: 0, importedescuento: 0,
+              tasaproprecargo: 0, total: this.roundTo(this.ndcTotal/1.21,2), texto: '', vencimiento: null, adevolver: 0, padre_id: null, undenvase: 1,
+              escombo: false, ofeprecio: 0, ofetasdes: 0, ofeenvio: 0, ofeunidades: 0, ofeestado: '', turno_id: null,
+              decimales: 2, preciomediocobro: false, loTengo: false, desc1: 0, desc2: 0,
+            })
+          } else if (this.ndcMotivoSel==2) {    // VIENE articulos[] YA CARGADO
+            articulo_id = 3
+            codigo = '3@1'
+            nombre = 'NDC POR DEVOLUCION'
+          } else if (this.ndcMotivoSel==3) {    // VIENE articulos[] YA CARGADO
+            articulo_id = 4
+            codigo = '4@1'
+            nombre = 'NDC POR ANULACION'
+          }
+        } else {
+          if (this.nddMotivoSel==1) {    // VIENE articulos[] YA CARGADO
+            articulo_id = 6
+            codigo = '12@1'
+            nombre = 'NDD POR MORA'
+          } else if (this.nddMotivoSel==2) {    // VIENE articulos[] YA CARGADO
+            articulo_id = 5
+            codigo = '5@1'
+            nombre = 'NDD POR CAMBIO DE PRECIO'
+          }
+          this.articulos = []
+          this.articulos.push({
+            id: null, articulo_id: articulo_id, codigo: codigo, codbar: null, nombre: nombre, deposito_id: null, unidad_id: null, moneda_id: null,
+            iva_id: 5, cantidad: 1, cantidadoriginal: 1, stock: 0, undstock: 0, sinstock: 'C', costo: this.roundTo(this.editado.gravado,2),
+            precio: this.roundTo(this.editado.gravado,2), preciooriginal: this.roundTo(this.editado.gravado,2), tasadescuento: 0, importedescuento: 0,
+            tasaproprecargo: 0, total: this.roundTo(this.editado.gravado,2), texto: '', vencimiento: null, adevolver: 0, padre_id: null, undenvase: 1,
+            escombo: false, ofeprecio: 0, ofetasdes: 0, ofeenvio: 0, ofeunidades: 0, ofeestado: '', turno_id: null, decimales: 2,
+            preciomediocobro: false, loTengo: false, desc1: 0, desc2: 0,
+          })
+        }
+        if (!this.itemActual.ctacte) {
+          this.valores.push({
+            caja_id: this.caja, medio_id: 1, cuentaorigen_id: null, cuentadestino_id: null,
+            cuentacheque_id: null, cuentatarjeta_id: null, banco_id: null, tarjeta_id: null,
+            cpringreso_id: null, cpregreso_id: null, 
+            cheque_id: null, echeq: false, fechafinanciera: null, fechasalida: null,
+            importe: this.editado.total*this.coef, nrovalor: null, tipo: 'I',
+            observ: que=='NDC'?'NDC EN EFECTIVO':'NDD EN EFECTIVO',
+            medioNombre: 'Efectivo', cuenta: null, cuit: null, nombre: null,
+            recargo: null, interes: null, domicilioFiscal: [], vuelto: 0, maletin_id: null
+          })
+        }
+        // EL ESPEJO SOLO VA CUANDO EL CLIENTE TAMBIEN PERTENECE A GOHU
+        if (this.itemActual.tercero.user) {
+          espejo.push({ comprobante_id: this.itemActual.id, tercero_id: this.itemActual.tercero_id, tipo: 'ndcfac' })
+        }
+        // ASOCIADO, CUANDO EL CPR ES ELECTRONICO
         if (!this.sucursalDemo) {
           this.asociado = [{
             Tipo: this.itemActual.comprobante_id,
             PtoVta: 10,   // VER DE DONDE LO SACAMOS
-            Nro: parseInt(this.itemActual.cpr.substr(12,8),10),
+            Nro: parseInt(this.itemActual.cpr.substring(12,8),10),
             Cuit: parseInt(this.itemActual.tercero.cuit,10)
           }]
         }
-
-        this.editado.cpr = 'NDC'
-        this.editado.letra = this.itemActual.cpr.substr(4,1)
-        this.editado.observaciones = this.sucursalDemo?'PRE':'FAC'
-        this.editado.sucursal_id = this.itemActual.sucursal_id
-        this.editado.direccion_id = this.itemActual.direccion_id
-        this.editado.documento_id = this.itemActual.documento_id
-        this.editado.documentoCodigo  = this.itemActual.tercero.documento.codigo
-        this.editado.mediodepago_id = this.itemActual.mediodepago_id
-        this.editado.deposito_id = this.itemActual.deposito_id
-
-        debugger
-        this.editado.tercero_id = this.itemActual.tercero_id
-        this.editado.vendedor.id = this.itemActual.vendedor_id
-        this.editado.moneda_id = this.itemActual.moneda_id
-
-        if (!this.sucursalDemo) {
-          this.editado.gravado = this.roundTo(this.ndcTotal/1.21,2)
-          this.editado.iva = this.roundTo(this.ndcTotal-this.editado.gravado,2)
-        } else {
-          this.editado.gravado = 0
-          this.editado.iva = 0
-        }
-        this.editado.rentabilidad = this.roundTo(this.ndcTotal*(this.ndcTotal/this.editado.total),2)*-1
-        this.editado.total = this.roundTo(this.ndcTotal,2)
-        this.rentabilidad = this.editado.rentabilidad
-        
-        let articulo_id = 0
-        let codigo = ''
-        let nombre = ''
-        if (this.ndcMotivoSel==1) {           // SE GENERA UN CODIGO DE ARTICULO PREDETERMINADO
-          articulo_id = 2
-          codigo = '2@1'
-          nombre = 'NDC POR BONIFICACION'
-          this.articulos = []
-          this.articulos.push({
-            id: null, articulo_id: articulo_id, codigo: codigo, codbar: null, nombre: nombre, deposito_id: null, unidad_id: null, moneda_id: null,
-            iva_id: 5, cantidad: 1, cantidadoriginal: 1, stock: 0, undstock: 0, sinstock: 'C', costo: this.roundTo(this.ndcTotal/1.21,2),
-            precio: this.roundTo(this.ndcTotal/1.21,2), preciooriginal: this.roundTo(this.ndcTotal/1.21,2), tasadescuento: 0, importedescuento: 0,
-            tasaproprecargo: 0, total: this.roundTo(this.ndcTotal/1.21,2), texto: '', vencimiento: null, adevolver: 0, padre_id: null, undenvase: 1,
-            escombo: false, ofeprecio: 0, ofetasdes: 0, ofeenvio: 0, ofeunidades: 0, ofeestado: '', turno_id: null,
-            decimales: 2, preciomediocobro: false, loTengo: false,
-          })
-        } else if (this.ndcMotivoSel==2) {    // VIENE articulos[] YA CARGADO
-          articulo_id = 3
-          codigo = '3@1'
-          nombre = 'NDC POR DEVOLUCION'
-        } else if (this.ndcMotivoSel==3) {    // VIENE articulos[] YA CARGADO
-          articulo_id = 4
-          codigo = '4@1'
-          nombre = 'NDC POR ANULACION'
-        }
-
-        if (this.itemActual.pendientes.length>0) {
-          this.pendientes.push({
-            comprobante_id: null,
-            vencimiento: this.itemActual.pendientes[0].vencimiento.substring(0,10),
-            importe: this.ndcTotal,
-            pendiente: 0,
-            concepto: 'X '+this.ndcMotivos[this.ndcMotivoSel-1].nombre+'@'+this.itemActual.pendientes[0].id
-          })
-        }
-
-        // EL ESPEJO SOLO VA CUANDO EL CLIENTE TAMBIEN PERTENECE A GOHU
-        if (this.itemActual.tercero.user) {
-          espejo.push({
-            comprobante_id: this.itemActual.id,
-            tercero_id: this.itemActual.tercero_id,
-            articulo_id: articulo_id,
-            codigo: codigo,
-            tipo: 'ndcfac'
-          })
-        }
-
         this.dialogNdcFac = false
+        this.dialogNddFac = false
         if (!this.sucursalDemo) {
           this.cargoIvas()
         }
-
-      } else if (que=='nddfac') {
-
-        this.coef = 1
-        if (this.itemActual.comprobante_id==1) { this.editado.comprobante_id = 2 } 
-        else if (this.itemActual.comprobante_id==6) { this.editado.comprobante_id = 7 } 
-        else if (this.itemActual.comprobante_id==11) { this.editado.comprobante_id = 12 }
-        else if (this.itemActual.comprobante_id==51) { this.editado.comprobante_id = 52 }
-
-        //NDD, puede ser por 1-cheque rechazado, 2-mora, o 3-cambio de precio. En todos los casos debe imputar 
-        //la cuenta corriente como si fuera una factura.
-        
-        this.editado.cpr = 'NDD'
-        this.editado.letra = this.itemActual.cpr.substr(4,1)
-        this.editado.observaciones = 'FAC'
-        this.editado.sucursal_id = this.itemActual.sucursal_id
-        this.editado.direccion_id = this.itemActual.direccion_id
-        this.editado.documento_id = this.itemActual.documento_id
-        this.editado.documentoCodigo  = this.itemActual.tercero.documento.codigo
-        this.editado.mediodepago_id = this.itemActual.mediodepago_id
-        this.editado.deposito_id = this.itemActual.deposito_id
-
-        debugger
-        this.editado.tercero_id = this.itemActual.tercero_id
-        this.editado.moneda_id = this.itemActual.moneda_id
-        this.editado.gravado = this.roundTo(this.nddTotal/1.21,2)
-        this.editado.iva = this.roundTo(this.nddTotal-this.editado.gravado,2)
-        this.editado.total = this.roundTo(this.nddTotal,2)
-        this.editado.rentabilidad = 0
-
-        this.asociado = [{
-          Tipo: this.itemActual.comprobante_id,
-          PtoVta: 10,   // VER DE DONDE LO SACAMOS
-          Nro: parseInt(this.itemActual.cpr.substr(12,8),10),
-          Cuit: parseInt(this.itemActual.tercero.cuit,10)
-        }]
-        
-        let articulo_id = 0
-        let codigo = ''
-        let nombre = ''
-
-        if (this.nddMotivoSel==1) {           // SE GENERA UN CODIGO DE ARTICULO PREDETERMINADO
-          articulo_id = 7
-          codigo = '6@1'
-          nombre = 'NDD POR CHEQUE RECHAZADO'
-        } else if (this.nddMotivoSel==2) {    // VIENE articulos[] YA CARGADO
-          articulo_id = 6
-          codigo = '12@1'
-          nombre = 'NDD POR MORA'
-        } else if (this.nddMotivoSel==3) {    // VIENE articulos[] YA CARGADO
-          articulo_id = 5
-          codigo = '5@1'
-          nombre = 'NDD POR CAMBIO DE PRECIO'
-        }
-        this.articulos = []
-        this.articulos.push({
-          id: null, articulo_id: articulo_id, codigo: codigo, codbar: null, nombre: nombre, deposito_id: null, unidad_id: null, moneda_id: null,
-          iva_id: 5, cantidad: 1, cantidadoriginal: 1, stock: 0, undstock: 0, sinstock: 'C', costo: this.roundTo(this.editado.gravado,2),
-          precio: this.roundTo(this.editado.gravado,2), preciooriginal: this.roundTo(this.editado.gravado,2), tasadescuento: 0, importedescuento: 0,
-          tasaproprecargo: 0, total: this.roundTo(this.editado.gravado,2), texto: '', vencimiento: null, adevolver: 0, padre_id: null, undenvase: 1,
-          escombo: false, ofeprecio: 0, ofetasdes: 0, ofeenvio: 0, ofeunidades: 0, ofeestado: '', turno_id: null, decimales: 2,
-          preciomediocobro: false, loTengo: false,
-        })
-
-        if (this.itemActual.cpr.substring(0,3)=='REC') {  // NDD EN RECIBO
-          if (this.itemActual.cancelaciones.length>0) {
-            this.pendientes.push({
-              comprobante_id: null,
-              vencimiento: this.itemActual.cancelaciones[0].cancelado.vencimiento.substring(0,10),
-              importe: this.nddTotal,
-              pendiente: this.nddTotal,
-              concepto: 'X '+this.nddMotivos[this.nddMotivoSel-1].nombre+'@'+this.itemActual.cancelaciones[0].id
-            })
-          }
-
-          this.editado.gravado = 0
-          this.editado.exento = this.editado.total
-          this.editado.iva = 0
-
-        } else {
-
-          if (this.itemActual.pendientes.length>0) {  // NDD EN FACTURA
-            let pos = this.nddMotivos.findIndex(x=>x.id==this.nddMotivoSel)
-            this.pendientes.push({
-              comprobante_id: null,
-              vencimiento: this.itemActual.pendientes[0].vencimiento.substring(0,10),
-              importe: this.nddTotal,
-              pendiente: this.nddTotal,
-              concepto: 'X '+this.nddMotivos[pos].nombre+'@'+this.itemActual.pendientes[0].id
-            })
-          }
-
-        }
-
-        // EL ESPEJO SOLO VA CUANDO EL CLIENTE TAMBIEN PERTENECE A GOHU
-        if (this.itemActual.tercero.user) {
-          espejo.push({
-            comprobante_id: this.itemActual.id,
-            tercero_id: this.itemActual.tercero_id,
-            articulo_id: articulo_id,
-            codigo: codigo,
-            tipo: 'nddfac'
-          })
-        }
-
-        this.dialogNddFac = false
-        this.cargoIvas()
-
       } else if (que=='anotaciones') {
-
-        if (this.$store.state.datosEmpresa.responsable_id==1) {
-          this.editado.comprobante_id = 6                 
-        } else if (this.$store.state.datosEmpresa.responsable_id==6) {
-          this.editado.comprobante_id = 11
+        this.cargoIvas()
+        if (!this.sucursalDemo) {
+          if (this.$store.state.datosEmpresa.responsable_id==1) {
+            this.editado.comprobante_id = 6
+          } else if (this.$store.state.datosEmpresa.responsable_id==6) {
+            this.editado.comprobante_id = 11
+          }
+          this.editado.cpr = 'FAC'
+          this.editado.letra = 'B'
+          this.electronica = true
+          this.editado.documentoNumero = '20111111112'
+        } else {
+          this.editado.comprobante_id = 124
+          this.editado.cpr = 'PRE'
+          this.editado.letra = 'P'
+          this.electronica = false
+          this.editado.documentoNumero = ''
         }
         this.editado.sucursal_id = this.sucursal
-        this.editado.cpr = 'FAC'
-        this.editado.letra = 'B'
+        this.editado.ctacte = false
         this.editado.tercero_id = 2
         this.editado.documento_id = 25
         this.editado.documentoCodigo  = 80
         this.editado.deposito_id = this.depItems[0].id              // HEV
         this.editado.moneda_id = 51
-        this.editado.observaciones = 'ANOTADOR REMITO'
+        this.editado.observaciones = 'ANOTADOR'
         this.editado.regstk = 1
         this.editado.mediodepago_id = 1
         this.editado.direccion_id = null
-
-        this.notificaEnBaseAOtro = []
         this.notificaOriginal = []
         this.basadoEnOtroCpr = []
         this.valores = []
@@ -9597,7 +8217,6 @@ export default {
         })
         this.pendientes = []
         this.anotadorId =  this.anotadorId
-
         //Los precios en articulos[] vien finales, tengo que pasarlo a 'sin iva'
         //por compatibilidad
         for (let i=0; i<=this.articulos.length-1; i++) {
@@ -9605,12 +8224,9 @@ export default {
           this.articulos[i].total  = this.articulos[i].cantidad*this.articulos[i].precio
         }
         this.calculos()
-      
       } else if (que=='recibo') {
-
         this.coef = -1
-        if (this.reciboDeUnSoloComprobante) {
-
+        if (this.reciboDeUnSoloComprobante) { // detalla pago desde facturacion
           if (!this.sucursalDemo) {
             if (this.itemActual.comprobante_id==1||this.itemActual.comprobante_id==51) { this.editado.comprobante_id = this.comprobantesm?54:4 } 
             else if (this.itemActual.comprobante_id==6) { this.editado.comprobante_id = 9 } 
@@ -9620,29 +8236,13 @@ export default {
             else if (this.itemActual.cpr.substring(0,5)=='PRE-B') { this.editado.comprobante_id = 9 } 
             else if (this.itemActual.cpr.substring(0,5)=='PRE-C') { this.editado.comprobante_id = 15 }
           }
-
           this.editado.letra           = this.itemActual.cpr.substr(4,1)
           this.editado.direccion_id    = this.itemActual.direccion_id
           this.editado.documento_id    = this.itemActual.documento_id
           this.editado.documentoCodigo = this.itemActual.tercero.documento.codigo
-
-          debugger
           this.editado.tercero_id      = this.itemActual.tercero_id
           this.editado.moneda_id       = this.itemActual.moneda_id
-
-        } else {
-          
-          //this.editado.comprobante_id  = this.editado.comprobante_id
-          //this.editado.letra           = this.editado.letra
-          //this.editado.direccion_id    = this.editado.direccion_id
-          //this.editado.documento_id    = this.editado.documento_id
-//        this.editado.documentoCodigo = this.itemActual.tercero.documento.codigo
-          //this.editado.documentoCodigo = this.editado.documentoCodigo
-          //this.editado.tercero_id      = this.editado.tercero_id
-          //this.editado.moneda_id       = this.editado.moneda_id
-          
         }
-
         this.editado.fecha          = moment().format('YYYY-MM-DD')
         this.editado.perfiscal      = moment().format('YYYY-MM')
         this.editado.mediodepago_id = 4
@@ -9651,25 +8251,45 @@ export default {
         this.editado.cpr            = 'REC'
         this.editado.observaciones  = 'REC'
         this.editado.deposito_id    = null
-        this.dialogRec              = false
         this.editado.gravado        = 0
         this.editado.iva            = 0
         this.editado.total          = this.roundTo(this.totValores,2)
         this.editado.rentabilidad   = 0
         this.editado.pendientes     = this.pend
         this.editado.valores        = this.valores
-        //this.editado.hayMaletin     = this.hayMaletin
+        this.editado.ndcPorPP       = this.ndcPorPP
+        this.dialogRec              = false
+        /*
+          ¿A QUIENES SE LES HACE RECIBOS?
+          A TODOS LOS CLIENTES NO VINCULADOS Y A LOS VINCULADOS EXCLUSIVOS QUE "NO USEN EL SISTEMA"
+          LOS VINCULADOS QUE UTILICEN EL SISTEMA VIENE EL PAGO CORRESPONDIENTE
 
-        return HTTP().post('/recibo', { editado: this.editado }).then(({ data }) => {
+          VER COMO DETECTO QUE EL RECIBO DEBE GENERAR NDC X PRONTO PAGO O NO.
+          ES EXACTAMENTE LA MISMA LOGICA QUE EN PAGOS
+          SE PUEDE HACER UN RECIBO POR ADELANTO DE CHEQUES O POR PAGO MAYOR
 
-          if (data=='no hay consistencia') {
-            this.mensaje('¡DATOS INCONSISTENTES!. Es posible que otro usuario ya haya cancelado algunos de las facturas pendientes.', this.temas.snack_error_bg, 5000) 
+          SI ES POR MALETIN LOS VALORES YA VIENEN CARGADOS EN maletin_items
+          CON LA CORRESPONDIENTE LISTA_ID Y LOS DESC1 Y DESC2
+        */
+        this.editado.genNDCPPP = true
+        this.msg.msgVisible = false
+        return HTTP().post('/nuevorecibo', { editado: this.editado, pend: this.pend }).then(({ data }) => {
+          if (data.substring(0,5)=='block') {
+            this.msg.msgTitle = 'Datos Modificados'
+            this.msg.msgVisible = true
+            this.msg.msgAccion = 'block'
+            let m = ''
+            if (data == 'block pendientes') {
+              m = '<br>¡Otro usuario ha modificado los pendientes de este comprobante!<br>'
+            }
+            m += '<br>El Recibo no se ha registrado.<br><br>Refresca los datos y verifica<br>.'
+            this.msg.msgBody = m
+            this.msg.msgButtons = ['Cerrar']
           } else if (data=='error') {
             this.mensaje('¡Opss, se ha producido un error. Reintente, si el error persiste consulte con gohu!', this.temas.snack_error_bg, 5000) 
           } else {
-            this.mensaje('¡El recibo se ha registrado correctamente!', this.temas.forms_titulo_bg, 1500)
+            this.mensaje('¡El recibo se ha registrado correctamente!', this.temas.forms_titulo_bg, 2500)
           }
-
           // Vuelvo la sucursal si la habia cambiado
           if (this.desdeAdmPedidos) {
             this.activoSucursal('setFiscal')
@@ -9680,94 +8300,36 @@ export default {
           }
         });
       }
-
       // sumo al descuento global todos los descuentos que puedan tener los items.
       for (let i=0; i<=this.articulos.length-1; i++) {
         this.editado.importedescuento += this.articulos[i].importedescuento
       }
-
-      // Si es un pedido y tiene un vendedor, genero como si fuera una compra del cliente, pero con el vendedor
-      if (this.editado.cpr.substring(0,3)=='PED' && this.editado.vendedor.id!=null) {
-
-        // busco la sucursal del cliente ( puede tener varias )
-        // Puede que el clente no use el sistema, en ese caso no tiene sucursal.
-        let laSuc = 0
-        let sucFis = ''
-        if (this.userDelTerceroDatos[0].tercero.user) {
-          for (let i=0; i<= this.userDelTerceroDatos[0].tercero.user.sucursales.length-1; i++) {
-            if (this.userDelTerceroDatos[0].tercero.user.sucursales[i].sucursaldemo==0) {
-              laSuc = this.userDelTerceroDatos[0].tercero.user.sucursales[i].id
-              sucFis = this.userDelTerceroDatos[0].tercero.user.sucursales[i].fiscal
-            }
-          }
-        } else {
-          laSuc = this.sucursal
-          sucFis = this.sucursalFiscal
+      if (this.editado.cpr.substring(0,3)=='PED') {
+        // ACTUALIZO articulos[] POR COMPATIBILIDAD con 'nuevopedido'
+        for (let i=0; i<=this.articulos.length-1; i++) {
+          this.articulos[i].ctt = this.articulos[i].cantidad
         }
-
-        return HTTP().post('/nuevacompra', {
-          fecha:               moment().format('YYYY-MM-DD'),
-          perfiscal:           moment().format('YYYY-MM'),
-          tipo:                'CO',
-          cpr:                 this.editado.cpr+'-'+this.editado.letra+' '+sucFis+'-00000000',
-          user_id:             this.userDelTerceroDatos[0].tercero.user.id,
-          sucursal_id:         laSuc,
-          tercero_id:          this.datosEmpresa.id,
-          comprobante_id:      126,
-          direccion_id:        this.userDelTerceroDatos[0].tercero.direcciones[0].id,
-          documento_id:        this.editado.documento_id,
-          mediodepago_id:      this.editado.medio_id,
-          deposito_id:         this.editado.deposito_id,
-          vendedor_id:         this.editado.vendedor.id,
-          moneda_id:           this.editado.moneda_id,
-          tasadescuento:       this.editado.tasadescuento,
-          importedescuento:    this.editado.importedescuento*this.coef,
-          retiva:              this.editado.retiva*this.coef,
-          retgan:              this.editado.retgan*this.coef,
-          retib:               this.editado.retib*this.coef,
-          gravado:             this.editado.gravado*this.coef,
-          exento:              this.editado.exento*this.coef,
-          iva:                 this.editado.iva*this.coef,
-          total:               this.editado.total*this.coef,
-          regstk:              false,
-          estado:              this.editado.estado,
-          activo:              true,
-          articulos:           this.articulos,
-          valores:             [],
-          pendientes:          [],
-          notificacion:        0,
-          notificaEnBaseAOtro: 0,
-          notificaOriginal:    0,
-          gasto:               null,
-          tasasIVA:            [],
-          quienpidio:          'V',
-        }).then(({ data }) => {
-          let msg = ''
-          if (data.estado.errno) {
-            this.msg.msgTitle = 'Error en la grabación del Pedido'
-            msg = 'Código de Error: '+data.estado.code+' ('+data.estado.errno+')<br><br>'
-            msg += 'Mensaje: '+data.estado.sqlMessage+'<br>'
-            this.msg.msgBody = msg
-            this.msg.msgAccion  = 'Error en la grabacion del Pedido'
-            this.msg.msgButtons = ['Aceptar']
+        return HTTP().post('/nuevopedido', {
+          origen: 'ventas',
+          userProv_id: this.userId,
+          userClie_id: this.itemActual.tercero.user.id,
+          vendedor_id: this.oprarioTerceroId,
+          viaje_id: null,
+          recorrido_id: null,
+          articulos: this.articulos,
+          }).then(({data})=>{
+          if (data!='error') {
+            this.mensaje('¡Pedio generado correctamente!', this.temas.forms_titulo_bg, 1500)
           } else {
-            this.msg.msgTitle = 'Grabación Correcta'
-            this.msg.msgBody = '¡El pedido se ha registrado correctamente!<br>'
-            this.msg.msgAccion  = 'Pedido OK'
+            this.msg.msgTitle = 'Error en el Pedido'
+            this.msg.msgBody = 'El Pedido no se ha podido generar<br>Reintente, si el problema persiste consulte con sistemas<br>'
+            this.msg.msgVisible = true
+            this.msg.msgAccion = 'pedido error'
             this.msg.msgButtons = ['Aceptar']
           }
-          this.msg.msgVisible = true
-          this.dialog = false
-
-          // Vuelvo la sucursal si la habia cambiado
-          if (this.desdeAdmPedidos==true) {
-            this.activoSucursal('setFiscal')
-          }
-          this.listarHTTP(true)
-        });
-
+        })
       } else {
-
+        // FAC, NDC, NDD, PRE ( demo )
         let cpr = ''
         if (this.esManual||this.sucursalDemo) {
           cpr = this.editado.cpr+'-'+this.editado.letra+' '+this.sucManual+'-'+this.nroManual 
@@ -9775,18 +8337,13 @@ export default {
         } else {
           cpr = this.editado.cpr+'-'+this.editado.letra+' '+this.sucursalFiscal+'-'+'00000001'
         }
-
         return HTTP().post('/nuevaventa', {
           fecha:               moment().format('YYYY-MM-DD'),
           perfiscal:           pf,
-          cpr:                 cpr,
-          user_id:             this.userId,
-          sucursal_id:         this.sucursal,
-          tercero_id:          this.editado.tercero_id,
+          ctacte:              this.editado.ctacte,
+          vencimiento:         moment(new Date).add(this.diasvenc, 'd').format('YYYY-MM-DD'),
           comprobante_id:      this.editado.comprobante_id,
-          direccion_id:        this.editado.direccion_id,
           documento_id:        this.editado.documento_id,
-          documentonumero:     this.editado.documentoNumero,
           documentocodigo:     this.editado.documentoCodigo,
           mediodepago_id:      this.editado.mediodepago_id,
           deposito_id:         this.editado.deposito_id,
@@ -9801,58 +8358,56 @@ export default {
           total:               this.editado.total*this.coef,
           rentabilidad:        this.rentabilidad,
           observaciones:       this.editado.observaciones,
-          quienpidio:          this.editado.quienpidio,
           regstk:              true,
           estado:              this.editado.estado,
           activo:              true,
           articulos:           this.articulos,
-          valores:             this.valores,
-          pendientes:          this.pendientes,
-          notificacion:        0,
-          notificaEnBaseAOtro: this.notificaEnBaseAOtro,
           notificaOriginal:    this.notificaOriginal,
           basadoEnOtroCpr:     this.basadoEnOtroCpr,
           anotadorId:          this.anotadorId,
           espejo:              espejo,
-          novedad:             novedad,
+          pedido_id:           pedido_id, 
           electronica:         this.electronica,
-          produccion:          this.datosEmpresa.faeproduccion,
           ivas:                this.ivas,
           asociado:            this.asociado,
-          facturasEnRemito:    this.facturas,
-          viaje_id:            this.editado.viaje_id,
+          licenciaId:          null,
+          quienpidio:          this.editado.quienpidio,
           clienteVinculado:    this.clienteVinculado,
-        }, { timeout: 25000 }).then(({ data }) => {
-
-          // Vuelvo la sucursal si la habia cambiado
+          cpr:                 cpr,
+          sucursal_id:         this.sucursal,
+          tercero_id:          this.editado.tercero_id,
+          direccion_id:        this.editado.direccion_id,
+          documentonumero:     this.editado.documentoNumero,
+          valores:             this.valores,
+          viaje_id:            this.editado.viaje_id,
+          produccion:          this.datosEmpresa.faeproduccion,
+          sucursalDemo:        this.sucursalDemo }, { timeout: 25000 }).then(({ data }) => {
           if (this.desdeAdmPedidos==true) {
             this.activoSucursal('setFiscal')
           }
-
           if (!data) {
             this.mensaje('¡Opps!, hubo un problema en la grabación!, consulte con la mesa de ayuda Gohu.', this.temas.snack_error_bg, 3000) 
           } else {
-
             if ( this.electronica) {
               if (data.cpr==undefined) {
                 this.electronicaOk = false
                 this.msg.msgTitle = 'Error en el Comprobante Electrónico'
                 let msg = ''
                 msg = 'Código de Error: '+data.code+' ('+data.errno+')<br><br>'
-                msg += 'No se puedo realizar el comprobante electrónico. '
+                msg += 'No se pudo realizar el comprobante electrónico. '
                 msg += 'Los servidores de AFIP no responden. '
                 msg += 'Debera esperar y reintentar luego.<br>'
                 msg += '<b>Si urge realizar el comprobante cambie a Manual.</b><br>'
                 this.msg.msgBody = msg
                 this.msg.msgAccion  = 'Comprobante Electronico Error'
-                this.msg.msgButtons = ['Reintetar','Cancelar']
+                this.msg.msgButtons = ['Reintentar','Cancelar']
               } else {
                 this.electronicaOk = true
                 this.msg.msgTitle = 'Comprobante Electrónico'
                 let msg = '<br>Se ha generado correctamente un nuevo comprobante electrónico.<br><br>'
                 msg += 'Comprobante: <b>'+data.cpr+'</b><br>'
                 msg += 'CAE: '+data.cae+'<br><br>'
-                if (this.notificaEnBaseAOtro.length) {
+                if (this.clienteVinculado) {
                   msg += '¡El comprobante ha sido enviado al cliente!'
                 }
                 this.msg.msgBody    = msg
@@ -9880,7 +8435,6 @@ export default {
       let pos     = 0
       let posiva  = 0
       this.ivas   = []
-
       for (let i=0; i<=this.articulos.length-1; i++) {
         posiva  = this.ivaTasas.map(function(e) { return e.id; }).indexOf(this.articulos[i].iva_id);
         pos     = this.ivas.map(function(e) { return e.Id; }).indexOf(this.articulos[i].iva_id);
@@ -9922,16 +8476,6 @@ export default {
       this.editedIndex = -1;
     },
 
-    cancelarSelArtPedErr() {
-      this.dialogError = false
-    },
-
-    nuevoMed() {
-      this.editedIndexMed = -1;
-      this.dialogMed = true;
-      this.cueItems = []
-    },
-
     rastrear(item) {
       return HTTP().get('/comprobantesrastrear/'+item.id+'/updown').then(({ data }) => {
         let ras = []
@@ -9966,75 +8510,20 @@ export default {
             r.push(ras[i])
           }
         }
-        this.rastreo = r
-        this.dialogRas = true
-      });
-
-      /* esta prueba recursiva funciona, el tema es implementarlo en la API */
-      /*
-      let rastros = [
-        {id:  1,padre:  8, hijo:  9},{id:  2,padre:  9, hijo: 10},{id:  3,padre: 10, hijo: 11},{id:  4,padre: 10, hijo: 12},
-        {id:  5,padre: 11, hijo: 13},{id:  6,padre: 10, hijo: 14},{id:  7,padre: 11, hijo: 15},{id:  8,padre: 10, hijo: 16},
-        {id:  9,padre: 11, hijo: 17},{id: 10,padre: 21, hijo: 22},{id: 11,padre: 22, hijo: 23},{id: 12,padre: 23, hijo: 24},
-        {id: 13,padre: 26, hijo: 27},{id: 14,padre: 27, hijo: 28},{id: 15,padre: 28, hijo: 29},{id: 16,padre: 51, hijo: 52},
-        {id: 17,padre: 67, hijo: 68},{id: 18,padre: 67, hijo: 69}]
-
-      function nestedDown(arr, buscar, j) {
-        var out = []
-        for (let i=j; i<=arr.length-1; i++)  {
-          if (arr[i].padre == buscar) {
-            out.push(arr[i]);
-            var children = nestedDown(arr, arr[i].hijo, i);
-            if(children.length) {
-              out.push(children); 
+        this.timeLine = []
+        this.dialogTimeLine = true
+        for (let i=0; i<=r.length-1; i++) {
+          if (r[i].user1==this.userId&&r[i].user2==this.userId) {
+            let pos = this.timeLine.findIndex(x=>x.detalles==r[i].cpr2)
+            if (pos==-1) {
+              this.timeLine.push({ created_at: r[i].fecha2, detalles: r[i].cpr2, novedad: r[i].cpr2 })
+            }
+            pos = this.timeLine.findIndex(x=>x.detalles==r[i].cpr1)
+            if (pos==-1) {
+              this.timeLine.push({ created_at: r[i].fecha1, detalles: r[i].cpr1, novedad: r[i].cpr1 })
             }
           }
         }
-        return out
-      }
-
-      function nestedUp(arr, buscar, j) {
-        var out = []
-        let lDone = true
-        let i = j
-        while (lDone==true) {
-          if (arr[i].hijo == buscar) {
-            out.push(arr[i]);
-            var children = nestedUp(arr, arr[i].padre, i);
-            if(children.length) {
-              out.push(children); 
-            }
-          }
-          i --
-          if (i<0) {
-            lDone = false
-          }
-        }
-        return out
-      }
-
-      let res = nestedDown(rastros , 10, 0 )
-      let ii = 0
-      for (let i=0; i<=rastros.length-1; i++) {
-        if (rastros[i].id == res[0].id) {
-          ii = i
-          break
-        }
-      }
-      let resx = nestedUp(rastros , 10, ii )
-      console.log(resx)
-      */
-
-    },
-
-    leerTimeLine(item) {
-      this.timeLine = []
-      return HTTP().get('/timeline/'+item.id)
-        .then(({ data }) => {
-          for (let i=0; i<=data.length-1; i++) {
-            this.timeLine.push(data[i])
-          }
-          this.dialogTimeLine = true
       });
     },
 
@@ -10068,26 +8557,29 @@ export default {
       this.dialogMed = true
       this.medioDePagoId = cual
       if (cual==1) {
-        this.medpagwidth = 400
+        this.medpagWidth = 400
       } else if (cual==2) {
-        this.medpagwidth = 1100
+        this.medpagWidth = 1100
       } else if (cual==3) {
-        this.medpagwidth = 1100
+        this.medpagWidth = 1100
       } else if (cual==5) {
-        this.medpagwidth = 600
+        this.medpagWidth = 600
       } else if (cual==6) {
-        this.medpagwidth = 1110
+        this.medpagWidth = 1110
       } else if (cual==7 || cual == 8 || cual == 9 ) {
-        this.medpagwidth = 500
+        this.medpagWidth = 500
       }
       this.cual = cual
       this.calculosMed()
-
       this.editadoMed = Object.assign({}, this.defaultItemMed)
       this.editadoMed.maletin_id = posMaletin
       this.cueItems = []
       if (posMaletin==null) {
-        this.editadoMed.importe = this.roundTo(this.editado.total-this.totValores,2)
+        if (this.pend.length>0) {
+          this.editadoMed.importe = this.roundTo(this.editado.total-this.totValores,2)
+        } else {
+          this.editadoMed.importe = 0
+        }
         this.medioDePagoNombre = this.medpag[cual-1].nombre
         this.editadoMed.maletinitem_id = null
       } else {
@@ -10101,60 +8593,21 @@ export default {
     },
 
     cprBalanceado() {
-
-      debugger
       if (this.editado.cpr.substring(0,3)=='REM') {
         return this.articulos.length==0?false:true
       }
       let valores = 0
-      let cancelado = 0
-      for (let i=0; i<=this.pend.length-1; i++) {
-        cancelado += this.pend[i].acancelar
-      }
-      cancelado = this.roundTo(cancelado,2)
-      if (this.editado.cpr.substring(0,3)!='REC') {
-        cancelado = this.editado.total
-      }
+      let aCobrar = this.editado.total
       for (let i=0; i<=this.medpag.length-1; i++) {
         valores += this.roundTo(this.medpag[i].total,2)
       }
-      this.totCancelado = cancelado
-      valores = this.roundTo(valores,2)
-      cancelado = this.roundTo(cancelado,2)
+      this.totACobrar = this.editado.total
       this.editado.total = this.roundTo(this.editado.total,2)
-      if ((valores<this.editado.total)||this.editado.total==0) {
-//    if ((valores!=this.editado.total)||(cancelado!=this.editado.total)||this.editado.total==0) {
-        return false
+      if (this.editado.cpr.substring(0,3)=='REC') {
+        return (valores==0?false:true)
       } else {
-        return true
+        return ((valores!=this.editado.total)||this.editado.total==0)?false:true
       }
-    },
-
-    automaticoPend(item) {
-      let tot = this.editado.total
-      for (let i=0; i<=this.pend.length-1; i++) {
-        this.pend[i].acancelar = 0
-      }
-      for (let i=0; i<=this.pend.length-1; i++) {
-        if (tot >= this.pend[i].pendiente) {
-          this.pend[i].acancelar = this.pend[i].pendiente
-          tot -= this.pend[i].pendiente
-        } else if ( tot > 0 ) {
-          this.pend[i].acancelar = tot
-          tot = 0
-        }
-      }
-      this.calculosMed()
-    },
-
-    editarPend(item) {
-      this.itemActualPend = item
-      this.editadoPend.acancelar = item.pendiente
-      this.dialogPend = true
-    },
-
-    editarRet(item) {
-      this.itemActual = item
     },
 
     guardarPend(item) {
@@ -10164,25 +8617,7 @@ export default {
       this.dialogPend = false
     },
 
-    cancelarPend() {
-      this.dialogPend = false;
-    },
-
-    selectPend(item) {
-      if (item.acancelar==0) {
-        item.acancelar = item.pendiente
-      } else {
-        item.acancelar = 0
-      }
-      let tot = 0
-      for (let i=0; i<=this.pend.length-1; i++) {
-        tot += this.pend[i].acancelar
-      }
-      this.editado.total = this.roundTo(tot,2)
-      this.calculosMed()
-    },
-
-    habinhab(obj) {
+    habInhab(obj) {
       let retval = false
       let mp = this.medioDePagoId
       if (mp==1) {            //EFECTIVO
@@ -10233,7 +8668,7 @@ export default {
         let txt = ''
         let cprs = 0
         for (let i=0; i<=this.pend.length-1; i++) {
-          if (this.pend[i].acancelar!=0) {
+          if (this.pend[i].pendiente!=0) {
             cprs ++
           }
         }
@@ -10297,19 +8732,22 @@ export default {
               tasadescuento: artTemp[i].tasadescuento, importedescuento: artTemp[i].importedescuento, tasaproprecargo: 0, total: artTemp[i].total,
               texto: artTemp[i].texto, vencimiento: artTemp[i].vencimiento, adevolver: 0, padre_id: this.itemActual.items[i].articulo.padre_id,
               undenvase: artTemp[i].undenvase, escombo: artTemp[i].escombo, ofeprecio: 0, ofetasdes: 0, ofeenvio: 0,
-              ofeunidades: 0, ofeestado: '', turno_id: null, decimales: 2, preciomediocobro: false, loTengo: false,
+              ofeunidades: 0, ofeestado: '', turno_id: null, decimales: 2, preciomediocobro: false, loTengo: false, desc1: 0, desc2: 0,
             })
           }
         }
       }
-      this.altaHTTP('ndcfac').then({
+      return this.altaHTTP('ndcfac').then(() => {
+        this.cancelar()
+        this.listarHTTP()
       })
     },
 
     guardarNdd() {
-      this.dialognddxDev = false
-      if (this.nddMotivoSel<=3) {
-        this.altaHTTP('nddfac').then({
+      if (this.nddMotivoSel<=2) {
+        return this.altaHTTP('nddfac').then(() => {
+          this.cancelar()
+          this.listarHTTP()
         })
       }
     },
@@ -10320,7 +8758,6 @@ export default {
     agregarMismoMed(item) {
       this.editedIndexMed = -1
       this.dialogMed = true
-
       this.calculosMed()
       this.editadoMed = Object.assign({}, this.defaultItemMed)
       this.editadoMed.id                = null
@@ -10399,7 +8836,6 @@ export default {
         if (this.editadoMed.fechafinanciera!=null) {
           fecfin = moment(this.editadoMed.fechafinanciera).format('DD-MM-YY')
         }
-
         this.editadoMed.nrovalor=this.editadoMed.nrovalor=='EFECTIVO'?null:Number(this.editadoMed.nrovalor)
         this.valores.push({ 
           caja_id: this.caja,
@@ -10456,7 +8892,6 @@ export default {
       this.calculosMed()
       this.calculos()
       this.dialogMed = false
-
       // Hay Maletines, marco el .sel
       if (this.hayMaletin()) {
         this.maletinesCli[this.maletinesCliPos].sel = true
@@ -10468,7 +8903,7 @@ export default {
       let totPen = 0
       let totVal = 0
       for (let i=0; i<=this.pend.length-1; i++) {
-        totPen += Number(this.pend[i].acancelar)
+        totPen += Number(this.pend[i].pendiente)
       }
       // SI VIENE DESDE FACTURACION NO TIENE PENDIENTE, TOMO EL TOTAL DEL COMPROBANTE
       if (this.editado.cpr.substring(0,3)!='REC') {
@@ -10476,6 +8911,9 @@ export default {
       }
       for (let i=0; i<=this.valores.length-1; i++) {
         totVal += Number(this.valores[i].importe)
+      }
+      if (this.pend.length==0&&this.editado.cpr.substring(0,3)=='REC') {
+        this.editado.total = totVal
       }
       totPen = this.roundTo(totPen,2)
       totVal = this.roundTo(totVal,2)
@@ -10487,13 +8925,11 @@ export default {
       if (this.editadoMed.id!=null) {
         let ipos = this.medios.findIndex(x=>x.id == this.editadoMed.id)
         if (ipos!=-1) {
-//        this.editadoMed.cuentaorigen_id = this.medios[ipos].cuenta_id
           this.editadoMed.cuentadestino_id = this.medios[ipos].cuenta_id
           if (this.editado.cpr.substring(0,3)=='FAC') {
             this.editadoMed.cuotas = this.medios[ipos].cuotas
             this.editadoMed.interes = this.medios[ipos].interes
             this.editadoMed.recargo = this.medios[ipos].recargo
-
             // selecciono en el combo de medios. Tengo que ver si tiene intereses o recargos
             // pueden haber otros medios ya cargados con otros recargos o intereses
             // si el medio seleccionado tiene recargo o intereses se calcula el proporcional
@@ -10501,25 +8937,20 @@ export default {
             // luego se calcula el proporcional de la tasa del medio seleccionado y este valor
             // se guarda en tasaproprecargo en el vector de articulos, para que vaya calculando
             // en base a los nuevos datos.
-            
             let totalValor = 0
             let recargoValor = 0
             let propValor = 0
             let tasaPropValor = 0
             let totCprSinRecargos = this.roundTo(this.totalComprobante(false),2)
-
             // ahora voy viendo en valores cuanto ingreso de cada uno y si tuvo recargo
             // en tal caso los voy aplicando al total del comprobante
             for (let i=0; i<=this.valores.length-1; i++) {
-              //valoresIngresados += this.valores[i].importe
-              //totCprSinRecargos -= this.valores[i].importe
               totalValor = this.valores[i].importe
               recargoValor = this.roundTo(totalValor * ((this.valores[i].recargo+this.valores[i].interes)/100),2)
               propValor = (totalValor * 100) / totCprSinRecargos
               tasaPropValor += propValor * ((this.valores[i].recargo+this.valores[i].interes)/100)
               // calculo proporcion del importe del valor con respecto al total del comprobante
             }
-
             // ahora veo el valor actual
             totalValor = this.editadoMed.importe
             recargoValor = this.roundTo(totalValor * ((this.editadoMed.recargo+this.editadoMed.interes)/100),2)
@@ -10599,7 +9030,6 @@ export default {
             desit = this.roundTo(base*(Number(this.articulos[i].tasadescuento)/100),2)
           }
           base = this.roundTo(base - (des+desit),2)
-          
           if (this.articulos[i].iva_id==2) {
             exe = base
           } else {
@@ -10635,15 +9065,17 @@ export default {
         this.editado.iva = this.roundTo(this.editado.iva,2)
         this.editado.total = this.roundTo(this.editado.total,2)
       }
-      if (this.ctacte && this.disponible>0) {
+      if (this.editado.ctacte && this.disponible>0) {
         this.valores = this.valores.filter(function(valor) { return valor.medio_id != 4 })
         if (this.disponible>this.editado.total) {
           this.medpag[3].total = (this.editado.total-(this.medpag[0].total+val))
           this.cargoValorInicialEnValores(null, this.medpag[3].total, 4)
         } else {
+          this.mensaje('¡No hay saldo disponible!', this.temas.snack_error_bg, 2500)
           this.medpag[3].total = this.disponible
           this.cargoValorInicialEnValores(null, this.disponible, 4)
         }
+        this.medpag[3].activo = true
       } else {
         if (this.medpag[0].activo) {
           this.medpag[0].total = (this.editado.total-(this.medpag[3].total+val))  
@@ -10651,7 +9083,7 @@ export default {
       }
     },
 
-    propiodelcliente() {
+    propioDelCliente() {
       this.editadoMed.cuit = this.editado.documentoNumero
       this.editadoMed.nombre = this.editado.nombre
       this.buscoCuentasDelCuit()
@@ -10754,14 +9186,6 @@ export default {
       })
     },
 
-    seleccionoBanco() {
-      for (let i=0; i<=this.cueNewItems.length-1; i++) {
-        if (this.editadoMed.cuenta==this.cueNewItems[i].cuenta) {
-          this.cueNewItems[i].banco_id=this.editadoMed.banco_id
-        }
-      }
-    },
-
     calculosNdc(cual) {
       if (cual==1) {  //CAMBIO EL %
         this.ndcTotal = this.roundTo(this.editado.total * (this.ndcTasaDescuento/100),2)
@@ -10775,115 +9199,6 @@ export default {
         this.nddTotal = this.roundTo(this.editado.total * (this.nddTasaDescuento/100),2)
       } else if (cual==2) {   //CAMBIO EL TOTAL, CALCULO EL %
         this.nddTasaDescuento = this.roundTo(((this.nddTotal/this.editado.total)*100),2)
-      }
-    },
-
-    selMotivoNdc() {
-      this.dialogNdcxDev = false
-      if (this.ndcMotivoSel==1) {
-        this.ndcTotal = 0
-        this.ndcTasaDescuento = 0
-        return 
-      }
-      // Si ya realizo devolucion o anulacion, debo buscar en el/los NDC vinculadas para descontar
-      // las cantidades ya devueltas.
-      let aRestar = []
-      this.articulos = []
-      let ndcImputadas = 0
-      this.ndcTotal = 0
-      return HTTP().get('/buscondcvinculadas/'+this.itemActual.id ).then(({ data }) => {
-        if (data.length>0) {
-          for (let i=0; i<=data.length-1; i++) {
-            aRestar.push({
-              articulo_id: data[i].articulo_id,
-              cantidad: data[i].cantidad,
-              total: data[i].total
-            })
-            ndcImputadas += data[i].total
-          }
-        }
-        for (let i=0; i<=this.itemActual.items.length-1; i++) {
-          for (let j=0; j<=aRestar.length-1; j++) {
-            if (aRestar[j].articulo_id == this.itemActual.items[i].articulo_id) {
-              this.itemActual.items[i].cantidad -= Math.abs(aRestar[j].cantidad)
-            }
-          }
-          if (this.itemActual.items[i].cantidad != 0) {
-            this.articulos.push({
-              id: this.itemActual.items[i].id, articulo_id: this.itemActual.items[i].articulo_id, codigo: this.itemActual.items[i].articulo.codigo,
-              codbar: this.itemActual.items[i].articulo.codbar, nombre: this.itemActual.items[i].articulo.nombre,
-              deposito_id: this.itemActual.items[i].deposito_id, unidad_id: this.itemActual.items[i].unidad_id,
-              moneda_id: this.itemActual.items[i].moneda_id, iva_id: this.itemActual.items[i].iva_id, cantidad: Number(this.itemActual.items[i].cantidad),
-              cantidadoriginal: Number(this.itemActual.items[i].cantidad), stock: this.itemActual.items[i].stock,
-              undstock: this.itemActual.items[i].articulo.undstock, sinstock: this.itemActual.items[i].sinstock,
-              costo: this.itemActual.items[i].costo, precio: this.itemActual.items[i].precio, preciooriginal: this.itemActual.items[i].preciooriginal,
-              tasadescuento: this.itemActual.items[i].tasadescuento, importedescuento: this.itemActual.items[i].importedescuento, tasaproprecargo: 0,
-              total: this.itemActual.items[i].total, texto: '', vencimiento: '', adevolver: 0, padre_id: this.itemActual.items[i].articulo.padre_id,
-              undenvase: this.itemActual.items[i].articulo.undenvase, escombo: false, ofeprecio: 0, ofetasdes: 0, ofeenvio: 0,
-              ofeunidades: 0, ofeestado: '', turno_id: null, decimales: this.itemActual.items[i].articulo.precios[0].decimales,
-              preciomediocobro: false, loTengo: false,
-            })
-          }
-        }
-        this.ndcTotal = this.roundTo(this.itemActual.total - Math.abs(this.roundTo(ndcImputadas,2)),2)
-        if (this.ndcTotal === 0) {
-          // MOSTRAR MENSAJE Y NO INGRESAR
-        }
-        if (this.ndcMotivoSel==2) {
-          this.dialogNdcxDev = true
-        }
-      })
-    },
-
-    selMotivoNdd() {
-      this.dialogNddxDev = false
-      if (this.itemActual.cpr.substring(0,3)=='FAC') {
-      } else if (this.itemActual.cpr.substring(0,3)=='FAC') {
-      }
-      if (this.nddMotivoSel==1) {
-        this.nddTotal = 0
-        this.nddTasaDescuento = 0
-        return 
-      }
-    },
-
-    ////////////////////////
-    // METODOS DE RECIBOS //
-    ////////////////////////
-    cobrar(item) {
-      let puedeCobrar = true
-      if (item.tercero.user) {
-        if (item.tercero.user.tipo=='PP'&&item.tercero.user.userexclusivo_id==this.userId&&item.tercero.user.usaelsistema==0) {
-          if (item.pendientes[0].pendiente!=0) {
-            return true
-          } else {
-            return false
-          }
-        } else {
-          let user = item.tercero.user.id
-          for (let i=0; i<=this.vinculosHijos.length-1; i++) {
-            if (user == this.vinculosHijos[i]) {
-              puedeCobrar = false
-              break
-            }
-          }
-        }
-      }
-      if (!item.pendientes[0] || !puedeCobrar || (this.userId==1 && item.user.tipo!='PP')) return false
-      if (item.pendientes[0].pendiente>0) {
-        return true
-      } else {
-        return false
-      }
-    },
-
-    tieneRemito(item) {
-      if (item.cpr==undefined) {return false}
-      if (item.cpr.substring(0,3)=='REM') { return false }
-      if (item.observaciones!=null) {
-        return item.observaciones.indexOf('REMITO')==-1 ? false : true
-      } else {
-        return false
       }
     },
 
@@ -10901,18 +9216,8 @@ export default {
       });
     },
 
-    tasaDescuentoGlobal() {
-      let ctt = Number(this.editadoArt.cantidad)
-      let pre = Number(this.editadoArt.precio)
-      let tde = Number(this.editado.tasadescuento)
-      let ide = this.roundTo((ctt*pre),2)*(tde/100)
-      this.editadoArt.importedescuento = ide
-      this.editadoArt.total = this.roundTo(((ctt*pre)-ide),2)
-      return this.editadoArt.total
-    },
-
     chequearArtPed(item) {
-      return HTTP().post('comprobante', { id: item.id }).then(({ data }) => {
+      return HTTP().post('comprobanteventa', { id: item.id }).then(({ data }) => {
         item = data.c;
         this.itemActual = data.c; // para luego laburar con el cuando seleccione articulos en pedidos
         this.artPed = []
@@ -11039,9 +9344,8 @@ export default {
         this.desdeAdmPedidos = true
         this.activoSucursal('setFiscal')
       }
-
       /* desdeDonde: 1=panel de principal, 2=administracion de pedidos*/
-      return HTTP().post('/comprobante', { id: id }).then(({ data }) => {
+      return HTTP().post('/comprobanteventa', { id: id }).then(({ data }) => {
         this.itemActual = data.c
         this.artTransfPed = []
         // Cargo en artPed cada unos de los items que me piden
@@ -11059,7 +9363,6 @@ export default {
             estado: 'K',
           })
         }
-
         return HTTP().get('/buscocomprobantesvinculados/'+id ).then(({ data }) => {
           if (data.length>0) {
             for (let i=0; i<=data.length-1; i++) {
@@ -11156,11 +9459,6 @@ export default {
         if (cuanto==-1 && this.artPed[k].cttped==0) {
           return
         }
-      } else if (array=='transfPed') {
-        k = this.artTransfPed.indexOf(item)
-        if (cuanto==-1 && this.artTransfPed[k].ctttransf==0) {
-          return
-        }
       }
       if (api) {
         return HTTP().post('/sumarrestaranotador', {cprid: this.anotadorId,artid: this.articulos[k].articulo_id,cant: cuanto}).then(({ data }) => {
@@ -11200,6 +9498,13 @@ export default {
               this.artTransfPedCtt --
             }
           }
+          let cttPed = 0
+          let cttTra = 0
+          for ( let i=0; i<= this.artTransfPed.length-1; i++) {
+            cttPed += this.artTransfPed[i].cttori
+            cttTra += this.artTransfPed[i].ctttransf
+          }
+          this.artTransfPorcentaje = this.roundTo((cttTra*100)/cttPed,2)
         }
       }
     },
@@ -11211,10 +9516,6 @@ export default {
       this.dialogTransferirItem = true
     },
 
-    cancelarTransferirItem() {
-      this.dialogTransferirItem = false
-    },
-
     guardarTransferirItem(item) {
       this.itemActualTransfItem.ctttransf = Number(this.editadoTransfItem.cttATransferir)
       this.artTransfPedCtt += this.editadoTransfItem.cttATransferir
@@ -11222,7 +9523,6 @@ export default {
     },
 
     sumarRestarNdcDev(item, cuanto) {
-      debugger
       this.editedIndexNot = this.articulos.indexOf(item)
       if ((cuanto==-1 && this.articulos[this.editedIndexNot].adevolver==0) ||
        (cuanto==1 && this.articulos[this.editedIndexNot].adevolver>=this.articulos[this.editedIndexNot].cantidad)) 
@@ -11247,11 +9547,9 @@ export default {
     },
 
     buscarArt(estricto) {
-
       if (this.busArt=='') {
         return
       }
-
       if (this.busArt=='1'||this.busArt.toUpperCase()=='TEXTO'||this.busArt=='1@1') {
         this.editadoArt.codigo = 'TEXTO'
         this.esTexto = true
@@ -11261,13 +9559,10 @@ export default {
         });
         return
       }
-
       this.precioOrigen = 'Lista'
       this.precioDescuento = 0
       this.cttMinima = 0
-
       estricto = this.busArt.indexOf('@')!=-1 ? true : false
-
       // si es PED es porque es el usuario es un Vendedor, y vinculosPadres viene cargado solo con la empresa del mismo.
       let data1 = null
       return HTTP().post('/articuloz', {
@@ -11285,36 +9580,11 @@ export default {
           });
           return
         }
-
-        // VEO EL TEMA DE PRECIOS, SI .PRECIOS > 1 ES PORQUE ENCONTRO MAS DE UN PRECIO DEL ARTICULO
-        // Y EN ESE CASO DEJO SOLO EL PRECIO MAYOR CON EL COSTO PROMEDIO PONDERADO
-        let ctt = 0
-        let tot = 0
-        let cpp = 0
-        for (let i=0; i<=data1.length-1; i++) {
-          if (data1[i].precios.length>1) {
-            ctt = 0; tot = 0; cpp = 0
-            for (let j=0; j<=data1[i].precios.length-1; j++) {
-              ctt += data1[i].precios[j].cantidad
-              tot += data1[i].precios[j].total
-            }
-            cpp = this.roundTo(tot/ctt,4)
-            // BUSCO EL PRECIO MAYOR
-            let precioMayor = data1[i].precios.sort((a,b) =>{
-              return Number.parseInt(b.precio) - Number.parseInt(a.precio)
-            })
-            data1[i].precios = []
-            data1[i].precios.push(precioMayor[0])
-            data1[i].precios[0].costo = cpp
-          }
-        }
-
         // INICIALIZO VALORES DE DESCUENTOS Y PRIMERA ASIGNACION. LUEGO CONTROLO X CANTIDAD
         let descual = 'Lista'
         this.precioOrigen = 'Lista'
         this.cttMinima = 1
-
-        if (data1[0].precios[0].ofeestado=='A') {
+        if (data1[0].precios[0].ofeestado=='A'&&data1[0].precios[0].ofeunidades>0) {
           data1[0].ofeprecio = data1[0].precios[0].precio-(data1[0].precios[0].precio*(data1[0].precios[0].ofetasadescuento/100))
           data1[0].ofetasdes = data1[0].precios[0].ofetasadescuento
           data1[0].ofeenvio = 0
@@ -11369,6 +9639,8 @@ export default {
           this.editadoArt.preciomediocobro = data1[0].preciomediocobro
           this.editadoArt.escombo          = data1[0].escombo
           this.editadoArt.loTengo          = data1[0].loTengo
+          this.editadoArt.desc1            = data1[0].precios[0].desc1
+          this.editadoArt.desc2            = data1[0].precios[0].desc2
 
           this.$nextTick(() => {
             const f = this.$refs.cantidad;
@@ -11424,7 +9696,6 @@ export default {
       this.cttMinima = 1
       this.promoDescuento = this.editadoArt.ofetasdes
       let pordes = 0
-
       // QUE DESUENTO TOMO?, veo si tomo el descuento de la promo
       if (this.editadoArt.ofeprecio && this.editadoArt.ofeestado=='A' && this.editadoArt.ofeunidades!=0 &&
           this.editadoArt.ofeunidades>this.editadoArt.cantidad) {
@@ -11432,7 +9703,6 @@ export default {
         descual = 'Promocion'
         pordes = this.promoDescuento
       }
-
       if (!this.esTexto) {
         this.editadoArt.texto = descual
       }
@@ -11460,7 +9730,6 @@ export default {
     },
 
     guardarItem(columna) {
-
       if (this.editadoArt.cantidad == 0) {
         this.$nextTick(() => {
           const f = this.$refs.cantidad;
@@ -11518,7 +9787,6 @@ export default {
       } else {
         this.actualizoItem(ctt, pre, false)
       }
-
       this.calculos()
       this.nuevoArt()
       if (this.editadoArt.codigo!='TEXTO') {
@@ -11578,6 +9846,8 @@ export default {
           decimales: this.editadoArt.decimales,
           preciomediocobro: this.editadoArt.preciomediocobro,
           loTengo: this.editadoArt.loTengo,
+          desc1: this.editadoArt.desc1,
+          desc2: this.editadoArt.desc2,
         })
       } else {
         this.articulos[this.editedIndexArt].cantidad = ctt
@@ -11601,7 +9871,7 @@ export default {
             preciooriginal: Number(this.editadoArt.total), tasadescuento: 0, importedescuento: 0, tasaproprecargo: 0, total: Number(this.editadoArt.total),
             texto: this.editadoArt.texto, vencimiento: '', adevolver: 0, padre_id: null, undenvase: 1, escombo: false,
             ofeprecio: 0, ofetasdes: 0, ofeenvio: 0, ofeunidades: 0, ofeestado: '', turno_id: null, decimales: this.editadoArt.decimales,
-            preciomediocobro: false, loTengo: false,
+            preciomediocobro: false, loTengo: false, desc1: this.editadoArt.desc1, desc2: this.editadoArt.desc2,
           })
         }
         this.calculos()
@@ -11654,7 +9924,7 @@ export default {
             undenvase: this.editadoArt.undenvase, escombo: this.editadoArt.escombo,
             ofeprecio: this.editadoArt.ofeprecio, ofetasdes: this.editadoArt.ofetasdes, ofeenvio: this.editadoArt.ofeenvio,
             ofeunidades: this.editadoArt.ofeunidades, ofeestado: this.editadoArt.ofeestado, turno_id: null, decimales: this.editadoArt.decimales,
-            preciomediocobro: false, loTengo: false,
+            preciomediocobro: false, loTengo: false, desc1: this.editadoArt.desc1, desc2: this.editadoArt.desc2,
           })
           recno = this.articulos.length-1
         }
@@ -11663,15 +9933,20 @@ export default {
         this.calculos()
       } else {
         const a = HTTP().post('/anotadordeventasitems/'+this.anotadorId, {articulos: this.articulos[recno]}).then(({ data }) => {
+          if (data=='err') {
+            this.mensaje('¡Opps, se ha producido un error al intentar guardar esta venta!', this.temas.snack_error_bg, 1500)
+            commit()
+          } else {
+            this.$store.commit('setAnotaciones', this.$store.state.anotaciones+1, { root: true })
+            this.mensaje('¡Nueva venta agregada!', this.temas.forms_titulo_bg, 1500)
+          }
           this.calculos()
         })
       }
-
       this.$nextTick(() => {
         const f = this.$refs.buscar;
         f.focus();
       });
-
       if (this.editedIndexArt == -1) {
         if (this.dialogArtNot) {
           this.nuevoArtNot()
@@ -11688,7 +9963,7 @@ export default {
         this.editedIndexNot = this.articulos.indexOf(item)
         this.msg.msgTitle = 'Borrar Item del Anotador'
         this.msg.msgBody = 'Desea borrar este Item del Anotador de Ventas?'
-      } else {
+     } else {
         this.msg.msgTitle = 'Borrar Item'
         this.msg.msgBody = 'Desea borrar '+this.itemActualArt.nombre+' - ('+this.itemActualArt.codigo+')'
       }
@@ -11737,58 +10012,25 @@ export default {
 
     guardarTransfPedHTTP(item) {
       return HTTP().post('/transfieropedido/', 
-        { sucursal: this.artTransfPedId,
-          itemactual: this.itemActual, articulos: this.artTransfPed }).then(({ data }) => {
-          if (data=='ok') {
-            this.msg.msgTitle = 'Transferencia Realizada'
-            this.msg.msgBody = 'Se ha realizado correctamente la tranferencia de este Pedido.'
-          } else if (data=='error') {
-            this.msg.msgTitle = 'Error'
-            this.msg.msgBody = 'Se ha producido un error en la tranferencia de este Pedido.'
-          }
-          this.msg.msgVisible = true
-          this.msg.msgAccion = 'transferencia de pedidos'
-          this.msg.msgButtons = ['Aceptar']
-          this.dialogTransferirPedido = false
-          if (this.desdeAdmPedidos) {
-            this.activoSucursal('setFiscal')
-            this.administracionPedidos()
-          } else {
-            this.listarHTTP(false)
-          }
-
-        })
+        { sucursal: this.artTransfPedId, itemactual: this.itemActual, articulos: this.artTransfPed }).then(({ data }) => {
+        if (data=='ok') {
+          this.mensaje('¡Transferencia realizada con éxito!', this.temas.forms_titulo_bg, 1500)
+        } else if (data=='error') {
+          this.mensaje('¡Opps, se ha producido un error al intentar transferir este pedido!', this.temas.snack_error_bg, 1500)
+        }
+        this.dialogTransferirPedido = false
+        if (this.desdeAdmPedidos) {
+          this.activoSucursal('setFiscal')
+          this.administracionPedidos()
+        } else {
+          this.listarHTTP(false)
+        }
+      })
     },
-
 
     //////////////////////////////
     // METODOS FUNCIONES VARIAS //
     //////////////////////////////
-    formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
-      try {
-        decimalCount = Math.abs(decimalCount);
-        decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
-        const negativeSign = amount < 0 ? "-" : "";
-        let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
-        let j = (i.length > 3) ? i.length % 3 : 0;
-        return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : ""); 
-      } catch (e) {
-        console.log(e)
-      }
-    },
-
-    roundTo(value, places){
-      var power = Math.pow(10, places);
-      return Math.round(value * power) / power;
-    },
-
-    truncTo(value, places) {
-      let multiplier = Math.pow(10, places),
-        adjustedNum = value * multiplier,
-        truncatedNum = Math[adjustedNum < 0 ? 'ceil' : 'floor'](adjustedNum);
-      return truncatedNum / multiplier;      
-    },
-
     msgRespuesta(op) {
       this.clickEnBoton = false
       if (op==='Aceptar') {
@@ -11798,23 +10040,24 @@ export default {
           if (this.dialogNot) {
             return HTTP().delete('/borraritemanotador/'+this.anotadorId+'/'+this.articulos[this.editedIndexNot].articulo_id).then((data) => {
               this.msg.msgVisible = false;
+              //gilgamesh9999
+              this.$store.commit('setAnotaciones', this.$store.state.anotaciones-1, { root: true })
               this.listarAnotaciones()
             });
           } else {
             this.borrarLineaComprobante(this.itemActualArt)
           }
-        } else if (this.msg.msgAccion=='exportar a PDF') {
-          alert('exportando a PDF...')
-        } else if (this.msg.msgAccion=='exportar a XLS') {
-          this.exportExcel()
         } else if (this.msg.msgAccion=='facturar anotaciones de ventas') {
+          this.msg.msgVisible = false
+          this.dialogNot = false
+          this.$store.commit('setAnotaciones', 0, { root: true })
           return this.altaHTTP('anotaciones').then((data) => {
             this.articulos = []
-            this.msg.msgVisible = false;
+            return this.listarHTTP()
           })
         } else if (this.msg.msgAccion=='cobrar comprobante') {
           return this.altaHTTP('recibo').then((data) => {
-            this.msg.msgVisible = false;
+            //this.msg.msgVisible = false;
           })
         } else if (this.msg.msgAccion=='anular recibo') {
           this.anularReciboHTTP(this.itemActual)
@@ -11854,6 +10097,10 @@ export default {
         } else if (this.msg.msgAccion=='Dar por concluido') {
           this.concluirPedidoHTTP(this.itemActual)
         }
+      } else if (op=='Reintentar') {
+        this.yaEnviado = true
+      } else if (op=='Cancelar') {
+        this.yaEnviado = false
       }
       this.msg.msgVisible = false;
     },
@@ -11876,23 +10123,6 @@ export default {
 
     getColor (activo) {
       return (activo === 1) ? this.temas.forms_btn_activo_bg : this.temas.forms_btn_inactivo_bg
-    },
-
-    getColorTotal (item) {
-      let tieneNdc = false
-      if (item.pendientes!=null) {
-        for (let i=0; i<= item.pendientes.length-1; i++) {
-          if (item.pendientes[i].cancelaciones!=null) {
-            for (let j=0; j<=item.pendientes[i].cancelaciones.length-1; j++) {
-              if (item.pendientes[i].cancelaciones[j].cancelador.cpr.substring(0,3)=='NDC') {
-                tieneNdc = true
-                break
-              }
-            }
-          }
-        }
-      }
-      return (tieneNdc) ? this.temas.forms_btn_inactivo_bg : this.temas.barra_lateral_bg
     },
 
     getEstadoPed (estado, accion) {
@@ -11937,7 +10167,7 @@ export default {
       let say = ''
       if (accion=='m') { //&&this.$store.state.formTercerosTitulo!='Equipo') {
         if (esExclMio) {
-          say = 'ex'+usaApp
+          say = 'v'+usaApp
         } else {
           if (item.tercero.user.tipo=='UE') {
             say = estaVinculado!=-1?'u+v':'u'
@@ -11951,11 +10181,9 @@ export default {
             say = estaVinculado!=-1?'BAv':'BA'
           }
         }
-
         if (item.lista!=null) {
           say +=' -'+item.lista
         }
-
         return say
       } else if (accion=='c') {
         if (item.tercero.user) {
@@ -11975,63 +10203,11 @@ export default {
     },
 
     getEstadoAnotador ( importe ) {
-      return importe==0 ? 'black' : this.temas.barra_principal_botonapp_bg
-    },
-
-    formatoImporte(value) {
-      let val = (value/1).toFixed(2).replace('.', ',')
-      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-    },
-
-    formatoImporteDec(value, dec) {
-      let val = (value/1).toFixed(dec).replace('.', ',')
-      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-//      let signo = value >= 0?1:-1
-//      let v = Math.round((value*Math.pow(10,dec))+(signo*.0001))/Math.pow(10,dec).toFixed(dec)
-//      return v.toString()
-    },
-
-    formatoFecha(value) {
-      return moment(String(value)).format('L')
-    },
-
-    formatoFechaCorta(value) {
-      let a = moment(String(value)).format('dd')
-      let b = moment(String(value)).format('DD') 
-      return a+' '+b
-    },
-
-    formatoFechaReparto(value) {
-      return moment(value).format('dd DD, MMM YY')
-    },
-
-    fechaTimeLine(value) {
-      return moment(String(value)).format('D MMM-YY h:mm a')
-    },
-
-    exportExcel: function () {
-      let data = XLSX.utils.json_to_sheet(this.items)
-      const workbook = XLSX.utils.book_new()
-      const filename = 'ventas'
-      XLSX.utils.book_append_sheet(workbook, data, filename)
-      XLSX.writeFile(workbook, `${filename}.xlsx`)
-    },
-
-    exportarAPDF () {
-      this.msg.msgTitle = 'Exportar a PDF'
-      this.msg.msgBody = 'Desea exportar los datos a PDF'
-      this.msg.msgVisible = true
-      this.msg.msgAccion = 'exportar a PDF'
-      this.msg.msgButtons = ['Aceptar','Cancelar']
-    },
-
-    exportarAXLS () {
-      // este viene del form y activa el componente confirmacion, luego este va a msgRespuesta con lo confirmado
-      this.msg.msgTitle = 'Exportar a XLS'
-      this.msg.msgBody = 'Desea exportar los datos a XLS'
-      this.msg.msgVisible = true
-      this.msg.msgAccion = 'exportar a XLS'
-      this.msg.msgButtons = ['Aceptar','Cancelar']
+      if (importe==0) {
+        return this.$store.state.dark?'white':'grey'
+      } else {
+        return this.temas.barra_principal_botonapp_bg
+      }
     },
 
     chequearAfip () {
@@ -12055,29 +10231,28 @@ export default {
     },
 
     setGrillaPrincipal() {
+      this.items = []
       if (this.filtroComprobanteSel=='Viajes') {
         this.headers = [
           { text: 'Vje', value: 'id', align: 'end', width: 80 },
           { text: 'Fecha', value:'fecha', align: 'left', width: 90},
           { text: 'Zona', value:'zona.nombre', align: 'left', width: 200},
-        //{ text: 'Vendido', value:'vendido', align: 'end', width: 140},
           { text: 'Facturado', value:'facturas', align: 'end', width: 160},
           { text: 'NDDs', value:'ndd', align: 'end', width: 160},
           { text: 'NDCs', value:'ndc', align: 'end', width: 160},
           { text: 'REMs', value:'remitos', align: 'end', width: 90},
           { text: 'Recibos', value:'recibos', align: 'end', width: 220},
-        //{ text: 'Val/Ren', value:'valores', align: 'left', width: 100},
           { text: 'Estado', value:'estado', align: 'end',  width: 110},
           { text: 'Ops', value: 'accion', sortable: false },
         ]
       } else {
         this.headers = [
-          { text: 'COMPROBANTE', value:'cpr', align: 'left', width: 175 },
+          { text: 'COMPROBANTE', value:'cpr', align: 'left', width: 125 },
           { text: 'FECHA', value:'fecha', align: 'left', width: 90 },
           { text: 'CLIENTE', value: 'tercero.razon_social', align: 'left', width: 230 },
+          { text: 'CTACTE', value:'ctacte', align: 'end', width: 110 },
+          { text: 'NDC', value:'ndcPPTot', align: 'end', width: 110 },
           { text: 'DESC', value:'importedescuento', align: 'end', width: 110 },
-          { text: 'TRN', value:'rentabilidad', align: 'end', width: 110 },
-          { text: 'PENDIENTE', value:'pendientes[0].pendiente', align: 'end', width: 120 },
           { text: 'TOTAL', value:'total', align: 'end', width: 150 },
           { text: 'ESTADO', value:'estado', align: 'left', width: 110 },
           { text: 'ACC', value: 'accion', sortable: false, width: 50 },
@@ -12091,12 +10266,17 @@ export default {
         if (this.filtroComprobanteSel=='Pedidos') {
           if (this.operarioEsVendedor) {
             this.headers[2].value = 'user.tercero.razon_social'
+            this.headers[3].text = 'Viaje'
+            this.headers[3].value = 'viaje_id'
+            this.headers[4].text = 'Zona'
+            this.headers[4].value = 'zona'
+            this.headers[4].align ='left'
           } else {
             this.headers[2].value = 'tercero.razon_social'
             this.headers[3].text = 'Viaje'
             this.headers[3].value = 'viaje_id'
             this.headers[4].text = 'Zona'
-            this.headers[4].value = 'tercero.direcciones[0].zona[0].zonas.nombre'
+            this.headers[4].value = 'zona'
             this.headers[4].align ='left'
           }
           this.headers[5].text = 'PEDIDO POR'
@@ -12134,18 +10314,6 @@ export default {
       }
     },
 
-    selectAllChq(event) {
-      this.nddTotal = 0
-      if (event.value) {
-        this.selected = this.cheques
-        for (let i=0; i<=this.cheques.length-1; i++) {
-          this.nddTotal += this.cheques[i].importe
-        }
-      } else {
-        this.selected = []
-      }
-    },
-
     confirmarFacturasSeleccionadas() {
       this.articulos = []
       this.dialogSelFacturas = false
@@ -12167,6 +10335,7 @@ export default {
               vencimiento: item.data[i].vencimiento, adevolver: 0, padre_id: null, undenvase: item.data[i].articulo.undenvase,
               escombo: item.data[i].articulo.escombo, ofeprecio: 0, ofetasdes: 0, ofeenvio: 0, ofeunidades: 0, ofeestado: '',
               turno_id: null, decimales: item.data[i].articulo.precios[0].decimales, preciomediocobro: false, loTengo: false,
+              desc1: item.data[i].articulo.precios[0].desc1, desc2: item.data[i].articulo.precios[0].desc2,
             })
           } else {
             this.articulos[pos].cantidad += Number(item.data[i].cantidad)
@@ -12197,6 +10366,7 @@ export default {
             total: this.selected[i].precio, texto: 'FACTURACION DE TURNO/S', vencimiento: moment().format('YYYY-MM-DD'), adevolver: 0,
             padre_id: null, undenvase: 1, escombo: false, ofeprecio: 0, ofetasdes: 0, ofeenvio: 0, ofeunidades: 0,
             ofeestado: '', turno_id: this.selected[i].id, decimales: this.selected[i].decimales, preciomediocobro: false, loTengo: false,
+            desc1: 0, desc2: 0,
           })
         } else {
           this.articulos[pos].cantidad += 1
@@ -12214,40 +10384,64 @@ export default {
         numero: parseInt(this.itemActual.cpr.substring(11,19)),
         cuit: this.datosEmpresa.cuit,
         produccion: this.datosEmpresa.faeproduccion }, { timeout: 25000 }).then((res) => {
-
         this.msg.msgTitle = 'Informe de Comprobante en AFIP'
-        let msg = ''
+        let m = ''
         if (res.data=='error') {
-          msg = 'El servicio de AFIP esta INACTIVO' 
-          msg += '<br>Deberá esperar a que mismo se reestablezca.'
+          m = 'El servicio de AFIP esta INACTIVO' 
+          m += '<br>Deberá esperar a que mismo se reestablezca.'
         } else {
-          msg += '<br>Cbte:<b>'+res.data.CbteDesde+'</b><br>'
-          msg += 'CAE:<b>'+res.data.CodAutorizacion+'</b><br>'
+          m =  '<table><tr><td style="text-align:left">Cbte</td><td style="text-align:left">'
+          m += '<b>\xa0\xa0\xa0'+res.data.CbteDesde+'</b>'
+          m += '</td></tr><tr><td style="text-align:left">Tipo</td><td style="text-align:left">'
           if (res.data.Concepto==1) {
-            msg += 'Tipo: <b>Comercializacion de Mercaderias</b><br><br>'
+            m += '<b>\xa0\xa0\xa0Comercializacion de Mercaderias</b>'
           } else if (data.Concepto==2) {
-            msg += 'Tipo: <b>Servicio Prestado</b><br><br>'
+            m += '<b>\xa0\xa0\xa0Servicio Prestado</b>'
           } else {
-            msg += 'Tipo: <b>Comercializacion de Mercaderías y Servicio Prestado</b><br><br>'
+            m += '<b>\xa0\xa0\xa0Comer.de Mercaderías y Serv.Prestado</b>'
           }
-          msg += 'Importes<br>'
-          msg += 'NETO: <b>$'+this.formatoImporte(res.data.ImpNeto)+'</b><br>'
-          msg += 'EXENTO: <b>$'+this.formatoImporte(res.data.ImpOpEx)+'</b><br>'
-          msg += 'OTROS: <b>$'+this.formatoImporte(res.data.ImpTotConc)+'</b><br>'
-          msg += 'IVA: <b>$'+this.formatoImporte(res.data.ImpIVA)+'</b><br>'
-          msg += 'TOTAL: <b>$'+this.formatoImporte(res.data.ImpTotal)+'</b><br><br>'
-          msg += 'Cantidad de Alicuotas: <b>'+res.data.Iva.AlicIva.length+'</b><br>'
-          for (let i=0; i<=res.data.Iva.AlicIva.length-1; i++) {
-            msg += 'BaseImp: <b>$'+this.formatoImporte(res.data.Iva.AlicIva[i].BaseImp)+'</b> '
-            msg += 'IVA: <b>$'+this.formatoImporte(res.data.Iva.AlicIva[i].Importe)+'</b> '
-            msg += 'Codigo: <b>'+res.data.Iva.AlicIva[i].Id+'</b><br>'
+          m += '</td></tr><tr><td style="text-align:left">CAE</td><td style="text-align:left">'
+          m += '<b>\xa0\xa0\xa0'+res.data.CodAutorizacion+'</b></td></tr>'
+
+          if (res.data.ImpNeto!=undefined) {
+            m += '<tr><td style="text-align:left">NETO</td><td style="text-align:right">'
+            m += '<b>\xa0\xa0\xa0$ '+this.formatoImporte(res.data.ImpNeto)+'</b></td></tr>'
+          }
+          if (res.data.ImpOpEx!=undefined) {
+            m += '<tr><td style="text-align:left">EXENTO</td><td style="text-align:right">'
+            m += '<b>\xa0\xa0\xa0$ '+this.formatoImporte(res.data.ImpOpEx)+'</b></td></tr>'
+          }
+          if (res.data.ImpTotConc!=undefined) {
+            m += '<tr><td style="text-align:left">OTROS</td><td style="text-align:right">'
+            m += '<b>\xa0\xa0\xa0$ '+this.formatoImporte(res.data.ImpTotConc)+'</b></td></tr>'
+          }
+          if (res.data.ImpTotConc!=undefined) {
+            m += '<tr><td style="text-align:left">IVA</td><td style="text-align:right">'
+            m += '<b>\xa0\xa0\xa0$ '+this.formatoImporte(res.data.ImpIVA)+'</b></td></tr>'
+          }
+          if (res.data.ImpTotal!=undefined) {
+            m += '<tr><td style="text-align:left">TOTAL</td><td style="text-align:right">'
+            m += '<b>\xa0\xa0\xa0$ '+this.formatoImporte(res.data.ImpTotal)+'</b></td></tr>'
+          }
+          if (res.data.Iva!=undefined) {
+            m += '<tr><td style="text-align:left">Ctt. de Alicuotas</td><td style="text-align:right">'
+            m += '<b>\xa0\xa0\xa0'+res.data.Iva.AlicIva.length+'</b></td></tr>'
+            for (let i=0; i<=res.data.Iva.AlicIva.length-1; i++) {
+              m += '<tr><td style="text-align:left">BaseImp.</td><td style="text-align:right">'
+              m += '<b>\xa0\xa0\xa0$ '+this.formatoImporte(res.data.Iva.AlicIva[i].BaseImp)+'</b></td></tr>'
+              m += '<tr><td style="text-align:left">IVA</td><td style="text-align:right">'
+              m += '<b>\xa0\xa0\xa0$ '+this.formatoImporte(res.data.Iva.AlicIva[i].Importe)+'</b></td></tr>'
+              m += '<tr><td style="text-align:left">Código</td><td style="text-align:right">'
+              m += '<b>\xa0\xa0\xa0'+this.formatoImporte(res.data.Iva.AlicIva[i].Id)+'</b></td></tr>'
+            }
           }
           if (res.data.CbtesAsoc!=undefined) {
-            msg += '<br>Comprobante Asociado<br>'
-            msg += 'Número: <b>'+res.data.CbtesAsoc.CbteAsoc[0].Nro+'</b><br>'
+            m += '<tr><td style="text-align:left">Comprobante Asociado</td><td style="text-align:left">'
+            m += '<b>$\xa0\xa0\xa0'+res.data.CbtesAsoc.CbteAsoc[0].Nro+'</b></td></tr>'
           }
+          m += '</table>'
         }
-        this.msg.msgBody    = msg
+        this.msg.msgBody = m
         this.msg.msgVisible = true
         this.msg.msgAccion  = 'Servicio de AFIP'
         this.msg.msgButtons = ['Aceptar']
@@ -12272,7 +10466,7 @@ export default {
       window.open(`https://api.whatsapp.com/send?phone=${code}${phone}&text=${msg}`,"_blank");
     },
 
-    terceroUserDefined(item) {
+    terceroUserDefinido(item) {
       if (item.tercero==undefined) {return false}
       return item.tercero.user!=undefined?true:false
     },
@@ -12283,6 +10477,16 @@ export default {
 
     setNroManual() {
       this.nroManual = this.nroManual.padStart(8,'0')
+    },
+
+    tieneRemito(item) {
+      if (item.cpr==undefined) {return false}
+      if (item.cpr.substring(0,3)=='REM') { return false }
+      if (item.observaciones!=null) {
+        return item.observaciones.indexOf('REMITO')==-1 ? false : true
+      } else {
+        return false
+      }
     },
 
     busManual() {
@@ -12313,7 +10517,7 @@ export default {
           ofeprecio: this.editadoArt.ofeprecio, ofetasdes: this.editadoArt.ofetasdes,
           ofeenvio: this.editadoArt.ofeenvio, ofeunidades: this.editadoArt.ofeunidades, ofeestado: this.editadoArt.ofeestado,
           turno_id: this.editadoArt.turno_id, decimales: this.editadoArt.decimales, preciomediocobro: this.editadoArt.preciomediocobro,
-          loTengo: this.editadoArt.loTengo,
+          loTengo: this.editadoArt.loTengo, desc1: this.editadoArt.desc1, desc2: this.editadoArt.desc2,
         })
         this.editadoArt = Object.assign({}, this.defaultItemArt)
       } else {
@@ -12327,13 +10531,13 @@ export default {
     },
 
     print(item) {
-      return HTTP().post('comprobante', { id: item.id }).then(({ data }) => {
+      return HTTP().post('comprobanteventa', { id: item.id }).then(({ data }) => {
         this.$refs.impresion.ventasPrint(data.c, 'yo');
       })
     },
 
     printDetalles(item) {
-      return HTTP().post('comprobante', { id: item.id }).then(({ data }) => {
+      return HTTP().post('comprobanteventa', { id: item.id }).then(({ data }) => {
         this.$refs.impresion.ventasPrintDetalles(data.c);
       })
     },
@@ -12343,13 +10547,9 @@ export default {
     },
 
     printViajeStock(item) {
-
       // tengo que levantar todos los recorridos del viaje para mostrar la informacion
       // de stocks
-      debugger
-      // hev021
       return HTTP().post('/haystockparaelviaje', { viaje: this.itemActualViaje.id }).then(({ data }) => {
-        debugger
         let dat = []
         let art = []
         let ctt = []
@@ -12425,7 +10625,6 @@ export default {
             }
           }
         }
-
         return HTTP().post('/articuloz', {
           search: art,
           vinculosPadresLic: this.$store.state.vinculosPadresLic,
@@ -12442,22 +10641,169 @@ export default {
           this.$refs.impresion.viajestock(this.itemActualViaje,dat, ctt);
         })
       })
-
-
     },
 
-    clickRow(value) {
-      if (value.value) {
-        this.nddTotal += value.item.importe
-      } else {
-        this.nddTotal -= value.item.importe
+    onRowClick(item, row) {
+      if (!this.hayMaletin()) {
+        this.asignoDescuentosEnFacturasParaElPago(item, row);
       }
+    },
+
+    asignoDescuentosEnFacturasParaElPago(item, row) {
+      let xxx = this.condicionDePago;
+      if (item!=undefined) {
+        for (let i=0; i<=this.condicionesDePago.length-1; i++) {
+          this.condicionesDePago[i].selected = false
+        }
+        this.condicionDePago = item
+        let pos = this.condicionesDePago.findIndex(x=>x.id==this.condicionDePago.id)
+        if (pos!=-1) {
+          this.condicionesDePago[pos].selected = true
+        }
+      }
+      let descuento = 0
+      let sinDescuentos = 0
+      this.totAPagar = 0
+      if (this.condicionDePagoOriginal!=undefined) {
+        if (this.condicionDePago == this.condicionDePagoOriginal) {
+          for (let i=0; i<=this.pend.length-1; i++) {
+            if (this.pend[i].cpr.substring(0,3)=='DES') {
+              descuento = this.pend[i].pendiente
+            }
+            let facConDesc = 0
+            if (this.pend[i].cpr.substring(0,3)=='FAC'||this.pend[i].cpr.substring(0,3)=='PRE') {
+              let aux = this.pend[i].pendiente
+              facConDesc = (aux-(aux*(this.condicionDePago.desc1/100)))
+              facConDesc = this.roundTo((facConDesc-(aux*(this.condicionDePago.desc2/100))),2)
+            }
+            sinDescuentos += this.pend[i].pendiente
+            this.pend[i].descuentos = this.pend[i].pendiente - facConDesc
+            this.pend[i].acancelar = facConDesc
+            this.pend[i].lista_id = this.condicionDePago.id
+            this.pend[i].desc1 = this.condicionDePago.desc1
+            this.pend[i].desc2 = this.condicionDePago.desc2
+            this.totAPagar += facConDesc
+          }
+        } else {
+          for (let i=0; i<=this.pend.length-1; i++) {
+            if (this.pend[i].cpr.substring(0,3)=='DES') {
+              descuento = this.pend[i].pendiente
+            } 
+            let facConDesc = 0
+            sinDescuentos += this.pend[i].pendiente
+            if (this.pend[i].cpr.substring(0,3)=='FAC'||this.pend[i].cpr.substring(0,3)=='PRE') {
+              let aux = this.pend[i].pendiente
+              facConDesc = (aux-(aux*(this.condicionDePago.desc1/100)))
+              facConDesc = this.roundTo((facConDesc-(aux*(this.condicionDePago.desc2/100))),2)
+            }
+            this.pend[i].descuentos = this.pend[i].pendiente - facConDesc
+            this.pend[i].acancelar = facConDesc
+            this.pend[i].lista_id = this.condicionDePago.id
+            this.pend[i].desc1 = this.condicionDePago.desc1
+            this.pend[i].desc2 = this.condicionDePago.desc2
+            this.totAPagar += facConDesc
+          }
+        }
+      }
+
+      this.totAPagar -= Math.abs(descuento)
+      this.medpag[0].activo = true;   // efectivo siempre hay que dar la posibilidad de ingresar efectivo
+      this.medpag[1].activo = false;  // Tj Credito
+      this.medpag[2].activo = false;  // Tj Debito
+      this.medpag[4].activo = false;  // Transferencia
+      this.medpag[5].activo = false;  // Cheque
+      this.medpag[6].activo = false;  // Mcado.Pago
+      this.medpag[7].activo = false;  // Todo Pago
+      this.medpag[8].activo = false;  // Canje
+
+      let idCondPag = this.condicionDePago.medio_id
+      if (idCondPag == 5) {
+        idCondPag = 6
+      }
+      let pos = this.medpag.findIndex(x=>x.id==idCondPag);
+      if (pos!=-1) {
+        this.medpag[pos].activo = true
+      }
+      // si la lista es de cheques habilito los de terceros y los propios
+      if (idCondPag==6) {
+        this.maxDiasChq = this.condicionDePago.dias
+      }
+      this.totAPagar = this.roundTo(this.totAPagar,2)
+      this.editado.total = this.roundTo(this.totAPagar,2)
+      this.ndcPorPP = this.roundTo(sinDescuentos-this.totAPagar,2);
+      if (this.ndcPorPP==0) {
+        this.medpag[1].activo = true;  // Tj Credito
+        this.medpag[2].activo = true;  // Tj Debito
+        this.medpag[4].activo = true;  // Transferencia
+        this.medpag[5].activo = true;  // Cheque
+        this.medpag[6].activo = true;  // Mcado.Pago
+        this.medpag[7].activo = true;  // Todo Pago
+        this.medpag[8].activo = true;  // Canje
+      }
+    },
+
+    setBuscarCliente() {
+      this.encontroElCliente=false
+      this.pend = []
+      this.valores = []
+      this.condicionesDePago = []
+      this.maletinesCli = []
+    },
+
+    footProps(lineas) {
+      this.footerProps.itemsPerPageOptions[0] = lineas;
+      this.footerProps.showFirstLastPage = true
+      this.footerProps.showCurrentPage = true
+      this.footerProps.pageText = 'Páginas'
+      this.footerProps. nextIcon = 'mdi-arrow-right-drop-circle-outline'
+      this.footerProps.prevIcon = 'mdi-arrow-left-drop-circle-outline'
+      return this.footerProps;
+    },
+
+    getCellStyles(value) {
+      let color = this.dark?'white':'black'; // Puedes cambiar esto según tus necesidades
+      let fontWeight = 'normal'; // Puedes cambiar esto según tus necesidades
+      if (value.selected) { color = 'green'; fontWeight = 'bold'; }
+      return { align: 'end', color: color, fontWeight: fontWeight, };
     },
 
     porTransferir() {
       if (this.artTransfPorcentaje<0||this.artTransfPorcentaje>100) {
         this.artTransfPorcentaje = 0
       }
+    },
+
+    roundTo(value, places){
+      var power = Math.pow(10, places);
+      return Math.round(value * power) / power;
+    },
+
+    formatoImporte(value) {
+      let val = (value/1).toFixed(2).replace('.', ',')
+      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+    },
+
+    formatoImporteDec(value, dec) {
+      let val = (value/1).toFixed(dec).replace('.', ',')
+      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+    },
+
+    formatoFecha(value) {
+      return moment(String(value)).format('L')
+    },
+
+    formatoFechaCorta(value) {
+      let a = moment(String(value)).format('dd')
+      let b = moment(String(value)).format('DD') 
+      return a+' '+b
+    },
+
+    formatoFechaReparto(value) {
+      return moment(value).format('dd DD, MMM YY')
+    },
+
+    fechaTimeLine(value) {
+      return moment(String(value)).format('D MMM-YY h:mm a')
     },
 
   },
@@ -12469,9 +10815,9 @@ export default {
     font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: 100%;
   }
-  .fg100b {
+  .fg150b {
     font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 100%;
+    font-size: 150%;
     font-weight: bold;
   }
   .fg115b {
@@ -12484,18 +10830,9 @@ export default {
     font-size: 135%;
     font-weight: bold;
   }
-  .fg150b {
+  .fg100b {
     font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 150%;
-    font-weight: bold;
-  }
-  .fg95 {
-    font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 95%;
-  }
-  .fg90 {
-    font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 90%;
+    font-size: 100%;
     font-weight: bold;
   }
   .fg85 {
@@ -12510,25 +10847,5 @@ export default {
     font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: 70%;
   }
-  .fg60 {
-    font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 60%;
-  }
 </style> 
-<style> 
-  tr.v-data-table__selected {
-    background: #a5acd2 !important;
-  }
-
-  span.izq{
-    display: block;
-    float: left;
-  }
-
-  span.der{
-    display: block;
-    float: right;
-  }
-
-</style>
-/* 12480 */
+/* 12868 */

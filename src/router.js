@@ -8,9 +8,7 @@ import Articulos from './views/Articulos.vue';
 import Marcas from './views/Tablas/Marcas.vue';
 import Rubros from './views/Tablas/Rubros.vue';
 import Grupos from './views/Grupos.vue';
-import Caracteristicas from './views/Tablas/Caracteristicas.vue';
 import Unidades from './views/Unidades.vue';
-import ClientesTags from './views/Tablas/ClientesTags.vue';
 import ContactosTipos from './views/ContactosTipos.vue';
 import MediosDePagos from './views/Tablas/MediosDePagos.vue';
 import Paises from './views/Tablas/Paises.vue';
@@ -27,7 +25,6 @@ import AfipComprobantes from './views/Tablas/AfipComprobantes.vue';
 import AfipMonedas from './views/Tablas/AfipMonedas.vue';
 import AfipDocumentos from './views/Tablas/AfipDocumentos.vue';
 import AfipResponsables from './views/Tablas/AfipResponsables.vue';
-import AfipOperaciones from './views/Tablas/AfipOperaciones.vue';
 import Migraciones from './views/Migraciones.vue';
 import CotizacionMonedas from './views/CotizacionMonedas.vue';
 import PreciosCambios from './views/PreciosCambios.vue';
@@ -98,11 +95,6 @@ export default new Router({
       component: Grupos,
     },
     {
-      path: '/caracteristicas',
-      name: 'caracteristicas',
-      component: Caracteristicas,
-    },
-    {
       path: '/contactostipos',
       name: 'contactostipos',
       component: ContactosTipos,
@@ -116,11 +108,6 @@ export default new Router({
       path: '/unidades',
       name: 'unidades',
       component: Unidades,
-    },
-    {
-      path: '/clientestags',
-      name: 'clientestags',
-      component: ClientesTags,
     },
     {
       path: '/paises',
@@ -191,11 +178,6 @@ export default new Router({
       path: '/afipiva',
       name: 'afipiva',
       component: AfipIVA,
-    },
-    {
-      path: '/afipoperaciones',
-      name: 'afipoperaciones',
-      component: AfipOperaciones,
     },
     {
       path: '/afipcomprobantes',

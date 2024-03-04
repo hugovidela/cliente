@@ -23,9 +23,9 @@
           <v-card-text>
             <v-container fluid>
               <v-row class="fg">
-                <v-col cols="3" sm="3" md="3">
+                <v-col cols="2" sm="2" md="2">
                   <v-text-field
-                    label="Código, ID, Descripción o Código de Barra"
+                    label="Código, ID, Descrip. o Cód.de Barra"
                     :color="temas.forms_titulo_bg"
                     autofocus
                     clear-icon="mdi-close-circle"
@@ -41,6 +41,16 @@
                     @click="buscarArt(true)">
                     Buscar
                   </v-btn>
+                </v-col>
+                <v-col cols="1" sm="1" md="1" class="pt-5">
+                  <v-text-field
+                    dense
+                    :color="temas.forms_titulo_bg"
+                    type="number"
+                    min="25" max="300"
+                    outlined label="Regs a Leer"
+                    v-model="regs">
+                  </v-text-field>
                 </v-col>
                 <v-col cols="7" sm="7" md="7">
                   <div class="text-center" v-if="proveedoresPreferidos.length>0">
@@ -97,13 +107,14 @@
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on }">
                       <v-btn fab small dense
-                        @click="sayOnOffFecDeAct"
-                        v-on="on">
-                        <v-icon medium
-                          :color="temas.forms_close_bg">
+                        @click="sayOnOffFecDeAct" v-on="on">
+                        <v-icon medium>
+                          {{ 'mdi-calendar' }}
+                          <!--
                           {{ sayOnOffFechasDeActualizacion?
                              'mdi-arrow-up-circle':
                              'mdi-arrow-down-circle' }}
+                          -->
                         </v-icon>
                       </v-btn>
                     </template>
@@ -133,7 +144,7 @@
                     flat
                     class="elevation-1"
                     :footer-props="{
-                      itemsPerPageOptions: [6],
+                      itemsPerPageOptions: [10],
                       showFirstLastPage: true,
                       showCurrentPage: true,
                       nextIcon: 'mdi-arrow-right-drop-circle-outline',
@@ -151,7 +162,6 @@
                     <template v-slot:item.nombre="{ item }">
                       <span>{{ item.nombre }} </span>
                     </template>
-
                     <!--
                     <template v-slot:item.final="{ item }">
                       <v-card v-for="(p) in item.precios" :key="p.id" flat>
@@ -229,7 +239,9 @@
                     </template>
 
                     <template v-slot:item.stock="{ item }">
-                      <span>{{ formatoImporte(item.stock) }}</span>
+                      <span>
+                        {{ sayStock(item) }}
+                      </span>
                     </template>
                   </v-data-table>
                 </v-col>
@@ -265,6 +277,7 @@ export default {
     expanded: [],
     busArt: '',
     userArticulosId: 0,
+    regs: 24,
     // definimos los headers de la datatables
     headersArt: [
       { text: 'Código', value:'codigo', align: 'left', width: 90},
@@ -283,9 +296,10 @@ export default {
     ...mapGetters('authentication', ['isLoggedIn','userId']),
     ...mapMutations(['alert','closeAlert']),
     ...mapState([
-      'vinculosPadres', 'vinculosPadresLic', 'vinculosPadresAll', 'vinculosHijos', 
+      'vinculosPadres', 'vinculosPadresLic', 'vinculosPadresAll', 'vinculosHijos', 'limit', 
       'empresa', 'tipo', 'temas', 'dolar', 'codigooid', 'cttLoadReg', 'descuentos', 'exclusivoDe', 'transition'
     ]),
+
   },
 
   mounted() {
@@ -312,9 +326,10 @@ export default {
               articulos: data[i].articulos,
               sel: 0,
               hay: false,
-              })
+            })
           }
         }
+        this.regs = this.cttLoadReg;
       }
     })
   },
@@ -326,6 +341,15 @@ export default {
         router.push('/ue')
       } else {
         router.push('/')
+      }
+    },
+
+    sayStock(item) {
+      let stk = item.stock||0
+      if (typeof stk == "number") {
+        return this.formatoImporte(stk)
+      } else {
+        return stk
       }
     },
 
@@ -360,6 +384,7 @@ export default {
         }
       }
 
+      /*
       let v = [];
       let todos = false
       let mios = false
@@ -389,8 +414,8 @@ export default {
         let pos = this.proveedoresPreferidos.findIndex(x=>x.sel == 1)
         v.push(this.proveedoresPreferidos[pos].user_id);
       }
+      */
 
-      debugger
       // Si el usuario es exclusivo de otro, asigno a ese otro como filtro de articulos
       let proveedor = this.$store.state.exclusivoDe.id==null?0:this.$store.state.exclusivoDe.id
       return HTTP().post('/articuloz', {
@@ -398,42 +423,30 @@ export default {
         vinculosPadresLic: this.$store.state.vinculosPadresLic,
         vinculosPadresAll: this.$store.state.vinculosPadresAll,
         proveedor: proveedor, stockProv: false, grupo: '', marca: '', userex: null, soloArtComprados: false, descuentos: this.descuentos,
-        dolar: this.$store.state.dolar, activos: true, limit: this.cttLoadReg }).then(({ data })=>{
-
-      debugger
-      
-      /*
-      return HTTP().post('/articulosx', {
-        search: s, vinculos: v,
-        vinculosPadresLic: this.$store.state.vinculosPadresLic,
-        vinculosPadresAll: this.$store.state.vinculosPadresAll,
-        estricto: false, codigooid: this.$store.state.codigooid, userex: null, dolar: this.$store.state.dolar, ambiente: 'consulta', tipo: '',
-        rubro: '', marca: '', grupo: '', proveedor: 0, ancla: '', saySoloArtsPropios: true, activos: true, limit: this.cttLoadReg,
-        descuentos: this.descuentos }).then(({ data })=>{
-        */
+        dolar: this.$store.state.dolar, activos: true, limit: this.regs }).then(({ data })=>{
 
         debugger
-        this.selArt = []
-        for (let i=0; i<=data.length-1; i++) {
-          this.selArt.push({
-            id: data[i].id,
-            codigo: data[i].codigo,
-            nombre: data[i].nombre,
-            stock: data[i].stock,
-            descuento: data[i].descuento,
-            medioscobro: data[i].medioscobro,
-            simbolo: data[i].simbolo,
-            precios: data[i].precios,
-          })
-          if (asignoDots) {
-            for (let j=0; j<=data[i].precios.length-1; j++) {
-              let pos = this.proveedoresPreferidos.findIndex(x=>x.user_id==data[i].precios[j].user_id)
-              if (pos!=-1) {
-                this.proveedoresPreferidos[pos].hay = 1
-//                if (data[i].precios[j].user_id == this.userId) {
-//                  this.proveedoresPreferidos[1].hay = 1
-//                }
-//                this.proveedoresPreferidos[pos].hay = 1
+        if (data.length==0) {
+          this.mensaje('¡No hay registros que coincidan con al búsqueda ingresada!', this.temas.snack_error_bg, 1500)
+        } else {
+          this.selArt = []
+          for (let i=0; i<=data.length-1; i++) {
+            this.selArt.push({
+              id: data[i].id,
+              codigo: data[i].codigo,
+              nombre: data[i].nombre,
+              stock: data[i].stock,
+              descuento: data[i].descuento,
+              medioscobro: data[i].medioscobro,
+              simbolo: data[i].simbolo,
+              precios: data[i].precios,
+            })
+            if (asignoDots) {
+              for (let j=0; j<=data[i].precios.length-1; j++) {
+                let pos = this.proveedoresPreferidos.findIndex(x=>x.user_id==data[i].precios[j].user_id)
+                if (pos!=-1) {
+                  this.proveedoresPreferidos[pos].hay = 1
+                }
               }
             }
           }
@@ -441,8 +454,12 @@ export default {
       })
     },
 
+    mensaje(mensaje, color, tiempo) {
+      this.$store.commit("alert", {color:color,text:mensaje,timeout:tiempo,button:false});
+      setTimeout(() => { this.$store.commit("closeAlert") }, tiempo);
+    },
+
     filtrarProveedorPreferido(cual) {
-      debugger
       let pos = this.proveedoresPreferidos.findIndex(x=>x.prefijo == cual.prefijo)
       if (this.proveedoresPreferidos[pos].sel==1) return
       for (let i=0; i<=this.proveedoresPreferidos.length-1; i++) {

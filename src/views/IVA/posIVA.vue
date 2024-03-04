@@ -56,7 +56,6 @@
 
       <v-tabs
         key="ventas"
-        background-color="white"
         :color="temas.forms_titulo_bg"
         v-model="tabInicial"
         xl="12" lg="12" md="12" sm="1" xs="1">
@@ -94,7 +93,7 @@
               prevIcon: 'mdi-arrow-left-drop-circle-outline',
             }">
             <template v-slot:top>
-              <v-toolbar flat color="white">
+              <v-toolbar flat>
                 <v-dialog max-width="600px"
                   :transition="transition==null?'false':transition">
                   <template v-slot:activator="{ on, attrs }">
@@ -208,10 +207,11 @@
               nextIcon: 'mdi-arrow-right-drop-circle-outline',
               prevIcon: 'mdi-arrow-left-drop-circle-outline' }">
             <template v-slot:top>
-              <v-toolbar flat color="white">
+              <v-toolbar flat>
                 <v-dialog max-width="600px"
                   :transition="transition==null?'false':transition">
                   <template v-slot:activator="{ on, attrs }">
+
                     <v-row class="mt-6 mb-4">
                       <v-col cols="7">
                         <v-btn
@@ -246,17 +246,13 @@
                       <v-col cols="5">
                         <v-card flat>
                           <v-card-text>
-                            <span>
-                              Estado <b>
-                                {{
-                                  comprasventas[1].cerrado?'Cerrado':'Abierto'
-                                }}
-                              </b>
+                            <span class="pt-0 mt-0">
+                              Estado <b>{{comprasventas[1].cerrado?'Cerrado':'Abierto'}}</b>
                             </span>
                             <v-tooltip bottom>
                               <template v-slot:activator="{ on }">
                                 <v-btn
-                                  class="text-capitalize mr-4 ml-4"
+                                  class="text-capitalize mr-4 ml-4 pt-0 mt-0"
                                   fab x-small outlined
                                   dense v-on="on"
                                   @click="abrirCerrar()">
@@ -269,11 +265,11 @@
                               <span class="fg">
                               {{perEstado=='abierto'?'Cerrar Compras':'Abrir Compras'}}</span>
                             </v-tooltip>
-
                           </v-card-text>
                         </v-card>
                       </v-col>
                     </v-row>
+
                   </template>
 
                 </v-dialog>
@@ -507,7 +503,7 @@
                 <v-btn v-show="selected.length>0"
                   :color="temas.forms_titulo_bg"
                   :dark="temas.cen_btns_dark==true"
-                  class="ma-2 white--text"
+                  class="ma-2"
                   @click="cpAplicar()">
                   Revisar
                 </v-btn>
@@ -650,7 +646,7 @@
             <v-btn
               :color="temas.cen_btns_bg"
               :dark="temas.cen_btns_dark==true"
-              class="pb-0 pt-0 ma-2 white--text"
+              class="pb-0 pt-0 ma-2"
               @click="importarMovimiento">
               Importar
             </v-btn>
@@ -1016,8 +1012,6 @@ export default {
     },
 
     nuevoMovimientoDeCompras(item) {
-
-      debugger
       this.editado.nombre = item.nombre
       this.editado.fecha = item.fecha
       let fe = item.fecha.substring(3,5)+'-'+item.fecha.substring(0,2)+'-'+item.fecha.substring(6,8)
@@ -1040,9 +1034,7 @@ export default {
         this.msg.msgAccion = 'sin proveedor'
         this.msg.msgButtons = ['Aceptar']
       } else {
-        debugger
         return HTTP().get('/importarcompraasociados/'+item.tercero_id).then(({data})=>{
-          debugger
           if (data[0].length>0) {
             for (let i=0; i<=data[0].length-1; i++) {
               this.asociados.push({id: data[0][i].id, cpr: data[0][i].cpr, total: data[0][i].total })
@@ -1303,7 +1295,6 @@ export default {
     },
 
     formatoFechaCorta2(value) {
-      debugger
       let a = moment(String(value)).format('dd')
       let b = moment(String(value)).format('DD') 
       return a+' '+b
@@ -1419,7 +1410,6 @@ export default {
           this.comprasventas[2].det[2].total = this.roundTo(this.comprasventas[2].det[2].total,2)
           this.comprasventas[2].det[3].total = this.roundTo(this.comprasventas[2].det[3].total,2)
 
-          debugger
           return HTTP().post('/posicionfiscalcambiarestado/', {
             periodo: this.perFiscal,
             estado: this.perEstado,
@@ -1427,19 +1417,12 @@ export default {
             modulo: this.perModulo,
             datos: this.comprasventas, }).then(({ data }) => {
 
-            alert(this.comprasventas[1].cerrado)
             this.comprasventas[0].cerrado = data.vencerrado
             this.comprasventas[1].cerrado = data.comcerrado
-            alert(this.comprasventas[1].cerrado)
-
             this.msg.msgVisible = false;
 
-            debugger
             return HTTP().post('/periodos/').then(({ data }) => {
               if (data) {
-
-                debugger
-
                 this.periodos = data
                 this.presentacion.presentado  = data[0].presentado
                 this.presentacion.fecha       = data[0].fecha
@@ -1581,9 +1564,7 @@ export default {
             }
           }
 
-          debugger
           await HTTP().post('/generarciti', { file: this.file, cab: cab, det: det, periodo: this.perFiscal, modulo: this.perModulo}).then((data)=> {
-            debugger
             if (data) {
 
               //this.msg.msgTitle = 'Atención'
@@ -1610,11 +1591,9 @@ export default {
         
         } else if (this.msg.msgAccion=='importar movimiento') {
 
-          debugger
           let pos = this.importadosAFIP.findIndex(x=>x.cpr==this.editado.cpr)
           await HTTP().post('/importarcompraafip', {
             sucursal_id: this.sucursal, asociado: this.asociado, editado: this.importadosAFIP[pos]}).then((data)=> {
-            debugger
             if (data.data=='ok') {
               this.importadosAFIP[pos].loTengo = true
             }
@@ -1628,7 +1607,6 @@ export default {
     async descargarCITI(cual) {
       this.file = this.userId+'_'+this.perFiscal+'_CITI'+this.comprasventas[this.tabActivo].nombre+'_CAB.txt'
       await HTTP().get('/descargarciti/'+this.file).then(( response ) => { 
-        debugger
         var fileURL = window.URL.createObjectURL(new Blob([response.data]));
         var fileLink = document.createElement('a');
         fileLink.href = fileURL;
@@ -1683,7 +1661,6 @@ export default {
     },
 
     cargarXls() {
-      debugger
       if (this.nuevoXls.name != undefined) {
         try {
           this.xlsCargado = true;
@@ -1708,11 +1685,7 @@ export default {
     },
 
     parseFileContent(sheet) {
-
-      debugger
-
       this.importadosAFIP = []
-
       let cpr = ''
       let suc = ''
       let nro = ''
@@ -1770,10 +1743,8 @@ export default {
           cpr = 'TND-M '
         }
 
-        debugger
         suc = sheet[j][2].toString()
         nro = sheet[j][3].toString()
-
         suc = suc.padStart(4,'0')
         nro = nro.padStart(8,'0')
         cpr += suc
@@ -1837,13 +1808,9 @@ export default {
         }
       }
 
-      debugger
       HTTP().post('/buscocuits', { proveedores: pro, vinculados: this.vinculosPadres}).then((data)=> {
         this.CUITFaltantes = []
         this.dialogCUITFaltantes = false
-
-        debugger
-
         for (let i=0; i<=data.data.length-1; i++) {
           let pos = this.importadosAFIP.findIndex(x=>x.nroDoc==data.data[i].cuit)
           if (pos!=-1) {
@@ -1860,7 +1827,6 @@ export default {
           }
         }
         // ASIGNO LOS TERCEROS
-        debugger
         for (let i=0; i<=data.data.length-1; i++) {
           for (let j=0; j<=this.importadosAFIP.length-1; j++) {
             if (data.data[i].cuit==this.importadosAFIP[j].nroDoc) {
@@ -1881,7 +1847,6 @@ export default {
     },
   
     importarCUIT(item, como) {
-      debugger
       if (item.importar=='gohu') {
         return HTTP().post('/agregotercerodesdegohu', {user_id: this.userId, tercero_id: item.tercero_id, tipo_id: como}).then(({data})=>{
           if (data=='ok') {

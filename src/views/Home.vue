@@ -2,17 +2,13 @@
   <div id="app">
     <v-layout class="mt-0" row wrap justify-center>
       <v-flex>
-
         <v-container fluid>
           <v-row>
             <v-col cols="12">
-
               <v-container fluid v-show="$store.state.activo && $store.state.ofertas">
-
                 <v-card flat>
                   <v-row>
                     <v-col cols="3" sm="3" md="3">
-
                       <v-card flat class="fg ml-0 mt-0 text-center">
                         <v-row>
                           <v-col cols="1" sm="1" md="1">
@@ -171,18 +167,23 @@
                                             ARTICULO OFERTA
                                             ///////////////
                                           -->
-                                          <div v-if="item.estado=='A'&&item.unidades>0">
+
+                                          <div v-if="item.estado=='A'">
                                             <v-card-text class="pt-2 pb-2">
                                               <div class="fg">
                                                 <v-row>
                                                   <v-col cols="12">
                                                     <v-img
                                                       height="35" width="59"
-                                                      src='/images/oferta.png'
+                                                      :src="
+                                                      $store.state.dark?
+                                                      '/images/oferta_dark.jpg':
+                                                      '/images/oferta.jpg'
+                                                      "
                                                       class="galeria__img mt-4 mb-4">
                                                     </v-img>
                                                     ${{elPrecio(item,'original')}}
-                                                    <span class="fg100br">
+                                                    <span class="fg80br">
                                                       %{{item.tasadescuento}} Off.
                                                     </span>
                                                     <span class="fg85">
@@ -202,14 +203,12 @@
                                                     :content="item.unidades"
                                                     :value="item.unidades"
                                                     :color="$store.state.temas.forms_btn_add_bg"
-                                                    :dark=
-                                                    "$store.state.temas.forms_btn_add_bg==true">
+                                                    :dark="$store.state.temas.forms_btn_add_bg">
                                                   </v-badge>
                                                   <v-badge v-else class="pl-2 pt-0"
                                                     content="s/Stock"
                                                     :color="$store.state.temas.forms_btn_add_bg"
-                                                    :dark=
-                                                    "$store.state.temas.forms_btn_add_bg==true">
+                                                    :dark="$store.state.temas.forms_btn_add_bg">
                                                   </v-badge>
                                                 </div>
                                               </div>
@@ -221,7 +220,7 @@
                                                 </span>
                                               </div>
 
-                                              <div class="fg100br font-weight-bold"
+                                              <div class="fg80br font-weight-bold"
                                                 v-if="item.estado=='P'">
                                                 {{'Pausada'}}
                                               </div>
@@ -248,7 +247,7 @@
                                                       <v-btn
                                                         class="ml-0"
                                                         :disabled="item.estado!='A'"
-                                                        fab x-small color="white"
+                                                        fab x-small
                                                         @click="loQuiero(item)" v-on="on">
                                                         <v-icon dark>
                                                           {{ item.loquiero==true ?
@@ -287,7 +286,7 @@
                                                     <template v-slot:activator="{ on }">
                                                       <v-btn class="ml-0"
                                                         :disabled="item.estado!='A'||ctt<=0"
-                                                        fab x-small color="white"
+                                                        fab x-small
                                                         @click="agregarAlCarrito(item)"
                                                         v-on="on">
                                                         <v-icon dark>mdi-cart</v-icon>
@@ -333,6 +332,16 @@
                                                     </b>
                                                   </span>
 
+                                                  <span class="fg80br">
+                                                    %{{item.tasadescuento}} Off.
+                                                  </span>
+                                                  <!-- gilgamesh -->
+                                                  <span class="fg45">
+                                                    {{ $store.state.proveedor.preciosconiva?
+                                                      'c/IVA':'s/IVA'
+                                                    }}
+                                                  </span>
+
                                                   <br>
                                                   <span v-if="item.desc1" class="fg55"
                                                     :style="{ color: 'green' }">
@@ -343,16 +352,14 @@
                                                     class="pl-2 pt-0"
                                                     :content="formatoImporte(item.stock)"
                                                     :value="item.stock"
-                                                    :color=
-                                                    "$store.state.temas.forms_btn_add_bg"
+                                                    :color="$store.state.temas.forms_btn_add_bg"
                                                     :dark=
                                                     "$store.state.temas.forms_btn_add_bg==true">
                                                   </v-badge>
-                                                  <v-badge v-else-if="item.stock=='HAY STOCK'"
+                                                  <v-badge v-else-if="item.stock=='hay/stk'"
                                                     class="pl-2 pt-0"
                                                     content="hay stock"
-                                                    :color=
-                                                    "$store.state.temas.forms_btn_add_bg"
+                                                    :color="$store.state.temas.forms_btn_add_bg"
                                                     :dark=
                                                     "$store.state.temas.forms_btn_add_bg==true">
                                                   </v-badge>
@@ -379,6 +386,7 @@
                                                   <b>
                                                     ({{ item.codigo }}
                                                     / id:{{ item.articulo_id }})
+                                                    / Stk: {{ item.stock }}
                                                   </b>
                                                 </div>
                                               </div>
@@ -390,11 +398,11 @@
                                               <v-row>
                                                 <v-col cols="4" sm="4" md="4" class="pt-4">
                                                   <v-tooltip bottom
-                                                    v-if="item.stock>0||item.stock=='HAY STOCK'">
+                                                    v-if="item.stock>0||item.stock=='hay/stk'">
                                                     <template v-slot:activator="{ on }">
                                                       <v-btn
                                                         class="ml-0"
-                                                        fab x-small color="white"
+                                                        fab x-small
                                                         @click="loQuiero(item)" v-on="on">
                                                         <v-icon dark>
                                                           {{ item.loquiero==true ?
@@ -627,14 +635,38 @@
         </v-dialog>
         <!-- FIN DIALOGO FOTOS DE LA PUBLICACION -->
 
+        <!-- toDo y errores -->
+        <!--
+        <v-container fluid v-show="$store.state.activo && !$store.state.ofertas">
+          <v-card flat height="1550" width="1200" class="pt-0">
+            <v-card-text class="fg pt-0">
+              <div>
+                <span>
+                  Anotaciones: <br>Cuando se realiza una NDC a un cliente vinculado
+                  esta se genera automaticamente en el usuario cliente.
+                  Pero si el cliente no ha bajado todavia la factura madre
+                  se produce un error, ya que no puede generar la vinculacion
+                  de la FAC con la NDC en el Cliente.<br>
+                  La mejor sulución sería que cuando el Proveedor factura
+                  se haga lo mismo que con las NDC, que tambien se genere
+                  el espejo en el Cliente, y que solo notifique al Cliente
+                  del nuevo comprobante, en este caso, de compras.<br>
+                  Sería utilizar el mismo metodo que cuando es NDD o NDC.
+                </span>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-container>
+        -->
+
         <!-- MENSAJE INICIAL -->
         <v-container fluid v-show="
           $store.state.inicial && $store.state.activo && !$store.state.ofertas">
-          <v-card flat height="1550" width="1200" class="pt-0">
+          <v-card flat height="1550" max-width class="pt-0">
             <v-card-text class="fg pt-0">
               <div v-if="$store.state.tipo=='CO'||$store.state.tipo=='ME'||$store.state.tipo=='BA'">
                 Antes que nada, gracias por confiar en nosotros.<br><br>
-                Ahora tienes que cofigurar tu cuenta, ¡es fácil!.<br><br>
+                Ahora tienes que terminar de configurar tu cuenta, ¡es fácil!.<br><br>
                 <b>gohu</b> ya inicializó algunos datos, creó dos sucursales, una de producción
                 y la otra de puebas, ambas con sus respectivos depósitos de stock.<br>
                 También se te asignó el cliente CONSUMIDOR FINAL y tu primer proveedor:
@@ -647,7 +679,10 @@
                 y define los siguientes datos:<br><br>
                 <li> Carga tus certificados digitales de AFIP. Te permitirán realizar comprobantes
                   electrónicos y leer datos de contribuyentes al momento de cargar Clientes y
-                  Proveedores.</li><br>
+                  Proveedores. Si quieres podemos realizar esta tarea por ti. Contáctanos y
+                  avanzaremos con la creación de tus certificados.<br>
+                </li>
+                <br>
                 <li> Revisa los nombres de las sucursales y depósitos asignados automaticamente,
                 puedes agregar los que necesites.</li><br>
                 <li> Si vas a utilizar más de una sucursal, define un <i>tema</i> distinto para
@@ -659,11 +694,9 @@
                   <b>gohu</b> permite administrar estos porcentajes en forma muy flexible,
                   por Marcas, por Grupos e incluso por cada artículo.<br>
                 </li><br>
-                <li>Si te vas a vincular con tus clientes, es importante que definas
-                  <i>porcentajes de remarcación sugeridos o de reventa</i>.
-                  Puedes definir hasta tres.<br>
-                  Luego en la ficha de clientes podrás asignar el que corresponda a cada uno.
-                  Por defecto el sistema asignará el número 1.
+                <li>Define y asigna tus <i>porcentajes de remarcación sugeridos o de reventa</i>
+                  para tus Clientes vinculados.<br>
+                  Ellos luego podrán modificarlos.
                 </li>
                 <br>
                 <li>
@@ -676,9 +709,10 @@
                 <li>
                   En <b>gohu</b> ya existen una gran cantidad de CUIT's cargados.
                   Puedes ingresar a Clientes y Proveedores para ver si ellos ya existen en nuestas
-                  bases de datos desde boton <i>Incluir</i> de la barra principal del formulario
-                  correspondiente. De todas formas, si necesitas cargar cuentas que aún no estén en
-                  <b>gohu</b>, el sistema las importa desde AFIP. Solo deberás ingresar el CUIT
+                  bases de datos. Utiliza el boton <i>Incluir</i> de la barra principal del
+                  formulario correspondiente. Clientes, Proveedores y Transportistas.<br>
+                  De todas formas, si necesitas cargar cuentas que aún no estén en
+                  <b>gohu</b> el sistema las importa desde AFIP. Solo deberás ingresar el CUIT
                   al momento de la carga. ¡También puedes importarlos!, sigue leyendo.
                 </li><br>
                 <li>¡Importa tus datos!. Ingresa al menú <i>Configuración</i> >
@@ -691,7 +725,7 @@
                   de artículos nuevos de un proveedor. Es un proceso mucho mas rápido.<br><br>
                 </li>
 
-                <li><b>Muy Importante</b><br>¡Organiza tus artículos!.<br>
+                <li>¡Organiza tus artículos!<br>
                   Es muy importante que tanto tus códigos como los nombres o descripciones de tus
                   artículos esten cargados según un patrón o un criterio, al momento
                   de buscarlos va a ser mucho mas fácil encontrarlos.<br><br>
@@ -733,9 +767,9 @@
 
               <div v-else-if="$store.state.tipo=='PP'&&$store.state.exclusivoDe.id==null">
 
-                Antes que nada.... ¡Gracias por confiar en nosotros!
+                ¡Gracias por confiar en nosotros!
                 <br><br>
-                El objetivo del sistema es facilitar la operatoria comercial con tus
+                Nuestro objetivo es facilitar la operatoria comercial con tus
                 Clientes y Proveedores.
                 <br><br>
                 <b>gohu</b> presenta la posibilidad de que sus usuarios se vinculen entre si.<br>
@@ -746,15 +780,15 @@
                 Proveedores y que tus Clientes también vean los tuyos.<br>
                 <b>¡Estarás actualizado en todo momento y en forma automática!</b>
                 <br><br>
-                Podrás realizar y recibir pedidos a tus Proveedores y Clientes respectivamente.<br>
+                Podrás realizar pedidos a tus Proveedores y recibir pedidos de tus Clientes.<br>
                 Los Usuarios marcados con <b>g</b> son administrados por <b>gohu</b>,
-                por lo tanto, a estos no podrás realizarles pedidos.<br>
+                a ellos no podrás realizarles pedidos.<br>
                 Recibimos todos los días las listas de los proveedores <b>g</b> y las procesamos
                 para que tengas sus precios actualizados en todo momento.
                 <br><br>
-                Invita a tus contactos comerciales con los cuales transaccionas a ser parte de
+                Invita a tus contactos comerciales a ser parte de
                 <b>gohu</b>, o envíanos un correo a <b>admin@gohu.com.ar</b> informándonos de
-                quiénes son. Los contactaremos y acordaremos para obtener sus listas y así poder
+                quiénes son.<br>Los contactaremos y acordaremos para obtener sus listas y así poder
                 administrarlas, para que tengas todo el tiempo la información actualizada
                 en un solo lugar.
                 <br><br>
@@ -762,14 +796,16 @@
                 Ve a tu perfil y carga tu avatar y el logo de tu Empresa para que te
                 puedan identificar mejor.
                 <br><br>
-                <b>Aplía tus posibilidades</b><br>
+                <b>Amplía tus posibilidades</b><br>
                 Podrás migrar a una licencia ERP ingresando al menú <i>Cambiar de Licencia</i>
-                y seleccionar una de las dos licencias disponibles:
+                y seleccionar una de las tres licencias disponibles:
                 <li><i>gohu ERP Completo <b>CO</b></i></li>
+                <li><i>gohu ERP Medio <b>ME</b></i></li>
                 <li><i>gohu ERP Básico <b>BA</b></i></li><br>
-                gohu ERP es un completo sistema de gestión comercial dónde todas las operaciones
-                van por sistema, aprovechando al máximo todo el poder que brindan las
-                vinculaciones.<b><br>Ahorrarás mucho tiempo de carga y evitarás errores.</b><br><br>
+                <b>gohu ERP</b> es un completo sistema de gestión comercial dónde todas las
+                operaciones entre usuarios vinculados van por sistema, aprovechando al máximo todo
+                el poder que brinda esta característica.<br>
+                <b> Ahorrarás mucho tiempo de carga y evitarás errores.</b><br><br>
                 ¡Y recuerda, comienza a vincularte!<br>
 
               </div>
@@ -810,7 +846,7 @@
               <span><b>{{ userName }}!</b></span>
             </v-card-title>
             <v-card-subtitle v-show="!estaNotificado" class="fg">
-              Necesitamos que completes tu cuenta.
+              Ahora vamos a completar tu cuenta.
             </v-card-subtitle>
             <v-card-text class="fg">
 
@@ -843,17 +879,7 @@
                   <br><br><br>
                 </div>
                 <div v-else>
-                  <b>gohu</b> trabaja bajo requerimientos AFIP, por lo tanto para poder
-                  realizar operaciones en el sistema deberás
-                  estar registrado en el organismo y tener activos tus certificados digitales.<br>
-                  Estos certificados te permitrán realizar comprobantes electrónicos y acceder
-                  desde AFIP a los datos de tus Clientes y Proveedores, ahorrado
-                  tiempo de carga y evitando errores.<br><br>
-                  Si posees tu certificado puede ser un buen momento para subirlo a nuestro
-                  servidor, o si lo deseas puedes hacerlo más tarde desde tu perfil.<br>
-                  Si no posees el certificado no hay problema, puedes generarlo en cualquier
-                  momento e incluso, con mucho gusto, podemos generarlo por vos.<br><br>
-                  Ingresa tu CUIT para ver como estan tus registros.<br><br>
+                  Ingresa tu CUIT (sin guiones) para ver como estan tus registros.<br><br>
                   <div v-if="$store.state.tipo=='UE'">
                     No obstante te invitamos a ver nuestros <b>videos</b>, quizas <b>gohu</b>
                     pueda ser de tu utilidad.<br><br>
@@ -881,6 +907,7 @@
                       @change="valido() && buscoDocumento()">
                     </v-text-field>
                   </v-col>
+                  <!--
                   <v-col cols="3" sm="3" md="3" class="pt-0">
                     <v-file-input class="fg"
                       outlined
@@ -901,6 +928,7 @@
                       Archivo KEY
                     </v-file-input>
                   </v-col>
+                  -->
                   <v-col cols="3" sm="3" md="3" class="pt-4 fg">
                     <span color='warning' v-if="datosUE.dondeEncontreLosDatos!=''">
                       Datos encontrados en
@@ -1145,34 +1173,136 @@
                 </v-row>
 
                 <div v-show="formOk==true">
-                  <!--
                   <v-row>
-                    <v-col>
-                      <span>
-                        Precios de Licencias
-                        {{ preciosLicencias.length ? preciosLicencias[0] : '' }}
-                      </span>
-                    </v-col>
-                  </v-row>
-                  -->
-                  <v-row>
-                    <v-col cols="12" sx="12" mx="12" class="pt-0">
+                    <v-col cols="12" sm="12" class="pt-5">
                       <v-btn
                         class="fg"
-                        @click="guardarUE">
+                        @click="guardarUsuario">
                         Guardar Datos y enviar Notificación
                       </v-btn>
                     </v-col>
                   </v-row>
                 </div>
               </div>
-              <!--
-              <div v-else>
-                <span>ACA TENEMOS QUE PEDIR LA DIRECCION DEL USUARIO Y LOS DATOS DE SUS
-                  TARJETAS!
-                </span>
+
+              <div v-else-if="externo">
+
+                <!--
+                  USUARIO TIENDA
+                -->
+                <v-row>
+                  <v-col cols="6" sm="6" md="6" class="pt-0">
+                    <span><b class="fg">Tus datos</b></span>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="12" sm="6" class="pt-0">
+                    <v-text-field class="fg"
+                      v-model="datosUE.nombre"
+                      label="Nombre"
+                      required outlined
+                      :color="$store.state.temas.forms_titulo_bg"
+                      :rules="nombreRules"
+                      :counter="50" :maxlength="50"
+                      @change="valido()"
+                      @keyup="escribiendoNombre">
+                    </v-text-field>
+                  </v-col>
+                  <!--
+                  <v-col cols="12" sm="6" class="pt-0">
+                    <v-text-field class="fg"
+                      v-model="datosUE.razonsocial"
+                      label="Razón Social"
+                      outlined
+                      :color="$store.state.temas.forms_titulo_bg"
+                      :rules="razonsocialRules"
+                      :counter="80" :maxlength="80"
+                      @change="valido()">
+                    </v-text-field>
+                  </v-col>
+                  -->
+                </v-row>
+
+                <v-row>
+                  <v-col cols="12" sm="3" class="pt-0">
+                    <v-select class="fg"
+                      label="Cond.Fiscal"
+                      v-model="datosUE.responsable_id"
+                      :items="itemsResponsables"
+                      :color="$store.state.temas.forms_titulo_bg"
+                      :rules="responsableRules"
+                      outlined
+                      item-value="id"
+                      item-text="nombre"
+                      @change="valido()">
+                    </v-select>
+                  </v-col>
+                  <v-col cols="12" sm="2" class="pt-0">
+                    <v-select class="fg"
+                      label="Tipo de Documento"
+                      v-model="datosUE.documento_id"
+                      :items="itemsDocumentos"
+                      :color="$store.state.temas.forms_titulo_bg"
+                      :rules="documentoRules"
+                      outlined
+                      item-value="id"
+                      item-text="nombre"
+                      @change="valido()">
+                    </v-select>
+                  </v-col>
+                  <v-col cols="12" sm="2" class="pt-0">
+                    <v-text-field class="fg"
+                      v-model="datosUE.cuit"
+                      v-on:keydown.tab="buscoDocumento"
+                      :color="$store.state.temas.forms_titulo_bg"
+                      label="CUIT/CUIL/Nro.Doc (Sin guiones)"
+                      outlined required clearable autofocus
+                      :rules="cuitRules"
+                      :counter="11"
+                      :maxlength="11"
+                      @change="valido() && buscoDocumento()">
+                    </v-text-field>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="12" sm="4" class="pt-0 pb-0">
+                    <v-text-field class="fg"
+                      v-model="datosUE.direccion"
+                      label="Dirección"
+                      :color="$store.state.temas.forms_titulo_bg"
+                      :counter="40"
+                      :maxlength="40"
+                      outlined
+                      @change="valido()">
+                    </v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="3" class="pt-0 pb-0">
+                    <v-select class="fg"
+                      label="Ciudad"
+                      v-model="datosUE.postal_id"
+                      :items="postales"
+                      :color="$store.state.temas.forms_titulo_bg"
+                      outlined
+                      item-value="id"
+                      item-text="nombre"
+                      @change="valido()">
+                    </v-select>
+                  </v-col>
+                </v-row>
+
+                <div v-show="formOk==true">
+                  <v-row>
+                    <v-col cols="12" sx="12" mx="12" class="pt-0">
+                      <v-btn
+                        class="fg"
+                        @click="guardarUE">
+                        Guardar Datos
+                      </v-btn>
+                    </v-col>
+                  </v-row>
+                </div>
+
               </div>
-              -->
             </v-card-text>
           </v-card>
         </v-container>
@@ -1217,6 +1347,7 @@ export default {
     toggle_exclusive: false,
     grupos: [],
     carro: [],
+    postales: [],
     totalCarro: 0,
     ctt: 0,
     cuitRules: [
@@ -1412,7 +1543,8 @@ export default {
         'temas', 'logotipo', 'notificaciones', 'codigooid', 'caja', 'empresa', 'datosEmpresa',
         'operario', 'level', 'tipo', 'activo', 'datosPanel', 'rubros', 'contadorBloqueado',
         'actPublicacion', 'enCarrito', 'publicarpreciosconiva', 'operarioEsVendedor',
-        'operarioTerceroId','inicial', 'ofertas', 'exclusivoDe', 'administraGOHU', 'transition'
+        'operarioTerceroId','inicial', 'ofertas', 'exclusivoDe', 'administraGOHU', 'transition',
+        'dark'
       ]),
   },
 
@@ -1427,39 +1559,51 @@ export default {
   mounted() {
     this.search = "";
     if (!this.isLoggedIn) { return }
-    
+
+    this.$vuetify.theme.dark = this.$store.state.dark;
     this.timeoutRefreshList = []
     for (let i=10; i<=360; i++) {
       this.timeoutRefreshList.push(i)
     }
     this.datosUE.nombre = this.$store.state.empresa
     this.datosUE.razonsocial = this.$store.state.empresa
-    return HTTP().get('/afipresponsables').then(({ data }) => {
-      this.itemsResponsables = data;
-      return HTTP().get('/afipdocumentos').then(({ data }) => {
-        this.itemsDocumentos = data;
-        this.preciosLicencias = []
-        return HTTP().get('/rubrosall').then(({ data }) => {
-          this.rubItems = [];
-          this.rubObj = [];
-          data.forEach(element => {
-            this.rubItems.push(element.nombre)
-            this.rubObj.push(element)
-          })
-          return HTTP().get('/precioslicencias').then(({ data }) => {
-            this.preciosLicencias = data
+    this.postales = []
 
-            for (let i=0; i<=data.length-1; i++) {
-              this.preciosLicencias[i].precio = this.preciosLicencias[i].usd*this.$store.state.dolar
-            }
+    return HTTP().post('/postales').then(({ data }) => {
+      for (let i=0; i<=data.length-1; i++) {
+        this.postales.push({
+          id: data[i].id,
+          nombre: data[i].nombre+' ('+data[i].codigo+')',
+        })
+      }
+      return HTTP().get('/afipresponsables').then(({ data }) => {
+        this.itemsResponsables = data;
+        return HTTP().get('/afipdocumentos').then(({ data }) => {
+          this.itemsDocumentos = data;
+          this.preciosLicencias = []
+          return HTTP().get('/rubrosall').then(({ data }) => {
+            this.rubItems = [];
+            this.rubObj = [];
+            data.forEach(element => {
+              this.rubItems.push(element.nombre)
+              this.rubObj.push(element)
+            })
+            return HTTP().get('/precioslicencias').then(({ data }) => {
+              this.preciosLicencias = data
 
-            this.proveedoresx = []
-            for (let i=1; i<=this.$store.state.proveedores.length-1; i++) {
-              this.proveedoresx.push(this.$store.state.proveedores[i])
-            }
-            if (this.proveedoresx.length>0) {
-              this.proveedor_id = this.proveedoresx[0].id
-            }
+              for (let i=0; i<=data.length-1; i++) {
+                this.preciosLicencias[i].precio = this.preciosLicencias[i].usd*this.$store.state.dolar
+              }
+
+              this.proveedoresx = []
+              for (let i=1; i<=this.$store.state.proveedores.length-1; i++) {
+                this.proveedoresx.push(this.$store.state.proveedores[i])
+              }
+              if (this.proveedoresx.length>0) {
+                this.proveedor_id = this.proveedoresx[0].id
+              }
+
+            })
           })
         })
       })
@@ -1583,24 +1727,62 @@ export default {
               })
 
               this.ofertas = []
-              
-              debugger
-
               return HTTP().post('/articuloz', {
                 search: this.search,
                 vinculosPadresLic: this.$store.state.vinculosPadresLic,
                 vinculosPadresAll: this.$store.state.vinculosPadresAll,
                 proveedor: this.proveedor_id, stockProv: true, grupo: '', marca: '', userex: null, soloArtComprados: false, descuentos: this.$store.state.descuentos,
                 dolar: this.$store.state.dolar, activos: true, limit: 25 }).then(({ data })=>{
-
-                debugger
-
                 for (let i=0; i<=data.length-1; i++) {
                   let pre = data[i].precios[0].costo
                   let preori = data[i].precios[0].costo
                   if (data[i].precios[0].ofeestado=='A'&&data[i].precios[0].ofeunidades>0) {
                     pre = pre - (pre*(data[i].precios[0].ofetasadescuento/100))
                   }
+
+                  /*
+                  this.articulos.push({ 
+                    id: item.items[i].id,
+                    articulo_id: item.items[i].articulo_id,
+                    codigo: item.items[i].articulo.codigo,
+                    codbar: item.items[i].articulo.codbar,
+                    nombre: item.items[i].articulo.nombre,
+                    deposito_id: this.editado.deposito_id,
+                    unidad_id: item.items[i].articulo.unidad_id,
+                    moneda_id: item.items[i].articulo.moneda_id,
+                    iva_id: item.items[i].articulo.iva_id,
+                    cantidad: Number(item.items[i].cantidad),
+                    cantidadoriginal: Number(item.items[i].cantidad),
+                    stock: Number(item.items[i].cantidad),
+                    undstock: item.items[i].undstock,
+                    sinstock: item.items[i].sinstock,
+                    costo: item.items[i].costo,
+                    precio: item.items[i].precio,
+                    preciooriginal: item.items[i].precio,
+                    tasadescuento: item.items[i].tasadescuento,
+                    importedescuento: item.items[i].importedescuento,
+                    tasaproprecargo: 0,
+                    total: item.items[i].total,
+                    texto: item.items[i].texto,
+                    vencimiento: item.items[i].vencimiento,
+                    adevolver: 0,
+                    padre_id: null,
+                    undenvase: item.items[i].articulo.undenvase,
+                    escombo: item.items[i].articulo.escombo,
+                    ofeprecio: 0,
+                    ofetasdes: 0,
+                    ofeenvio: 0,
+                    ofeunidades: 0,
+                    ofeestado: '',
+                    turno_id: null,
+                    decimales: item.items[i].articulo.precios[0].decimales,
+                    preciomediocobro: false,
+                    loTengo: item.items[i].loTengo,
+                    desc1: item.items[i].desc1,
+                    desc2: item.items[i].desc2,
+                  })
+                  */
+                  
                   this.ofertas.push({
                     pubid: data[i].precios[0].id,
                     articulo_id: data[i].id,
@@ -1616,7 +1798,6 @@ export default {
                     unidades: data[i].precios[0].ofeunidades,
                     vendidas: data[i].precios[0].ofevendidas,
                     vencimiento: data[i].precios[0].ofevencimiento,
-                    detalles: data[i].precios[0].ofedetalles,
                     created_at: moment(data[i].precios[0].createdAt).format('YYYY-MM-DD'),
                     updated_at: data[i].precios[0].updatedAt,
                     user_id: data[i].user_id,
@@ -1692,7 +1873,6 @@ export default {
         vinculosPadresAll: this.$store.state.vinculosPadresAll,
         proveedor: this.proveedor_id, stockProv: false, grupo: g, marca: m, userex: null, soloArtComprados: false, descuentos: this.$store.state.descuentos,
         dolar: this.$store.state.dolar, activos: true, limit: 25 }).then(({ data })=>{
-
         this.ofertas = []
         let ofe = []
 
@@ -1724,9 +1904,8 @@ export default {
             unidades: data[i].precios[0].ofeunidades,
             vendidas: data[i].precios[0].ofevendidas,
             vencimiento: data[i].precios[0].ofevencimiento,
-            detalles: data[i].precios[0].ofedetalles,
             created_at: moment(data[i].precios[0].createdAt).format('YYYY-MM-DD'),
-            updated_at: data[i].updated_at,
+            updated_at: data[i].precios[0].updatedAt,
             user_id: data[i].user_id,
             loquiero: false,
             loTengo: data[i].loTengo,
@@ -1824,11 +2003,19 @@ export default {
       this.datosUE.sucursalLogotipo = this.logotipo.name
     },
 
-    guardarUE() {
+    guardarUsuario() {
       this.msg.msgTitle = 'Guardar Datos'
       this.msg.msgBody = '¿Confirmas los datos ingresados?'
       this.msg.msgVisible = true
       this.msg.msgAccion = 'confirmar registro'
+      this.msg.msgButtons = ['Cancelar','Aceptar']
+    },
+
+    guardarUE() {
+      this.msg.msgTitle = 'Guardar Datos'
+      this.msg.msgBody = '¿Confirmas los datos ingresados?'
+      this.msg.msgVisible = true
+      this.msg.msgAccion = 'confirmar registro ue'
       this.msg.msgButtons = ['Cancelar','Aceptar']
     },
 
@@ -1848,15 +2035,9 @@ export default {
       if (this.$store.state.tipo=='PP') {
         this.datosUE.porRemarcacion = 0
       }
-
-      debugger
       return HTTP().post('/nuevousuario/', { tipo: this.$store.state.tipo, datos: this.datosUE, rubros: rub}).then(({ data }) => {
-
-        debugger
         if (data!='error') {
           return HTTP().get('/user/'+data.creador_id).then(({data}) => {
-            
-            debugger
             let rub = []
             if (data[0].rubros2!=undefined) {
               for (let i=0; i<=data[0].rubros2.length-1; i++) {
@@ -1898,6 +2079,31 @@ export default {
       })
     },
 
+    guardarUEHTTP() {
+      // GUARDO EL USUARIO TIENDA
+      return HTTP().post('/nuevousuariotienda/', { tipo: this.$store.state.tipo, datos: this.datosUE}).then(({ data }) => {
+        if (data!='error') {
+          return HTTP().get('/user/'+data.creador_id).then(({data}) => {
+            if (data=='ok') {
+              this.$store.commit('setTipo', data[0].tipo , { root: true })
+              this.$store.commit('setEmpresa', data[0].username, { root: true })
+              this.$store.commit('setTercero', data[0].tercero_id, { root: true })
+              this.$store.commit('setTema', data[0].sucursales[0].tema, { root: true })
+              this.$store.commit('setTemas', data[0].sucursales[0].tema, { root: true })
+              this.mensaje('¡La operación se ha realizado con éxito!', this.$store.state.temas.forms_titulo_bg, 1500)
+              router.push('/login');
+            } else {
+              this.mensaje('¡Ops, algo ha pasado, reintente y si el error continúa, contacte con gohu!', this.$store.state.temas.snack_error_bg, 2500)
+            }
+          })
+        } else {
+          this.mensaje('¡Ops, algo ha pasado, reintente y si el error continúa, contacte con gohu!', this.$store.state.temas.snack_error_bg, 2500)
+        }
+      }).catch((e) => {
+        this.mensaje('¡Ops, algo ha pasado, reintente y si el error continúa, contacte con gohu!', this.$store.state.temas.snack_error_bg, 2500) 
+      })
+    },
+
     mensaje(mensaje, color, tiempo) {
       this.$store.commit("alert", {color:color,text:mensaje,timeout:tiempo,button:false});
       setTimeout(() => { this.$store.commit("closeAlert") }, tiempo);
@@ -1929,6 +2135,8 @@ export default {
 
     agregarAlCarrito(item) {
       let pos = this.carro.findIndex(x=>x.articulo_id==item.articulo_id)
+
+      debugger
       if (pos == -1) {
         this.carro.push({
           articulo_id: item.articulo_id,
@@ -1937,7 +2145,6 @@ export default {
           iva_id: item.iva_id,
           created_at: item.created_at,
           ctt: this.ctt,
-          detalles: item.ofedetalles,
           envio: item.ofeenvio,
           estado: item.ofeestado,
           fotos: item.fotos,
@@ -1952,7 +2159,9 @@ export default {
           user_id: item.user_id,
           vencimiento: item.ofevencimiento,
           vendidas: item.ofevendidas,
-          texto: item.pubid!=undefined?'Promocion':'Lista'
+          texto: item.pubid!=undefined?'Promocion':'Lista',
+          desc1: item.desc1,
+          desc2: item.desc2,
         })
       } else {
         this.carro[pos].ctt = this.ctt
@@ -1993,7 +2202,18 @@ export default {
           estado: 'new',
         })
       }
-      return HTTP().post('generarpedido', {
+      debugger
+      return HTTP().post('nuevopedido', {
+
+        origen: 'carrito',
+        userProv_id: this.proveedor_id,
+        userClie_id: this.userId,
+        vendedor_id: null,
+        viaje_id: null,
+        recorrido_id: null,
+        articulos: this.carro,
+
+        /*
         proveedor: this.proveedor_id, //proveedor: this.$store.state.proveedor.id,
         sucursales: this.$store.state.sucursales,
         sucursal: this.$store.state.sucursal,
@@ -2003,7 +2223,11 @@ export default {
         viaje_id: null,
         recorrido_id: null,
         cliente_id: null,
+        */
+
         }).then(({ data }) => {
+
+          debugger
           this.mensaje(data, this.$store.state.temas.forms_titulo_bg, 5500)
           this.vaciarCarrito()
         })
@@ -2023,6 +2247,8 @@ export default {
       if (op==='Aceptar') {
         if (this.msg.msgAccion=='confirmar registro') {
           this.guardarHTTP()
+        } else if (this.msg.msgAccion=='confirmar registro ue') {
+          this.guardarUEHTTP()
         }
       } else if (op==='Cancelar') {
       }
@@ -2256,9 +2482,9 @@ export default {
     font-size: 100%;
     font-weight: bold;
   }
-  .fg100br {
+  .fg80br {
     font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 100%;
+    font-size: 80%;
     font-weight: bold;
     color: red;
   }
@@ -2297,6 +2523,10 @@ export default {
   .fg55 {
     font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: 55%;
+  }
+  .fg45 {
+    font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 45%;
   }
   table.v-table thead th {
     font-size: 20px !important;

@@ -64,7 +64,7 @@
                 </template>
                 <span class="fg">Enviar a PDF</span>
               </v-tooltip>
-              <v-tooltip bottom>
+              <v-tooltip bottom v-if="tipoTer!='Equipo'">
                 <template v-slot:activator="{ on }">
                   <v-btn
                     fab
@@ -78,28 +78,12 @@
                 <span class="fg">Incluir {{tipoTerPlurales}}</span>
               </v-tooltip>
 
-              <v-switch class="pt-3 pl-5"
-                label="Ver Cuentas Inactivas"
+              <v-switch class="pt-3 pl-5" v-if="tipoTer!='Equipo'"
+                label="Cuentas Inactivas"
                 :color="temas.forms_titulo_bg"
                 v-model="verCuentasInactivas"
                 @click="listarHTTP()">
               </v-switch>
-
-              <!--
-              <v-tooltip bottom v-if="tipo!='PP'">
-                <template v-slot:activator="{ on }">
-                  <v-btn
-                    fab
-                    :color="temas.forms_btn_add_bg"
-                    :dark="temas.forms_btn_add_dark==true"
-                    class="mr-2"
-                    @click="agregarTerceros" v-on="on">
-                    <v-icon>mdi-account-multiple-plus</v-icon>
-                  </v-btn>
-                </template>
-                <span class="fg">Incluir {{tipoTerPlurales}}</span>
-              </v-tooltip>
-              -->
             </template>
 
             <v-toolbar-title v-if="tipo!='PP'">
@@ -111,26 +95,11 @@
             </v-toolbar-title>
             <v-divider class="mx-5" inset vertical></v-divider>
             <v-spacer></v-spacer>
-            <!--
-            <span class="fg70 mt-6">
-              <v-badge content="co" inline :color="temas.forms_btn_add_bg"></v-badge>
-              co (completo)<br>
-              <v-badge content="ba" inline :color="temas.forms_btn_add_bg"></v-badge>
-              ba (básico)<br>
-              <v-badge content="pp" inline color="black"></v-badge>
-              pp (precios y pedidos)<br>
-              <v-badge content="x" inline color="red"></v-badge>
-              x (exclusivo)<br>
-              <v-badge content="v" inline :color="temas.forms_btn_add_bg"></v-badge>
-              esta vinculado<br>
-            </span>
-            -->
             <!-- Modal del diálogo para Alta y Edicion -->
             <v-dialog v-model="dialog" max-width="800px" :fullscreen="true" persistent
               :transition="transition==null?'false':transition">
               <template v-slot:activator="{ on }"></template>
               <v-card class="fg">
-
                 <v-toolbar flat
                   :color="temas.forms_titulo_bg"
                   :dark="temas.forms_titulo_dark==true">
@@ -158,7 +127,7 @@
                   <v-card-text>
                     <!--<v-container>-->
                       <v-row class="mx-4 my-2">
-                        <v-col cols="1" xl="1" lg="1" md="6" sm="12" xs="12">
+                        <v-col cols="12" sm="1">
                           <v-text-field
                             :color="temas.forms_titulo_bg"
                             v-model="editado.tercero_id"
@@ -166,10 +135,9 @@
                             label='id'>
                           </v-text-field>
                         </v-col>
-                        <v-col cols="1" xl="1" lg="1" md="6" sm="12" xs="12">
+                        <v-col cols="12" sm="1">
                           <v-select
                             label="Tipo de Docum."
-                            autofocus
                             :disabled="!puedeEditar"
                             :color="temas.forms_titulo_bg"
                             v-model="editado.documento_id"
@@ -179,9 +147,10 @@
                             autocomplete>
                           </v-select>
                         </v-col>
-                        <v-col cols="2" xl="2" lg="2" md="6" sm="12" xs="12">
+                        <v-col cols="12" sm="2">
                           <v-text-field
                             ref="cuit"
+                            autofocus
                             :color="temas.forms_titulo_bg"
                             v-model="editado.cuit"
                             :disabled="!puedeEditar"
@@ -193,7 +162,7 @@
                             :maxlength="11">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="4" xl="4" lg="4" md="6" sm="6" xs="12">
+                        <v-col cols="12" sm="4">
                           <v-text-field
                             ref="nombre"
                             :color="temas.forms_titulo_bg"
@@ -208,7 +177,7 @@
                             @keyup="escribiendoNombre">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="1" xl="1" lg="1" md="6" sm="6" xs="12">
+                        <v-col cols="12" sm="1">
                           <v-text-field
                             :color="temas.forms_titulo_bg"
                             v-model="editado.creador.username"
@@ -216,7 +185,7 @@
                             label="Creador">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="3" xl="3" lg="3" md="6" sm="6" xs="12">
+                        <v-col cols="12" sm="3">
                           <v-switch v-if="esExclusivo()"
                             class="pt-0 pb-0"
                             label="¿El Cliente utiliza el Sistema?"
@@ -232,18 +201,14 @@
                         </v-col>
                       </v-row>
 
-                      <v-tabs
-                        key="pri"
-                        background-color="white"
-                        :color="temas.forms_titulo_bg"
-                        v-model="tabInicial"
-                        xl="12" lg="12" md="12" sm="1" xs="1">
+                      <v-tabs key="pri" :color="temas.forms_titulo_bg" class="fg pt-0 pl-2 pr-2"
+                        v-model="tabInicial">
                         <v-tab href="#general">
                           Datos Generales
                         </v-tab>
                         <v-tab-item value="general">
                           <v-row class="mt-2">
-                            <v-col cols="6" xl="6" lg="6" md="2" sm="12" xs="12">
+                            <v-col cols="12" sm="6">
                               <v-text-field
                                 v-model="editado.razon_social"
                                 :disabled="!puedeEditar"
@@ -255,7 +220,7 @@
                                 :maxlength="80">
                               </v-text-field>
                             </v-col>
-                            <v-col cols="6" xl="6" lg="6" md="2" sm="12" xs="12">
+                            <v-col cols="12" sm="3">
                               <v-select
                                 label="Cond.Fiscal"
                                 :color="temas.forms_titulo_bg"
@@ -267,9 +232,20 @@
                                 autocomplete>
                               </v-select>
                             </v-col>
+                            <v-col
+                              cols="12" sm="1"
+                              v-if="cual==3">
+                              <v-text-field
+                                v-model="editado.prefijopedidos"
+                                :color="temas.forms_titulo_bg"
+                                :rules="prefijoPedidosRules"
+                                :maxlength="5"
+                                label="Pref.Pedidos">
+                              </v-text-field>
+                            </v-col>
                           </v-row>
                           <v-row>
-                            <v-col cols="4" xl="4" lg="4" md="2" sm="12" xs="12" class="pt-0">
+                            <v-col cols="12" sm="6" class="pt-0">
                               <v-textarea
                                 v-model="editado.observaciones"
                                 :color="temas.forms_titulo_bg"
@@ -281,37 +257,17 @@
                                 shaped>
                               </v-textarea>
                             </v-col>
-                            <v-col cols="4" xl="4" lg="4" md="2" sm="12" xs="12" class="pt-0"
-                              v-if="tipoTer==='Cliente'">
-                              <v-combobox
-                                outlined
-                                v-model="tagsValue"
-                                :color="temas.forms_titulo_bg"
-                                :items="tagsItems"
-                                chips label="Tags" multiple>
-                                <template v-slot:selection="{ attrs,item,select,selected}">
-                                  <v-chip
-                                    v-bind="attrs"
-                                    :input-value="selected"
-                                    close
-                                    @click="select"
-                                    @click:close="removeTag(item)">
-                                    <strong>{{ item }}</strong>&nbsp;
-                                  </v-chip>
-                                </template>
-                              </v-combobox>
-                            </v-col>
-                            <v-col cols="4" xl="4" lg="4" md="2" sm="12" xs="12" class="pt-0"
-                              v-if="tipoTer==='Cliente'&& listas.length>0&&esUsuarioGohu">
+                            <v-col cols="12" sm="4" class="pt-0"
+                              v-if="tipoTer==='Cliente'&& listas.length>0">
                               <v-row>
-                                <v-col cols="9" sm="8">
+                                <v-col cols="12" sm="8">
                                   <span>
                                     <b>Lista de Precios</b>
                                     A tus precios sin IVA se le aplicará los descuentos definidos en
                                     la lista seleccionada.<br>
                                   </span>
                                 </v-col>
-                                <v-col cols="3" xl="3" lg="3" md="2" sm="12" xs="12" class="pt-0">
+                                <v-col cols="12" sm="4" class="pt-0">
                                   <v-btn class="fg"
                                     :color="temas.cen_btns_bg"
                                     :dark="temas.cen_btns_dark==true"
@@ -339,6 +295,8 @@
                                 <v-col cols="2">
                                   <v-text-field
                                     :disabled="operarioEsVendedor"
+                                    type="number"
+                                    max="300" min="0"
                                     v-model="editado.porrevuser"
                                     :color="temas.forms_titulo_bg"
                                     label="% Gral.de Rem.p/sus Productos">
@@ -347,7 +305,7 @@
                               </v-row>
                               <v-row class="fg mb-0 pb-0 pt-0"
                                 v-if="cual!=3&&editado.user.id!=userId">
-                                <v-col cols="2" xl="2" lg="2" md="6" sm="12" xs="12"
+                                <v-col cols="12" sm="2"
                                   class="fg mb-0 pb-0 pt-0">
                                   <v-switch v-show="cual==1"
                                     :disabled="operarioEsVendedor"
@@ -356,7 +314,7 @@
                                     :color="temas.forms_titulo_bg">
                                   </v-switch>
                                 </v-col>
-                                <v-col cols="1" xl="1" lg="1" md="6" sm="12" xs="12"
+                                <v-col cols="12" sm="1"
                                   class="fg mb-0 pb-0 pt-0">
                                   <v-text-field v-show="cual==1"
                                     :disabled="operarioEsVendedor"
@@ -365,7 +323,7 @@
                                     label="Días de Vencim.">
                                   </v-text-field>
                                 </v-col>
-                                <v-col cols="1" xl="1" lg="1" md="6" sm="12" xs="12"
+                                <v-col cols="12" sm="1"
                                   class="fg mb-0 pb-0 pt-0">
                                   <v-text-field v-show="cual==1"
                                     :disabled="operarioEsVendedor"
@@ -374,7 +332,7 @@
                                     label="% de Bonif.Máxima">
                                   </v-text-field>
                                 </v-col>
-                                <v-col cols="2" xl="2" lg="2" md="6" sm="12" xs="12"
+                                <v-col cols="12" sm="2"
                                   class="fg mb-0 pb-0 pt-0">
                                   <v-text-field v-show="cual==1"
                                     :disabled="operarioEsVendedor"
@@ -387,7 +345,7 @@
                                     aún no acreditados.
                                   </p>
                                 </v-col>
-                                <v-col cols="2" xl="2" lg="2" md="6" sm="12" xs="12"
+                                <v-col cols="12" sm="2"
                                   class="fg mb-0 pb-0 pt-0">
                                   <v-text-field v-show="cual==1"
                                     :disabled="operarioEsVendedor"
@@ -401,9 +359,10 @@
                                   es un ciente,
                                   no es la cuenta del usuario,
                                 -->
+                                <!--
                                 <v-col v-if="tipoTer=='Cliente'"
                                   v-show="porRemActivos()"
-                                  cols="3" sx="12" mx="12" class="fg">
+                                  cols="12" sm="3" class="fg">
                                   <v-row>
                                     <v-col cols="12">
                                       Porcentaje de Remarcación Sugerido
@@ -429,7 +388,8 @@
                                     </v-radio-group>
                                   </v-row>
                                 </v-col>
-                                <v-col cols="1" xl="1" lg="1" md="1" sm="1" xs="1"
+                                -->
+                                <v-col cols="12" sm="1"
                                   class="fg mb-0 pb-0 pt-0">
                                   <v-text-field
                                     v-show="tipoTer=='Cliente'&&
@@ -445,7 +405,7 @@
                           </v-card>
 
                           <v-row v-show="cual==3">
-                            <v-col cols="3" xl="3" lg="3" md="6" sm="12" xs="12" class="pt-0">
+                            <v-col cols="12" sm="2" class="pt-0">
                               <v-select
                                 label="Area Laboral"
                                 autofocus
@@ -459,7 +419,7 @@
                                 @change="setAreaLaboral()">
                               </v-select>
                             </v-col>
-                            <v-col cols="1" xl="1" lg="1" md="6" sm="12" xs="12" class="pt-0">
+                            <v-col cols="12" sm="1" class="pt-0">
                               <v-text-field v-show="editado.area=='V'"
                                 v-model="editado.comision"
                                 :color="temas.forms_titulo_bg"
@@ -494,15 +454,21 @@
                           direcciones
                         </v-tab>
                         <v-tab-item value="direccion">
-
                           <v-data-table
                             :headers="headersDir"
                             :items="direcciones"
                             dense
                             class="elevation-3"
+                            :footer-props="{
+                              itemsPerPageOptions: [10],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }"
                             @click:row="locateGeoLocation">
                             <template v-slot:top>
-                              <v-toolbar flat color="white">
+                              <v-toolbar flat>
 
                                 <v-dialog v-model="dialogDir" max-width="500px"
                                   :transition="transition==null?'false':transition">
@@ -669,10 +635,17 @@
                             :headers="headersCon"
                             :items="contactos"
                             dense
+                            :footer-props="{
+                              itemsPerPageOptions: [10],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }"
                             class="elevation-3">
                             <template v-slot:top>
 
-                              <v-toolbar flat color="white">
+                              <v-toolbar flat>
                                 <v-dialog v-model="dialogCon" max-width="600px"
                                   :transition="transition==null?'false':transition">
                                   <template v-slot:activator="{ on, attrs }">
@@ -786,9 +759,16 @@
                             :headers="headersCuentas"
                             :items="cuentas"
                             dense
+                            :footer-props="{
+                              itemsPerPageOptions: [10],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }"
                             class="elevation-3">
                             <template v-slot:top>
-                              <v-toolbar flat color="white">
+                              <v-toolbar flat>
 
                                 <!-- CUENTAS -->
                                 <v-dialog v-model="dialogCuenta" max-width="500px"
@@ -928,9 +908,16 @@
                                               :headers="headersChequeras"
                                               :items="chequeras"
                                               dense
+                                              :footer-props="{
+                                                itemsPerPageOptions: [10],
+                                                showFirstLastPage: true,
+                                                showCurrentPage: true,
+                                                nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                                                prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                                              }"
                                               class="elevation-3">
                                               <template v-slot:top>
-                                                <v-toolbar flat color="white">
+                                                <v-toolbar flat>
                                                   <v-dialog
                                                     v-model="dialogChequeraEdit" max-width="1050px"
                                                     :transition="transition==null
@@ -1022,8 +1009,16 @@
                                                               <v-data-table
                                                                 :headers="headersCheques"
                                                                 :items="loscheques"
-                                                                :footer-props="footerPropsCheques"
                                                                 dense
+                                                                :footer-props="{
+                                                                  itemsPerPageOptions: [5],
+                                                                  showFirstLastPage: true,
+                                                                  showCurrentPage: true,
+                                                                  nextIcon:
+                                                            'mdi-arrow-right-drop-circle-outline',
+                                                                  prevIcon:
+                                                            'mdi-arrow-left-drop-circle-outline',
+                                                                }"
                                                                 class="elevation-3">
                                                               </v-data-table>
                                                             </v-col>
@@ -1058,7 +1053,7 @@
                                                   <v-icon dark>mdi-pencil</v-icon>
                                                 </v-btn>
                                                 <v-btn v-show="puedeEditar"
-                                                  class="mr-2" fab x-small color="white"
+                                                  class="mr-2" fab x-small
                                                   @click="activarDesactivarChequera(item)">
                                                   <v-icon dark>mdi-checkbox-marked-outline</v-icon>
                                                 </v-btn>
@@ -1106,9 +1101,16 @@
                                               :headers="headersTarjetas"
                                               :items="tarjetas"
                                               dense
+                                              :footer-props="{
+                                                itemsPerPageOptions: [10],
+                                                showFirstLastPage: true,
+                                                showCurrentPage: true,
+                                                nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                                                prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                                              }"
                                               class="elevation-3">
                                               <template v-slot:top>
-                                                <v-toolbar flat color="white">
+                                                <v-toolbar flat>
                                                   <v-dialog
                                                     v-model="dialogTarjetaEdit" max-width="500px"
                                                     :transition="transition==null
@@ -1253,7 +1255,7 @@
                                                   <v-icon dark>mdi-pencil</v-icon>
                                                 </v-btn>
                                                 <v-btn v-show="puedeEditar"
-                                                  class="mr-2" fab x-small color="white"
+                                                  class="mr-2" fab x-small
                                                   @click="activarDesactivarChequera(item)">
                                                   <v-icon dark>mdi-checkbox-marked-outline</v-icon>
                                                 </v-btn>
@@ -1455,7 +1457,7 @@
                         -->
 
                         <!-- ESTE TAB SE ACTIVA SI ESTOY EN VENDEDORES Y NO ES INSERT -->
-                        <v-tab href="#acceso" v-show="cual==3 && editedIndex!=-1">
+                         <v-tab href="#acceso" v-show="cual==3 && editedIndex!=-1">
                           Accesos
                         </v-tab>
                         <v-tab-item value="acceso">
@@ -1658,9 +1660,16 @@
                             :single-expand="singleExpand"
                             :expanded.sync="expanded"
                             show-expand
+                            :footer-props="{
+                              itemsPerPageOptions: [10],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }"
                             class="elevation-3">
                             <template v-slot:top>
-                              <v-toolbar flat color="white">
+                              <v-toolbar flat>
                                 <!-- ZONAS -->
                                 <v-dialog v-model="dialogZona" max-width="500px"
                                   :transition="transition==null?'false':transition">
@@ -1727,8 +1736,14 @@
                                 <v-data-table
                                   :headers="headersClieXZonas"
                                   :items="item.clientes"
-                                  :footer-props="footerProps"
-                                  dense>
+                                  dense
+                                  :footer-props="{
+                                    itemsPerPageOptions: [10],
+                                    showFirstLastPage: true,
+                                    showCurrentPage: true,
+                                    nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                                    prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                                  }">
                                   <template v-slot:item.usertercero.tercero.nombre="{ item }">
                                     <span disable dark> {{
                                       item.usertercero.tercero.nombre
@@ -1773,7 +1788,7 @@
                                 <v-icon dark>mdi-delete</v-icon>
                               </v-btn>
                               <v-btn v-show="puedeEditar"
-                                class="mr-2" fab x-small color="white"
+                                class="mr-2" fab x-small
                                 @click="activarDesactivarCuenta(item)">
                                 <v-icon dark>mdi-checkbox-marked-outline</v-icon>
                               </v-btn>
@@ -1834,18 +1849,7 @@
 
           </v-toolbar>
           <v-row>
-<!--
-            <v-col cols="6" sm="6" class="pl-6">
-              <v-text-field
-                v-model="search"
-                append-icon="search"
-                :color="temas.forms_titulo_bg"
-                label="Buscar"
-                single-line hide-details>
-              </v-text-field>
-            </v-col>
--->
-            <v-col cols="5" sm="4">
+            <v-col cols="12" sm="4">
               <v-text-field
                 class="fg pt-4 pl-2"
                 v-model="search"
@@ -1858,7 +1862,7 @@
               </v-text-field>
             </v-col>
 
-            <v-col class="pt-5" cols="2" sm="2">
+            <v-col cols="12" sm="2" class="pt-5 ml-2">
               <v-btn
                 :color="temas.forms_titulo_bg"
                 class="fg85" dark
@@ -1866,18 +1870,8 @@
                 Buscar
               </v-btn>
             </v-col>
-
-            <v-col cols="6" sm="6" class="pt-5 pr-5">
-              <v-combobox
-                v-model="tagsValue"
-                :color="temas.forms_titulo_bg"
-                :items="tagsItems"
-                clearable
-                @change="seleccionoTag()"
-                label="Filtar por Tag">
-              </v-combobox>
-            </v-col>
           </v-row>
+
         </template>
         <template v-slot:item.tercero.nombre="{ item }"
           name="tr-fade" is="transition-group">
@@ -2001,16 +1995,23 @@
                     <v-data-table
                       v-model="tercerosSeleccionados"
                       :headers="headersTerceros"
-                      :search="searchNuevosClientes"
+                      :search="searchNuevosTerceros"
                       :items="terceros"
                       :single-select="false"
                       item-key="id"
                       show-select dense
                       class="elevation-1"
+                      :footer-props="{
+                        itemsPerPageOptions: [10],
+                        showFirstLastPage: true,
+                        showCurrentPage: true,
+                        nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                        prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                      }"
                       @toggle-select-all="selectAll">
                       <template v-slot:top>
                         <v-text-field class="pl-5 pt-5 pb-5"
-                          v-model="searchNuevosClientes"
+                          v-model="searchNuevosTerceros"
                           append-icon="search"
                           :color="temas.forms_titulo_bg"
                           label="Buscar"
@@ -2190,7 +2191,7 @@
       <!-- FIN CAMBIAR PASSWORD CLIENTE EXCLUSIVO -->
 
       <!-- INICIO SALDOS ESPEJADOS -->
-      <v-dialog v-model="dialogSaldosEspejados" max-width="390px" persistent
+      <v-dialog v-model="dialogSaldosEspejados" max-width="550px" persistent
         :transition="transition==null?'false':transition">
         <template v-slot:activator="{}"></template>
         <v-card class="fg">
@@ -2206,6 +2207,12 @@
             <span class="text--right">
               Control de Saldos Espejados
             </span>
+            <v-spacer></v-spacer>
+            <v-btn v-show="cprsAImportar.length>0"
+              :color="temas.cen_btns_bg"
+              :dark="temas.cen_btns_dark==true"
+              class="fg85" @click="importarCprs">Importar
+            </v-btn>
           </v-toolbar>
 
           <v-form ref="art">
@@ -2236,9 +2243,39 @@
                   </v-col>
                 </v-row>
                 <v-row v-if="saldoEspejoPropio-saldoEspejoTercero!=0">
-                  <v-col cols="12" sx="12" mx="12">
+                  <v-col cols="12" sm="12">
                     <span>Hay diferencia entre tu saldo y esta cuenta.</span><br>
-                    <span>! Revisa si en notificaciones no tienes algún pago para anular. ¡</span>
+                    <span>!Revisa si en notificaciones no tienes algún pago para anular.¡</span>
+                  </v-col>
+                </v-row>
+                <v-row v-if="cprsAImportar.length>0">
+                  <v-col cols="12" sm="12">
+                    <span>
+                      Es necesario importar los comprobantes detallados en la grilla a tu sistema.
+                    </span><br>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="12" sm="12">
+                    <v-data-table
+                      :headers="headersCprsAImportar"
+                      :items="cprsAImportar"
+                      dense
+                      class="elevation-3"
+                      :footer-props="{
+                        itemsPerPageOptions: [3],
+                        showFirstLastPage: true,
+                        showCurrentPage: true,
+                        nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                        prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                      }">
+                      <template v-slot:item.cpr="{ item }">
+                        <span>{{ kit.cpr(item.cpr)}}</span>
+                      </template>
+                      <template v-slot:item.total="{ item }">
+                        <span>${{ formatoImporte(item.total)}}</span>
+                      </template>
+                    </v-data-table>
                   </v-col>
                 </v-row>
               </v-container>
@@ -2378,6 +2415,10 @@ export default {
       v => !!v || 'El cuit es requerido',
       v => (v && v.length <= 11) || 'Ingrese hasta 11 caracteres',
     ],
+    prefijoPedidosRules: [
+      v => !!v || 'Debes ingresar un prefijo para tus pedidos',
+      v => (v && v.length <= 5) || 'Ingrese hasta 5 caracteres',
+    ],
     emailRules: [
       v => !!v || 'E-mail es requerido',
       v => /.+@.+\..+/.test(v) || 'E-mail debe ser válido',
@@ -2394,29 +2435,24 @@ export default {
     searchBancos: '',         // para el cuadro de búsqueda de datatables
     searchPromos: '',         // para el cuadro de búsqueda de datatables
     loading: false,
-    searchTag: '',
     terceroTipoSeleccionado: [],
     tercerosTipos: [],
     cuentas: [],
     contactos: [],
     contactosTipos: [],
-    tagsItems: [],
-    tagsValue: [],
-    tagsObj: [],
     sucsValue: [],
     sucsItems: [],
     sucsObj: [],
     expanded: [],
     listas: [],
+    cprsAImportar: [],
     areas: [
       {id: 'A', nombre: 'Administrativo'}, 
       {id: 'V', nombre: 'Vendedor'},
       {id: 'R', nombre: 'Repartidor'},
       {id: 'X', nombre: 'Vendedor y Repartidor'}],
-    footerProps: {'items-per-page-options': [9, 12, 15, 100]},
-    footerPropsCheques: {'items-per-page-options': [5]},
     search: '',         // para el cuadro de búsqueda de datatables  
-    searchNuevosClientes: '',
+    searchNuevosTerceros: '',
     dialog: false,      // para que la ventana de dialogo o modal no aparezca automáticamente
     dialogDir: false,
     dialogCon: false,
@@ -2445,6 +2481,7 @@ export default {
     tarjetas: [],
     loscheques: [],
     terceros: [],
+    selected: [],
     headers: [
       { text: 'Código', value: 'tercero.id', width: 90, align: 'right', sortable: false },
       { text: 'Nombre', value:'tercero.nombre', width: 500},
@@ -2455,6 +2492,12 @@ export default {
       { text: 'CtaCte', value:'ctacte', width: 90},
       { text: 'Activo', value:'activo', width: 70},
       { text: 'Op', value: 'accion', sortable: false },
+    ],
+    headersCprsAImportar: [
+      { text: 'Id', value:'id', width: 60},
+      { text: 'Cpr', value:'cpr', width: 120},
+      { text: 'Fecha', value:'fecha', width: 110},
+      { text: 'Importe', value:'total', width: 130, align: 'end'},
     ],
     headersDir: [
       { text: 'DIRECCION', value:'direccion', width: 250},
@@ -2468,12 +2511,14 @@ export default {
       { text: 'ACTIVO', value:'activo'},
       { text: 'Op', value: 'accion', sortable: false },
     ],
+    /*
     headersPromo: [
       { text: 'NOMBRE', value:'promo.nombre'},
       { text: '% REM', value:'porrem'},
       { text: 'ACTIVO', value: 'activo'},
       { text: 'Op', value: 'accion', sortable: false },
     ],
+    */
     headersCuentas: [
       { text: 'BANCO', value:'banco.nombre', align: 'left', width: 250},
       { text: 'NOMBRE', value:'nombre', align: 'left', width: 150},
@@ -2693,6 +2738,7 @@ export default {
       cuentas: [],
       porrevuser: null,
       porrevuserid: null,
+      prefijopedidos: null,
     },
     defaultItem: {
       id: null,
@@ -2724,6 +2770,7 @@ export default {
       cuentas: [],
       porrevuser: null,
       porrevuserid: null,
+      prefijopedidos: null,
     },
     editadoZona: {
       id: null,
@@ -2867,10 +2914,7 @@ export default {
     if (!this.isLoggedIn) {
       return router.push('/login');
     } else {
-      this.tagsItems = []
-      this.tagsValue = []
       return HTTP().get('/inicialtercero').then(({ data }) => {
-
         this.tercerosTipos = data.tipos;
         this.contactosTipos = data.contactos;
         this.itemsBancos = data.bancos;
@@ -2879,12 +2923,7 @@ export default {
         this.itemsDocumentos = data.afipdocumentos;
         this.listas = data.listas;
         this.itemsZonas = data.zonas;
-        //this.viajesConfigAll = data.viajesconfig
-        
         this.preciosLicencias = data.precioslicencias
-        data.tagsterceros.forEach(el => { this.tagsItems.push(el.nombre) });
-        data.tagsterceros.forEach(el => { this.tagsObj.push(el)});
-
       })
     }
   },
@@ -2916,31 +2955,21 @@ export default {
   },
 
   methods: {
+
+    /*
     porRemActivos() {
       if (this.tipoTer=='Cliente') {
         if (this.editado.user.id!=this.userId) {
-//          if (this.$store.state.tipo!='PP') {
-            if (this.esUsuarioGohu) {
-              if (!this.operarioEsVendedor) {
-                return true       
-              }
+          if (this.esUsuarioGohu) {
+            if (!this.operarioEsVendedor) {
+              return true       
             }
-//          }
+          }
         }
       }
       return false
-
-/*      
-      if (this.tipoTer=='Cliente'&&this.editado.user.id!=this.userId&&
-        !this.$store.state.tipo=='PP'&&
-        this.esUsuarioGohu &&
-        !this.operarioEsVendedor) {
-          return true 
-        } else {
-          return false
-        }
-*/
     },
+    */
 
     esExclusivo() {
       if (this.tipoTer!='Cliente') return false
@@ -2976,7 +3005,6 @@ export default {
     */
     
     locateGeoLocation: function(value) {
-      debugger
       let dir = '';
       if (value!=undefined) {
         dir = value.direccion+' '+value.postal.nombre+' '+value.postal.provincia.nombre+' '+value.postal.provincia.pais.nombre
@@ -3114,14 +3142,14 @@ export default {
     },
 
     clickRow(value) {
+      debugger
       if (value.tercero_id==2) {  // CONSUMIDOR FINAL, CUENTA GENERAL, NO SE MODIFICA
         return
       }
       this.itemActual = value
       this.puedeEditar = false
       if ((this.itemActual.tercero.creador.id == this.userId)||
-          (this.itemActual.tercero.user.id==this.userId)||
-          (this.tipo=='PP'&&this.exclusivoDe.id==this.userId)) {
+          (this.tipo=='PP'&&this.exclusivoDe.id==this.itemActual.tercero.creador.id)) {
         this.puedeEditar = true
       }
       this.editar(this.itemActual)
@@ -3130,12 +3158,19 @@ export default {
     setAcciones(item) {
       this.itemActual = item
       this.acciones = []
+      debugger
       this.puedeEditar = false
       // Puede editar cuando el usuario del tercero es = al usuario actual
+
+      if ((this.itemActual.tercero.creador.id == this.userId)||
+          (this.tipo=='PP'&&this.exclusivoDe.id==this.itemActual.tercero.creador.id)) {
+        this.puedeEditar = true
+      }
+      /*
       if (this.itemActual.tercero.creador.id == this.userId && this.itemActual.tercero.id!=2) {
         this.puedeEditar = true
       }
-      debugger
+      */
       if (this.itemActual.tercero.id!=2) {
         this.acciones.push({nombre: 'Editar', icon: 'mdi-pencil'})
         if (this.itemActual.activo) {
@@ -3164,14 +3199,12 @@ export default {
           this.acciones.push({nombre: 'Cambiar su Password', icon: 'fingerprint'})
         }
       }
-      debugger
       if (this.itemActual.tercero.user && this.itemActual.tercero.id!=2) {
         this.acciones.push({nombre: '¿Saldos Espejados?', icon: 'mdi-code-equal'})
       }
     },
 
     selAccion(item) {
-      debugger
       if (item.nombre=='Editar' || item.nombre=='Ver') {
         this.editar(this.itemActual)
       } else if (item.nombre=='Activar') {
@@ -3187,19 +3220,16 @@ export default {
 
           this.msg.msgTitle = 'Datos Fiscales'
           let d = ''
-          if (data.data.datosGenerales==undefined) {
 
+          if (data.data.hasOwnProperty('datosGenerales') == false) {
             d = '¡No hay datos fiscales!<br>'
             d += 'Puede deberse a problemas con AFIP o con e CUIT asignado '
             d += 'para consultas de padrones.'
-
           } else {
-
             d =  '<table>'
             d += '<tr><td style="text-align:left">Tipo de Persona</td>'
             d += '<td style="text-align:left"><b>'
             d += '\xa0\xa0'+data.data.datosGenerales.tipoPersona+'</td></b></tr>'
-  
             d += '<tr><td style="text-align:left">Razón Social</td>'
             d += '<td style="text-align:left"><b>'
             if (data.data.datosGenerales.tipoPersona=='FISICA') {
@@ -3208,18 +3238,17 @@ export default {
               d += '\xa0\xa0'+data.data.datosGenerales.razonSocial
             }
             d += '</td></b></tr>'
-
             d += '<tr><td style="text-align:left">CUIT</td>'
             d += '<td style="text-align:left"><b>'
             d += '\xa0\xa0'+data.data.datosGenerales.idPersona
             d += '</td></b></tr>'
 
             let responsable = 'RESPONSABLE INSCRIPTO'
-            if (data.data.datosMonotributo!=undefined) {
+            if (data.data.hasOwnProperty('datosMonotributo')) {
               responsable = 'MONOTRIBUTO'
             } else {
-              if (data.data.datosRegimenGeneral!=undefined) {
-                if (data.data.datosRegimenGeneral.impuesto) {
+              if (data.data.hasOwnProperty('datosRegimenGeneral')) {
+                if (data.data.datosRegimenGeneral.hasOwnProperty('impuesto')) {
                   for (let x=0; x<=data.data.datosRegimenGeneral.impuesto.length-1; x++) {
                     if (data.data.datosRegimenGeneral.impuesto[x].descripcionImpuesto=='IVA EXENTO') {
                       responsable = 'EXENTO'
@@ -3273,7 +3302,26 @@ export default {
         this.passRegistro = ''
         this.dialogPasswordUserExclusivo = true
       } else if (item.nombre=='¿Saldos Espejados?') {
-        return HTTP().get('/controlespejo/'+this.itemActual.tercero.user.id, { timeout: 2500 }).then(( data ) => {
+
+        return HTTP().get(
+          '/controlespejo/'+this.itemActual.tercero.user.id+'/'+this.$store.state.formTercerosTitulo, {timeout:2500 }).then((data)=>{
+
+          this.cprsAImportar = []
+          /*
+          for (let i=0; i<=data.data.movs.length-1; i++) {
+            if (data.data.movs[i].estaEnLaOtraPunta==false) {
+              this.cprsAImportar.push({
+                id: data.data.movs[i].id,
+                cpr: data.data.movs[i].cpr,
+                comprobante_id: data.data.movs[i].comprobante_id,
+                fecha: moment(data.data.movs[i].fecha).format('DD/MM/YYYY'),
+                total: data.data.movs[i].total,
+                demo: data.data.movs[i].demo,
+              })
+            }
+          }
+          */
+
           this.saldoEspejoPropio = data.data.saldoPropio
           this.saldoEspejoTercero = data.data.saldoTercero
           this.dialogSaldosEspejados = true
@@ -3407,11 +3455,13 @@ export default {
     escribiendoNombre() {
       if (this.editedIndex===-1) {
         this.editado.razon_social = this.editado.nombre
+        if (this.cual=='3') {
+          this.editado.prefijopedidos = this.editado.razon_social.substring(0,4)
+        }
       }
     },
 
     activarTercero(item) {
-      debugger
       return HTTP().post('activardesactivar', {usertercero_id: item.id, tipo_id: this.cual, valor: item}).then ((data) => {
         if (data.data=='error') {
           this.mensaje('¡Opps, se ha producido un error en el desactivacion de esta cuenta!', this.temas.snack_error_bg, 2500) 
@@ -3426,19 +3476,18 @@ export default {
     },
 
     desactivarTercero(item) {
-      debugger
       return HTTP().post('userterceropuededesactivar', {tercero_id: item.tercero_id}).then ((data) => {
         let m = ''
         if (data.data!=0) {
-          this.msg.msgTitle = 'Error al Desactivar Cuenta'
+          this.msg.msgTitle = 'No se puede desactivar esta Cuenta'
           m = 'Esta cuenta posee un saldo de $'+this.formatoImporte(data.data)+' en Cuenta Corriente.<br>'
-          m += 'Debe cancelarlos para poder desactivarla<br>'
+          m += 'Debe cancelarlos para poder desactivarla.<br>'
           this.msg.msgAccion = 'error al desactivar tercero'
           this.msg.msgButtons = ['Aceptar']
         } else if (data.data==0) {
           this.msg.msgTitle = 'Desactivar Cuenta'
           m = '¿Confirmas desactivar a '+item.tercero.razon_social+'?<br><br>'
-          m += 'Solo permanecerá invisible. En cualquier momento podrás volver a activarla'
+          m += 'Solo permanecerá invisible. En cualquier momento podrás volver a activarla.'
           this.msg.msgAccion = 'desactivar tercero'
           this.msg.msgButtons = ['Aceptar','Cancelar']
         }
@@ -3492,9 +3541,7 @@ export default {
     },
 
     activarDesactivarTerceroHTTP(item, valor) {
-      debugger
       return HTTP().post('activardesactivar', {usertercero_id: item.id, tipo_id: this.cual, valor:valor}).then ((data) => {
-        debugger
         if (data.data=='error') {
           let m = '¡Opps, se ha producido un error en '
           m += valor==1?'activar':'desactivar'
@@ -3584,13 +3631,11 @@ export default {
             tip = '7'
           }
 
-          debugger
           // REALIZA LA INCORPORACION
           return HTTP().post('/agregotercerodesdegohu', {
             user_id: this.userId,
             tercero_id: this.terceroAIncorporar, tipo_id: tip })
             .then(({data}) => {
-              debugger
               if (data=='ok') {
                 this.mensaje('¡Incorporación Exitosa!', this.temas.forms_titulo_bg, 2500) 
               } else if (data=='error') {
@@ -3649,10 +3694,8 @@ export default {
     },
 
     buscoNombre(event) {
-      debugger
       const nom = event.target.value
       return HTTP().get(`/indexter/exists/${nom}`).then(({ data }) => {
-        debugger
         if(data.length>0) {
           this.mensaje('¡El nombre ingresado ya existe.!', this.temas.forms_titulo_bg, 1500) 
           this.$refs.nombre.focus()
@@ -3661,26 +3704,14 @@ export default {
     },
         
     listarHTTP() {
-      let sea = this.search==''?'%%':'%'+this.search+'%'
+      let sea = this.search==''?'null':this.search
+      debugger
       return HTTP().get('/indexter/'+this.verCuentasInactivas+'/'+this.cual+'/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/'+sea)
         .then(({data})=>{
+          debugger
           this.items = data;
           this.itemsAll = data;
       });
-    },
-
-    seleccionoTag() {
-      if (this.tagsValue==undefined) {
-        this.items = this.itemsAll
-      } else {
-        this.items = []
-        for (let i=0; i<=this.itemsAll.length-1; i++) {
-          let pos = this.itemsAll[i].tags.findIndex(x => x.nombre == this.tagsValue)
-          if (pos!=-1) {
-            this.items.push(this.itemsAll[i])
-          }
-        }
-      }
     },
 
     altaHTTP() {
@@ -3715,49 +3746,35 @@ export default {
         direcciones: this.direcciones,
         contactos: this.contactos,
         cuentas: this.cuentas,
-        tags: this.editado.tags,
+        prefijopedidos: this.editado.prefijopedidos,
         }).then(({ data }) => {
           if (data.error!=undefined) {
             this.mensaje(data.error, this.temas.forms_titulo_bg, 2500) 
           } else {
             this.mensaje('¡Alta Exitosa!', this.temas.forms_titulo_bg, 2500) 
-              // vuelvo a cargar los tags por si agrego alguno
-            return HTTP().get('/tagsterceros').then(({ data }) => {
-              this.tagsItems = []
-              this.tagsValue = []
-              data.forEach(el => { this.tagsItems.push(el.nombre) });
-              data.forEach(el => { this.tagsObj.push(el)});
-              this.listarHTTP();
-            })
           }  
         });
     },
 
     editarHTTP:function(data) {
 
-      let porRevUser = data.porrevuser
+      let porRevUser = data.porrevuser==''?0:data.porrevuser
+      data.porrevuser = porRevUser
       // actualizo datosEmpresa.cuentas, por si agrego alguna cuenta y se tenga que reflejar en pagos.
       this.$store.commit('setDatosEmpresaCuentas'  , data.cuentas, { root: true} )
       return HTTP().patch(`/indexter/${data.tercero_id}`, data).then(( data ) => {
         this.mensaje('¡Actualización Exitosa!', this.temas.forms_titulo_bg, 1500) 
-        // vuelvo a cargar los tags por si agrego alguno
-        return HTTP().get('/tagsterceros').then(({ data }) => {
-          this.tagsItems = []
-          this.tagsValue = []
-          data.forEach(el => { this.tagsItems.push(el.nombre) });
-          data.forEach(el => { this.tagsObj.push(el)});
-          if (this.porRevUserPos!=-1) {
-            let aux = []  // solo puedo modificar el store con un commmit
-            for (let i=0; i<=this.vinculosPadresLic.length-1; i++) {
-              aux.push(this.vinculosPadresLic[i])
-            }
-            if (this.porRevUserPos!=null) {
-              aux[this.porRevUserPos].porrev = porRevUser
-              this.$store.commit('setVinculosPadresLic', aux, { root: true });
-            }
+        if (this.porRevUserPos!=-1) {
+          let aux = []  // solo puedo modificar el store con un commmit
+          for (let i=0; i<=this.vinculosPadresLic.length-1; i++) {
+            aux.push(this.vinculosPadresLic[i])
           }
-          this.listarHTTP();
-        })
+          if (this.porRevUserPos!=null) {
+            aux[this.porRevUserPos].porrev = porRevUser
+            this.$store.commit('setVinculosPadresLic', aux, { root: true });
+          }
+        }
+        this.listarHTTP();
       });
     },
 
@@ -3776,6 +3793,7 @@ export default {
         user_id: this.userId,
         level: 3,
         tipo: this.tipo,
+        usaelsistema: true,
         activo: 1,
         sucursales: this.sucursales,
         }).then(({ data }) => {
@@ -3795,6 +3813,7 @@ export default {
         tercero_id: item.tercero.id,
         user_id: null,
         level: 2,
+        tipo: 'PP',
         usaelsistema: this.editado.user.usaelsistema,
         activo: 1,
         sucursales: [],
@@ -3826,8 +3845,6 @@ export default {
     },
 
     editar (item) {
-
-      debugger
       this.editado.porrevuser = null
       this.editado.porrevuserid = null
       if (item.tercero.user!=null) {
@@ -3852,7 +3869,7 @@ export default {
       this.editado.creditomaximo = item.creditomaximo
       this.editado.bonificacionmaxima = item.bonificacionmaxima
       this.editado.maxdiaschq = item.maxdiaschq
-      this.editado.porrev = item.porrev==null?'1':item.porrev.toString()
+    //this.editado.porrev = item.porrev==null?'1':item.porrev.toString()
       this.editado.comision = item.comision
       this.editado.cobcompedcli = item.cobcompedcli
       this.editado.pedtransfavend = item.pedtransfavend
@@ -3862,6 +3879,7 @@ export default {
       this.editado.area = item.area
       this.editado.lista_id = item.lista_id
       this.editado.cuentas = item.tercero.cuentas;
+      this.editado.prefijopedidos = item.prefijopedidos
 
       if(item.tercero.user) {
         this.editado.user.id = item.tercero.user.id
@@ -3870,13 +3888,10 @@ export default {
         this.editado.user.usaelsistema = item.tercero.user.usaelsistema
         this.editado.user.administraGohu = item.tercero.user.administragohu
       }
-      this.tagsValue = []
-      item.tags.forEach(el => { this.tagsValue.push(el.nombre) });
 
       this.esUsuarioGohu = item.tercero.user ? true : false
       this.tercerosZonas = []
 
-      debugger
       for (let i=0; i<=item.zonas.length-1; i++) {
         this.tercerosZonas.push({
           id:             item.zonas[i].id,
@@ -4132,6 +4147,7 @@ export default {
     },
 
     agregarTerceros() {
+      this.searchNuevosTerceros = ''
       this.dialogAgregarTerceros = true
       return HTTP().get('/todoslosterceros/'+this.cual).then(({ data }) => {
         this.terceros = data;
@@ -4220,7 +4236,28 @@ export default {
       this.dialogLeerMasSobrePrecios = true
     },
 
+    importarCprs() {
+      return HTTP().post('/importarcprs', { cprs: this.cprsAImportar, proveedor: this.itemActual.tercero.id }).then(({data})=>{
+        this.dialogSaldosEspejados = false
+        if (data=='error') {
+          this.mensaje('¡Opps!, Se ha producido un error!', this.temas.snack_error_bg, 2500) 
+        } else {
+          this.mensaje('¡La operación se ha realizado con éxito!', this.temas.forms_titulo_bg, 1500) 
+        }
+      })
+    },
+
     guardar() {
+      if (this.editado.cuit==null) {
+        this.mensaje('¡Opps!, Debes ingresar un Número de Documento!', this.temas.snack_error_bg, 2500) 
+        return
+      }
+
+      if (this.editado.nombre==null) {
+        this.mensaje('¡Opps!, Debes ingresar un Nombre o Razón Social!', this.temas.snack_error_bg, 2500) 
+        return
+      }
+
       if (this.editado.user) {
         if (this.editado.user.id == this.userId) {
           let hayCuentaPredeterminada = false
@@ -4254,31 +4291,8 @@ export default {
       this.editado.tercerosZonas = this.tercerosZonas;
       this.editado.usertercero_id = this.userterceroid;
 
-      // AGREGO LOS TAGS
-      let aux = [];
-      for(let i=0; i<=this.tagsValue.length-1; i++ ) {
-        let nuevo = true
-        for(let j=0; j<=this.tagsObj.length-1; j++) {
-          if(this.tagsValue[i]===this.tagsObj[j].nombre) {
-            nuevo = false
-            aux.push(this.tagsObj[j])
-            break
-          }
-        }
-        if (nuevo) {
-          aux.push({
-            id: null,
-            nombre: this.tagsValue[i],
-            user_id: this.userId,
-            created_at: moment().format('YYYY-MM-DD'),
-            updated_at: moment().format('YYYY-MM-DD'),
-          })
-        }
-      }
-      this.editado.tags = aux;
-
       // AGREGO LAS SUCURSALES
-      aux = []
+      let aux = []
       for(let i=0; i<=this.sucsValue.length-1; i++ ) {
         let nuevo = true
         for(let j=0; j<=this.sucsObj.length-1; j++) {
@@ -4866,11 +4880,6 @@ export default {
       }).then(({data})=>{
         this.mensaje('¡Operación Exitosa!', this.temas.forms_titulo_bg, 1500) 
       });
-    },
-
-    removeTag(item) {
-      this.tagsValue.splice(this.tagsValue.indexOf(item), 1);
-      this.tagsValue = [...this.tagsValue];
     },
 
     removeSuc(item) {

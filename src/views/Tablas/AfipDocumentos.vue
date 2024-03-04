@@ -8,7 +8,13 @@
         sort-by="id"
         dense
         class="elevation-3"
-        :footer-props="footerProps">
+        :footer-props="{
+          itemsPerPageOptions: [9],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }">
         <template v-slot:top>
           <v-toolbar
             :color="temas.forms_titulo_bg"
@@ -215,7 +221,6 @@ export default {
       (v) => !!v || 'El nombre es requerido',
       (v) => v.length <= 80 || 'Ingrese hasta 80 caracteres'
     ],
-    footerProps: {'items-per-page-options': [9, 12, 15, 100]},
     search: '', // para el cuadro de búsqueda de datatables  
     dialog: false, // para que la ventana de dialogo o modal no aparezca automáticamente      
     // definimos los headers de la datatables

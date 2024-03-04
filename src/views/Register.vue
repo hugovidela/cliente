@@ -175,19 +175,19 @@
                   <tr>
                     <td>Licencia <b>ERP Completo</b></td><td></td>
                     <td class="text-lg-right">
-                      ${{ formatoImporte(preciosLicencias[0].precio)}}/mes +IVA
+                      ${{ formatoImporte(preciosLicencias[1].precio)}}/mes +IVA
                     </td>
                   </tr>
                   <tr>
                     <td>Licencia <b>ERP Medio</b></td><td></td>
                     <td class="text-lg-right">
-                      ${{ formatoImporte(preciosLicencias[1].precio)}}/mes +IVA
+                      ${{ formatoImporte(preciosLicencias[2].precio)}}/mes +IVA
                     </td>
                   </tr>
                   <tr>
                     <td>Licencia <b>ERP Básico</b></td><td></td>
                     <td class="text-lg-right">
-                      ${{ formatoImporte(preciosLicencias[2].precio)}}/mes +IVA
+                      ${{ formatoImporte(preciosLicencias[3].precio)}}/mes +IVA
                     </td>
                   </tr>
                 </table>
@@ -197,6 +197,32 @@
                 inflación que informa el gobierno.</p><br> -->
               </v-col>
             </v-row>
+            <v-row v-else-if="registerTipo=='Profesionales'">
+              <v-col cols="12" sm="12" md="12">
+                <b>gohu</b> Profesionales.<br><br>
+                Para todos aquellos profesionales que necesitan cumplir con las obligaciones
+                fiscales.<br>
+                Podrás cargar todos los servicios que prestas, cargar tus proveedores y emitir
+                los comprobantes que necesites.
+                <br><br>
+                <span><b>Costo de esta Licencia</b></span><br>
+                <table class="fg85">
+                  <tr>
+                    <td>Licencia <b>Precios y Pedidos</b></td><td></td>
+                    <td class="text-lg-right">
+                      ${{ formatoImporte(preciosLicencias[0].precio)}}/mes +IVA
+                    </td>
+                  </tr>
+                </table>
+                <br><br>
+
+                <p></p>
+                <!-- <p class="fg85">Estos precios se actualizan mensualmente por el indice de
+                  inflación que informa el gobierno y no incluyen IVA.
+                </p> -->
+                <br>
+              </v-col>
+            </v-row>
             <v-row v-else-if="registerTipo=='Precios y Pedidos'">
               <v-col cols="12" sm="12" md="12">
                 <b>gohu</b> Precios y Pedidos.<br><br>
@@ -204,7 +230,7 @@
                 y también exponer los tuyos, para que tus clientes estén al tanto en todo momento.
                 <br>
                 Todos estos datos se actualizan en tiempo real, lo que te va a dar la tranquilidad
-                de que los precios son los actuales.
+                de que los precios siempre son los actuales.
                 También podrás recibir y emitir pedidos de tus Clientes y Proveedores
                 respectivamente.
                 <br><br>
@@ -214,15 +240,17 @@
                   <tr>
                     <td>Licencia <b>Precios y Pedidos</b></td><td></td>
                     <td class="text-lg-right">
-                      ${{ formatoImporte(preciosLicencias[2].precio)}}/mes +IVA
+                      ${{ formatoImporte(preciosLicencias[4].precio)}}/mes +IVA
                     </td>
                   </tr>
                 </table>
 
-                <br><b>gohu</b> Precios y Pedidos (Exclusivos).<br><br>
-                Podrás ser cliente exclusivo de tu proveedor, contactate con él para que te agrege.
+                <br><b>gohu</b> Precios y Pedidos (Exclusivos).<br>
+                Podrás ser cliente exclusivo de tu proveedor preferido.
+                Revisa la Ayuda en el apartado <i>Licencias</i> y lee sobre
+                las licencias tipo <b>PPx</b> para obtener mas información.
                 <br>
-                Esta licencia no tiene costo.
+                ¡Estas licencias no tienen costo!.
                 <br><br>
 
                 <p></p>
@@ -276,7 +304,7 @@ export default {
     valid: true,
     show: false,
     tipoUsuario: '',
-    tipoUsuarioItems: ['ERP Completo','ERP Medio','ERP Básico','Precios y Pedidos', 'Tienda'],
+    tipoUsuarioItems: ['ERP Completo','ERP Medio','ERP Básico','Precios y Pedidos', 'Profesionales', 'Tienda'],
     itemsResponsables: [],
     itemsDocumentos: [],
     documento_id: '',
@@ -322,10 +350,8 @@ export default {
   },
 
   mounted() {
-    debugger
-    this.preciosLicencias = [{precio: 0},{precio: 0},{precio: 0},{precio: 0}]
+    this.preciosLicencias = [{precio: 0},{precio: 0},{precio: 0},{precio: 0},{precio: 0}]
     return HTTP().get('/precioslicencias').then(({ data }) => {
-      debugger
       for (let i=0; i<=data.length-1; i++) {
         this.preciosLicencias[i].precio = data[i].usd*data[i].cotDolar
       }
@@ -357,8 +383,6 @@ export default {
     },
 
     validado() {
-
-      debugger
       let a1 = this.elRecomendoExiste
       let a2 = this.$store.state.authentication.registerUsername
       let a3 = this.$store.state.authentication.registerEmail
@@ -403,9 +427,7 @@ export default {
       let aBuscar = cual==1 ? this.$store.state.authentication.registerEmail : this.$store.state.authentication.registerEmailRecomendo
       this.elMailExiste = false
       this.elRecomendoExiste = true
-      debugger
       return HTTP().post('/existeelmail', {mail:aBuscar, donde:'users'}).then(({ data }) => {
-        debugger
         if (data && cual==1) {
           //this.msg.msgTitle = 'Existe el Mail'
           //this.msg.msgBody = 'El mail ingresado ya existe en gohu!<br>'
@@ -432,7 +454,6 @@ export default {
     },
 
     msgRespuesta(op) {
-      debugger
       this.msg.msgVisible = false;
       router.push('/Login');
     },

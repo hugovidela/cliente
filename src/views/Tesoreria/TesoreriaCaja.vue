@@ -443,8 +443,8 @@ export default {
     Confirmacion,
   },
   data: () => ({
-    page: 1,
-    pages: 1,
+    rows: [],
+    movs: [],
     chequeo: [],
     ventas: [],
     compras: [],
@@ -457,6 +457,7 @@ export default {
     dialogMovimiento: false,
     dialogMovDet: false,
     lchequeo: false,
+    saldoAnterior: 0,
     msg: {
       msgAccion: null,
       msgVisible: false,
@@ -469,24 +470,8 @@ export default {
       caja_id: 0,
       medio_id: 0,
       cuentaorigen_id: 0,
-//    cuentadestino_id: 0,
-//    cuentacheque_id: 0,
-//    cuentatarjeta_id: 0,
-//    banco_id: 0,
-//    tarjeta_id: 0,
-//    cpringreso_id: 0,
-//    cpregreso_id: 0,
       banmov_id: 0,
-//    cheque_id: 0,
-//    fechafinanciera: '',
-//    fechasalida: '',
-//    importe: 0,
-//    nrovalor: 0,
-//    tipo: '',
       observ: '',
-//    gravado: 0,
-//    iva: 0,
-//    tasaiva: 0,
       total: 0,
       numero: 0,
       muevebancos: 0,
@@ -580,19 +565,19 @@ export default {
       return router.push('/login');
     } else {
 
-      return HTTP().get('/tercerocuentas/'+this.$store.state.tercero)
-        .then(({ data }) => {
-          this.cueItems = []
-          for (let i=0; i<=data[0].cuentas.length-1; i++) {
-            this.cueItems.push(data[0].cuentas[i])
-          }
-          if (this.cueItems.length>0) {
-            this.caj.cuentaorigen_id = this.cueItems[0].id
-          }
-//        this.saldoCuenta()
-          return this.listarHTTP()
+      debugger
+      return HTTP().get('/tercerocuentas/'+this.$store.state.tercero).then(({ data }) => {
+        debugger
+        this.cueItems = []
+        for (let i=0; i<=data.tercero[0].cuentas.length-1; i++) {
+          this.cueItems.push(data.tercero[0].cuentas[i])
+        }
+        if (this.cueItems.length>0) {
+          this.caj.cuentaorigen_id = this.cueItems[0].id
+        }
+//      this.saldoCuenta()
+        return this.listarHTTP()
       })
-
     }
   },
   methods: {
@@ -687,9 +672,10 @@ export default {
 
 
     listarHTTP:function() {
-      return HTTP().get('/cajas/'+this.userId+'/'+this.sucursal)
-        .then(({ data }) => {
-          this.items = data;
+      debugger
+      return HTTP().get('/cajas/'+this.userId+'/'+this.sucursal).then(({ data }) => {
+        debugger
+        this.items = data;
       });
     },
 
@@ -746,15 +732,11 @@ export default {
             caja: 0
           })
         }
-
-        debugger
         return HTTP().post('/caja_detalles', {
           sucursal: this.sucursal,
           fechadesde: moment(item.fechadesde).format('YYYY-MM-DD'),
           fechahasta: item.fechahasta==null ? moment().format('YYYY-MM-DD') : moment(item.fechahasta).format('YYYY-MM-DD'),
           caja: item.id }).then((data) => {
-
-          debugger
           if (data.data.length>0) {
             for (let i=0; i<=data.data.length-1; i++) {
               for (let j=0; j<=data.data[i].medio.length-1; j++) {
@@ -925,12 +907,10 @@ export default {
 
     },
 
-
     cancelar() {
       this.dialog = false;
       this.lchequeo = false;
     },
-
 
     confirmarCierre() {
       if (!this.$refs.form.validate()) {
@@ -943,21 +923,6 @@ export default {
     },
 
     imprimirCaja(item) {
-      /*
-      SELECT mdp.nombre, sum(importe) as totalingresos FROM valores
-      left join comprobantes as c on c.id = cpringreso_id
-      left join medios_de_pagos as mdp on mdp.id = valores.medio_id
-      where c.fecha >= '2020-01-01' and fecha <= '2021-12-31'
-      and c.user_id = 4
-      group by medio_id
-
-      SELECT substr(cpr,1,3) as cpr, SUM(total) as tot FROM `gohu`.`comprobantes`
-      where user_id = 4 and tipo in ('VE','RE')
-      and (fecha >= '2020-09-27' and fecha<= '2021-12-31')
-      and sucursal_id = 5
-      and substr(cpr,1,3) in ('FAC', 'NDD', 'NDC', 'REC')
-      group by substr(cpr,1,3)
-      */
       this.rows = []
       this.totalcaja = 0
       let fdes = moment(item.fechadesde).format('YYYY-MM-DD')
@@ -965,27 +930,171 @@ export default {
       if (item.fechahasta==null) {
         fhas = moment().format('YYYY-MM-DD')
       }
-      return HTTP().post('/caja_detallada', {fechadesde:fdes,fechahasta:fhas,sucursal:this.sucursal}).then((data) => {
+      debugger
+      return HTTP().post('/caja_detallada', {fechadesde:fdes,fechahasta:fhas,sucursal:this.sucursal,caja_id:item.id}).then((data) => {
+
         debugger
         this.rows = data.data.res
+  
+        /* tengo que agrupar por tipos de comprobantes en ingresos.porventas e ingresos.porcobranzas */
+        let dat = [
+          { tipo: 'PG', datos: [] },
+          { tipo: 'RE', datos: [] },
+          { tipo: 'VE', datos: [] },
+        ]
+        let aux = []
+        let imp = 0;
+        let efec = 0;
+        let tarj = 0;
+        let ccte = 0;
+        let elec = 0;
+        let cheq = 0;
+        let total = 0;
+        let totGral = 0;
+        if (this.rows.length>0) {
+          for (let i=0; i<=dat.length-1; i++) {
+            totGral = 0;
+            aux = []
+            for (let j=0; j<=this.rows.length-1; j++) {
+              if (this.rows[j].tipo==dat[i].tipo) {
+                efec = 0; tarj = 0; ccte = 0; elec = 0; cheq = 0; total = 0;
+
+                imp = this.rows[j].importe
+                if (this.rows[j].cpr.substring(0,3)=='NDC') {
+                  imp = imp * -1
+                }
+
+                let mp = this.rows[j].mdpId
+                if (mp==1) {                       // efectivo
+                  efec = this.roundTo(imp,2)
+                } else if (mp==2||mp==3) {         // tarjetas
+                  tarj = this.roundTo(imp,2)
+                } else if (mp==4) {                // cta.cte.
+                  ccte = this.roundTo(imp,2)
+                } else if (mp==5||mp==7||mp==8) {  // transferencia
+                  elec = this.roundTo(imp,2)
+                } else if (mp==6) {                // cheque
+                  cheq = this.roundTo(imp,2)
+                }
+                
+                total = this.roundTo(efec+tarj+ccte+elec+cheq,2)
+                totGral += this.roundTo(efec+tarj+ccte+elec+cheq,2)
+                
+                let parDesde = this.rows[j].cpr.substring(0,5)
+                let pos = aux.findIndex(x=>x.cprdesde.substring(0,5)==parDesde)
+                if (pos==-1) {
+                  aux.push({
+                    cprs: '',
+                    cprdesde: this.rows[j].cpr,
+                    cprhasta: this.rows[j].cpr,
+                    ctt: 1, efec:efec, tarj:tarj, ccte:ccte, elec:elec, cheq:cheq, total:total
+                  })
+                } else {
+                  aux[pos].cprhasta = this.rows[j].cpr,
+                  aux[pos].ctt += 1
+                  aux[pos].efec += efec
+                  aux[pos].tarj += tarj
+                  aux[pos].ccte += ccte
+                  aux[pos].elec += elec
+                  aux[pos].cheq += cheq
+                  aux[pos].total += efec+tarj+ccte+elec+cheq
+                }
+              }
+            }
+            dat[i].datos.push(aux);
+          }
+        } 
+        // Acomodo los desde y hasta
+        for (let i=0; i<=dat.length-1; i++) {
+          for (let j=0; j<=dat[i].datos[0].length-1; j++) {
+            dat[i].datos[0][j].cprs = this.kit.cpr(dat[i].datos[0][j].cprdesde)+'/'+dat[i].datos[0][j].cprhasta.substring(13)
+          }
+        }
+
+        this.movs = {
+          ingresos: {
+            porventas: [],
+            porcobranzas:  [],
+            otrosingresos: { comprobantes:[], ctt:0, efectivo:0, tarjetas:0, cheques:0, electro:0, ctactes:0, total:0 },
+          },
+          egresos: {
+            porcompras:    { comprobantes:[], ctt:0, efectivo:0, tarjetas:0, cheques:0, electro:0, ctactes:0, total:0 },
+            porpagos:      [],
+            otrosingresos: { comprobantes:[], ctt:0, efectivo:0, tarjetas:0, cheques:0, electro:0, ctactes:0, total:0 },
+          },
+        }
+
+        this.movs.ingresos.porventas = dat[2].datos[0];
+        this.movs.ingresos.porcobranzas = dat[1].datos[0];
+        this.movs.egresos.porpagos = dat[0].datos[0];
+
+        let cprDesde = '';
+        let tipDesde = '';
+
+        if (this.rows.length>0) {
+          cprDesde = this.rows[0].cpr
+          for (let i=0; i<=this.rows.length-1; i++) {
+
+            tipDesde = this.rows[i].tipo
+            let mp = this.rows[i].mdpId
+            if (tipDesde=='CO'||tipDesde=='GS'||tipDesde=='BE') {
+
+              this.movs.egresos.porcompras.comprobantes.push({
+                cpr: this.kit.cpr(this.rows[i].cpr),
+              })
+              this.movs.egresos.porcompras.ctt ++
+              if (mp==1) {                                                      // efectivo
+                this.movs.egresos.porcompras.efectivo += this.rows[i].importe
+              } else if (mp==2||mp==3) {                                        // tarjetas
+                this.movs.egresos.porcompras.tarjetas += this.rows[i].importe
+              } else if (mp==4) {                                               // cta.cte.
+                this.movs.egresos.porcompras.ctasctes += this.rows[i].importe
+              } else if (mp==5||mp==7||mp==8) {                                 // transferencia
+                this.movs.egresos.porcompras.electro += this.rows[i].importe
+              } else if (mp==6) {                                               // cheque
+                this.movs.egresos.porcompras.cheques += this.rows[i].importe
+              }
+              this.movs.egresos.porcompras.total += this.rows[i].importe
+
+            } else if (tipDesde=='BI') {
+
+              this.movs.ingresos.porventas.comprobantes.push({cpr: this.kit.cpr(cprDesde), })
+              this.movs.ingresos.porventas.ctt ++
+              if (mp==1) {                                                      // efectivo
+                this.movs.ingresos.porventas.efectivo += this.rows[i].importe
+              } else if (mp==2||mp==3) {                                        // tarjetas
+                this.movs.ingresos.porventas.tarjetas += this.rows[i].importe
+              } else if (mp==4) {                                               // cta.cte.
+                this.movs.ingresos.porventas.ctasctes += this.rows[i].importe
+              } else if (mp==5||mp==7||mp==8) {                                 // transferencia
+                this.movs.ingresos.porventas.electro += this.rows[i].importe
+              } else if (mp==6) {                                               // cheque
+                this.movs.ingresos.porventas.cheques += this.rows[i].importe
+              }
+              this.movs.ingresos.porventas.total += this.rows[i].importe
+            }
+
+          }
+        }
+        //this.movs = data.data.result
+        this.saldoAnterior = data.data.saldoAnterior
         this.print('Detalles de Caja', item)
       })
     },
 
     print(informeTitulo, item) {
-      var doc = new jsPDF('p', 'pt')  // 'p' normal 'l' horizontal ( landscape )
-      this.page = 1
-      this.pages = Math.trunc(this.rows.length/44)+1
+      var doc = new jsPDF('l', 'pt')  // 'p' normal 'l' horizontal ( landscape )
       this.cabecera(informeTitulo, doc, 'p', item)
-      this.detalles(informeTitulo, doc, 'p', item)
+      this.detalles(doc, 'l', item)
       doc.output ('dataurlnewwindow')
     },
 
     cabecera(informeTitulo, doc, orientacion, item) {
-      let des = moment(item.fechadesde).format('YYYY-MM-DD')
-      let has = moment().format('YYYY-MM-DD')
-      let topDown = orientacion == 'p' ? 810 : 580
-      let topWidth = orientacion == 'p' ? 527 : 777
+      let des = moment(item.fechadesde).format('DD-MM-YYYY')
+      let has = moment().format('DD-MM-YYYY')
+      if (item.cerrada) {
+        has = moment(item.fechahasta).format('DD-MM-YYYY')
+      }
 
       if (this.logotipo!=null) {
         let av = 'images/'+this.logotipo
@@ -995,33 +1104,262 @@ export default {
       }
 
       doc.setFontSize(8);
-      doc.text ( 'Fecha: '+moment().format('L'), 40, 90 )
+      doc.text ( 'Fecha: '+moment().format('L'), 30, 90 )
       doc.setFontSize(15);
       doc.text ( informeTitulo, 180, 45 )
 
       doc.setFontSize(9);
       doc.text ( 'Desde:'+des, 180, 67 )
       doc.text ( 'Hasta:'+has, 260, 67 )
-      doc.text ( 'Página '+this.page.toString()+'/'+this.pages.toString(), topWidth, topDown)
-
-      doc.text ( 'Area', 30, 115 )
-      doc.line( 30, 121, 70, 121)
 
     },
 
-    detalles(informeTitulo, doc, orientacion) {
-      let f = 135
-      let topDown = orientacion == 'p' ? 780 : 540
-      let topWidth = orientacion == 'p' ? 570 : 800
+    detalles(doc, orientacion) {
 
-      doc.text ( 'Comprobantes', 30, f )
-      doc.text ( 'Ctt.', 168, f )
-      doc.text ( 'Efectivo', 218, f )
-      doc.text ( 'Tarjetas', 295, f )
-      doc.text ( 'Cheques', 369, f )
-      doc.text ( 'Bancos', 453, f )
-      doc.text ( 'Cta.Ctes.', 530, f ); f+=5;
-      doc.line( 30, f, 570, f);f+=5;
+      let f = 115
+      let h = 750
+      doc.text ( 'Ingresos', 30, f )
+      f = this.cp(f, 10, 50, h, doc)
+      doc.line( 30, f, 70, f)
+      f = this.cp(f, 15, 50, h, doc)
+
+      let totEfec = 0; let totTarj = 0; let totCheq = 0; let totElec = 0; let totCcte = 0; let totGral = 0;
+
+      ////////////
+      // VENTAS //
+      ////////////
+      if (this.movs.ingresos.porventas.length>0) {
+        doc.text ( '   Por Ventas', 30, f )
+        f = this.cp(f, 10, 50, h, doc)
+        doc.text ( '     comprobantes                                       ctt.                          Efectivo                          Tarjetas                         Cheques                            Electro                        Cta.Ctes.                               Total', 30, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.text ( '     ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 30, f);
+        f = this.cp(f, 10, 50, h, doc)
+
+        let efec = 0; let tarj = 0; let cheq = 0; let elec = 0; let ccte = 0; let total = 0;
+        for (let i=0; i<=this.movs.ingresos.porventas.length-1; i++) {
+          doc.text ( this.movs.ingresos.porventas[i].cprs, 42, f);
+          doc.text ( this.movs.ingresos.porventas[i].ctt.toString(), 203, f);
+          doc.text ( '$'+this.formatoImporte(this.movs.ingresos.porventas[i].efec),  306, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(this.movs.ingresos.porventas[i].tarj),  404, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(this.movs.ingresos.porventas[i].cheq),  502, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(this.movs.ingresos.porventas[i].elec),  600, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(this.movs.ingresos.porventas[i].ccte),  698, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(this.movs.ingresos.porventas[i].total), 796, f, 'right' );
+          f = this.cp(f, 10, 50, h, doc)
+          efec += this.movs.ingresos.porventas[i].efec
+          tarj += this.movs.ingresos.porventas[i].tarj
+          cheq += this.movs.ingresos.porventas[i].cheq
+          elec += this.movs.ingresos.porventas[i].elec
+          ccte += this.movs.ingresos.porventas[i].ccte
+          total += this.movs.ingresos.porventas[i].total
+
+          totEfec += this.movs.ingresos.porventas[i].efec
+          totTarj += this.movs.ingresos.porventas[i].tarj
+          totCheq += this.movs.ingresos.porventas[i].cheq
+          totElec += this.movs.ingresos.porventas[i].elec
+          totCcte += this.movs.ingresos.porventas[i].ccte
+          totGral += this.movs.ingresos.porventas[i].total
+          
+        }
+        doc.text ( '     ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 30, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.text ( '$'+this.formatoImporte(efec),  306, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(tarj),  404, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(cheq),  502, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(elec),  600, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(ccte),  698, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(total), 796, f, 'right' );
+        f = this.cp(f, 15, 50, h, doc)
+
+      }
+
+      ///////////////
+      // COBRANZAS //
+      ///////////////
+      if (this.movs.ingresos.porcobranzas.length>0) {
+        doc.text ( '   Por Cobranzas', 30, f )
+        f = this.cp(f, 10, 54, h, doc)
+        doc.text ( '     comprobantes                                       ctt.                          Efectivo                          Tarjetas                         Cheques                            Electro                        Cta.Ctes.                               Total', 30, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.text ( '     ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 30, f);
+        f = this.cp(f, 10, 50, h, doc)
+        let efec = 0; let tarj = 0; let cheq = 0; let elec = 0; let ccte = 0; let total = 0;
+        for (let i=0; i<=this.movs.ingresos.porcobranzas.length-1; i++) {
+          doc.text ( this.movs.ingresos.porcobranzas[i].cprs, 42, f);
+          doc.text ( this.movs.ingresos.porcobranzas[i].ctt.toString(), 203, f);
+          doc.text ( '$'+this.formatoImporte(this.movs.ingresos.porcobranzas[i].efec),  306, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(this.movs.ingresos.porcobranzas[i].tarj),  404, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(this.movs.ingresos.porcobranzas[i].cheq),  502, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(this.movs.ingresos.porcobranzas[i].elec),  600, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(this.movs.ingresos.porcobranzas[i].ccte),  698, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(this.movs.ingresos.porcobranzas[i].total), 796, f, 'right' );
+          f = this.cp(f, 10, 50, h, doc)
+          efec += this.movs.ingresos.porcobranzas[i].efec
+          tarj += this.movs.ingresos.porcobranzas[i].tarj
+          cheq += this.movs.ingresos.porcobranzas[i].cheq
+          elec += this.movs.ingresos.porcobranzas[i].elec
+          ccte += this.movs.ingresos.porcobranzas[i].ccte
+          total += this.movs.ingresos.porcobranzas[i].total
+
+          totEfec += this.movs.ingresos.porcobranzas[i].efec
+          totTarj += this.movs.ingresos.porcobranzas[i].tarj
+          totCheq += this.movs.ingresos.porcobranzas[i].cheq
+          totElec += this.movs.ingresos.porcobranzas[i].elec
+          totCcte += this.movs.ingresos.porcobranzas[i].ccte
+          totGral += this.movs.ingresos.porcobranzas[i].total
+
+        }
+        doc.text ( '     ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 30, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.text ( '$'+this.formatoImporte(efec),  306, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(tarj),  404, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(cheq),  502, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(elec),  600, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(ccte),  698, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(total), 796, f, 'right' );
+        f = this.cp(f, 15, 50, h, doc)
+      }
+
+      ////////////////////
+      // OTROS INGRESOS //
+      ////////////////////
+      if (this.movs.ingresos.otrosingresos.total) {
+        doc.text ( '   Por Otros Ingresos', 30, f )
+        f = this.cp(f, 10, 59, h, doc)
+        doc.text ( '     comprobantes                                       ctt.                          Efectivo                          Tarjetas                         Cheques                            Electro                        Cta.Ctes.                               Total', 30, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.text ( '     ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 30, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.text ( this.movs.ingresos.otrosingresos.comprobantes[0].cpr, 42, f);
+        doc.text ( this.movs.ingresos.otrosingresos.ctt.toString(), 203, f);
+        doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.ingresos.otrosingresos.efectivo)*-1), 306, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.ingresos.otrosingresos.tarjetas)*-1), 404, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.ingresos.otrosingresos.cheques)*-1),  502, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.ingresos.otrosingresos.electro)*-1),  600, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.ingresos.otrosingresos.ctactes)*-1),  698, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.ingresos.otrosingresos.total)*-1),    796, f, 'right' );
+
+        totEfec += this.movs.ingresos.otrosingresos[i].efectivo
+        totTarj += this.movs.ingresos.otrosingresos[i].tarjetas
+        totCheq += this.movs.ingresos.otrosingresos[i].cheques
+        totElec += this.movs.ingresos.otrosingresos[i].electro
+        totCcte += this.movs.ingresos.otrosingresos[i].ctactes
+        totGral += this.movs.ingresos.otrosingresos[i].total
+
+        f = this.cp(f, 15, 50, h, doc)
+      }
+
+      f = this.cp(f, 5, 50, h, doc)
+      doc.text ( 'Egresos', 30, f )
+      f = this.cp(f, 10, 50, h, doc)
+      doc.line( 30, f, 70, f)
+      f = this.cp(f, 15, 50, h, doc)
+
+      //////////////////////
+      // COMPRAS Y GASTOS //
+      //////////////////////
+      if (this.movs.egresos.porcompras.total) {
+        doc.text ( '   Por Compras/Gastos', 30, f )
+        f = this.cp(f, 10, 59, h, doc)
+        doc.text ( '     comprobantes                                       ctt.                          Efectivo                          Tarjetas                         Cheques                            Electro                        Cta.Ctes.                               Total', 30, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.text ( '     ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 30, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.text ( this.movs.egresos.porcompras.comprobantes[0].cpr, 42, f);
+        doc.text ( this.movs.egresos.porcompras.ctt.toString(), 203, f);
+        doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.egresos.porcompras.efectivo)*-1), 306, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.egresos.porcompras.tarjetas)*-1), 404, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.egresos.porcompras.cheques)*-1),  502, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.egresos.porcompras.electro)*-1),  600, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.egresos.porcompras.ctactes)*-1),  698, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.egresos.porcompras.total)*-1),    796, f, 'right' );
+
+        totEfec -= Math.abs(this.movs.egresos.porcompras.efectivo)
+        totTarj -= Math.abs(this.movs.egresos.porcompras.tarjetas)
+        totCheq -= Math.abs(this.movs.egresos.porcompras.cheques)
+        totElec -= Math.abs(this.movs.egresos.porcompras.electro)
+        totCcte -= Math.abs(this.movs.egresos.porcompras.ctactes)
+        totGral -= Math.abs(this.movs.egresos.porcompras.total)
+
+        f = this.cp(f, 15, 50, h, doc)
+      }
+
+      ///////////
+      // PAGOS //
+      ///////////
+      if (this.movs.egresos.porpagos.length>0) {
+        doc.text ( '   Por Pagos', 30, f )
+        f = this.cp(f, 10, 54, h, doc)
+        doc.text ( '     comprobantes                                       ctt.                          Efectivo                          Tarjetas                         Cheques                            Electro                        Cta.Ctes.                               Total', 30, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.text ( '     ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 30, f);
+        f = this.cp(f, 10, 50, h, doc)
+        let efec = 0; let tarj = 0; let cheq = 0; let elec = 0; let ccte = 0; let total = 0;
+        for (let i=0; i<=this.movs.egresos.porpagos.length-1; i++) {
+          doc.text ( this.movs.egresos.porpagos[i].cprs, 42, f);
+          doc.text ( this.movs.egresos.porpagos[i].ctt.toString(), 203, f);
+          doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.egresos.porpagos[i].efec)*-1),  306, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.egresos.porpagos[i].tarj)*-1),  404, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.egresos.porpagos[i].cheq)*-1),  502, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.egresos.porpagos[i].elec)*-1),  600, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.egresos.porpagos[i].ccte)*-1),  698, f, 'right' );
+          doc.text ( '$'+this.formatoImporte(Math.abs(this.movs.egresos.porpagos[i].total)*-1), 796, f, 'right' );
+          f = this.cp(f, 10, 50, h, doc)
+          efec += this.movs.egresos.porpagos[i].efec
+          tarj += this.movs.egresos.porpagos[i].tarj
+          cheq += this.movs.egresos.porpagos[i].cheq
+          elec += this.movs.egresos.porpagos[i].elec
+          ccte += this.movs.egresos.porpagos[i].ccte
+          total += this.movs.egresos.porpagos[i].total
+
+          totEfec -= Math.abs(this.movs.egresos.porpagos[i].efec)
+          totTarj -= Math.abs(this.movs.egresos.porpagos[i].tarj)
+          totCheq -= Math.abs(this.movs.egresos.porpagos[i].cheq)
+          totElec -= Math.abs(this.movs.egresos.porpagos[i].elec)
+          totCcte -= Math.abs(this.movs.egresos.porpagos[i].ccte)
+          totGral -= Math.abs(this.movs.egresos.porpagos[i].total)
+
+        }
+        doc.text ( '     ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 30, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.text ( '$'+this.formatoImporte(Math.abs(efec)*-1),  306, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(tarj)*-1),  404, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(cheq)*-1),  502, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(elec)*-1),  600, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(ccte)*-1),  698, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(Math.abs(total)*-1), 796, f, 'right' );
+        f = this.cp(f, 15, 50, h, doc)
+      }
+
+      f = this.cp(f, 5, 50, h, doc)
+      doc.text ( 'Totales', 30, f )
+      f = this.cp(f, 10, 50, h, doc)
+      doc.line( 30, f, 70, f)
+      f = this.cp(f, 15, 50, h, doc)
+      doc.text ( '$'+this.formatoImporte(totEfec),  306, f, 'right' );
+      doc.text ( '$'+this.formatoImporte(totTarj),  404, f, 'right' );
+      doc.text ( '$'+this.formatoImporte(totCheq),  502, f, 'right' );
+      doc.text ( '$'+this.formatoImporte(totElec),  600, f, 'right' );
+      doc.text ( '$'+this.formatoImporte(totCcte),  698, f, 'right' );
+      doc.text ( '$'+this.formatoImporte(totGral), 796, f, 'right' );
+      f = this.cp(f, 15, 50, h, doc)
+
+      f = this.cp(f, 15, 50, h, doc)
+      doc.text ( 'Efectivo Anterior', 30, f )
+      doc.text ( '$'+this.formatoImporte(this.saldoAnterior), 190, f, 'right' );
+
+      f = this.cp(f, 15, 50, h, doc)
+      doc.text ( 'Movimientos por', 30, f )
+      doc.text ( '$'+this.formatoImporte(totEfec), 190, f, 'right' );
+
+      f = this.cp(f, 15, 50, h, doc)
+      doc.text ( 'Efectivo Final', 30, f )
+      doc.text ( '$'+this.formatoImporte(totEfec+this.saldoAnterior), 190, f, 'right' );
+
+    },
+    
+    detalles2(doc, orientacion) {
 
       let totCtt = 0;
       let totEfe = 0;
@@ -1029,30 +1367,79 @@ export default {
       let totChe = 0;
       let totBan = 0;
       let totCC = 0;
-
-      f+=10;
+      let f = 115
+      let h = 750
       for (let z=0; z<=4; z++) {
+        for (let i=0; i<=this.rows[z].sucFis.length-1; i++) {
+          for (let j=0; j<=this.rows[z].sucFis[i].op.length-1; j++) {
+            let coef = 1
+            if (z==2||z==3||z==4) {
+              coef = -1
+            }
+            totEfe += this.rows[z].sucFis[i].op[j].efectivo*coef
+          }
+        }
+      }
+      for (let z=0; z<=this.movs.length-1; z++) {
+        if (this.movs[z].cpr==null&&this.movs[z].abrev=='EF'&&this.movs[z].cuenta!=null) {
+          totEfe += this.movs[z].importe
+        }
+      }
+
+      doc.text ( 'Efectivo Anterior', 30, f )
+      doc.text ( '$'+this.formatoImporte(this.saldoAnterior), 190, f, 'right' );
+
+      f = this.cp(f, 15, 50, h, doc)
+      doc.text ( 'Movimientos por', 30, f )
+      doc.text ( '$'+this.formatoImporte(totEfe), 190, f, 'right' );
+
+      f = this.cp(f, 15, 50, h, doc)
+      doc.text ( 'Efectivo Final', 30, f )
+      doc.text ( '$'+this.formatoImporte(totEfe+this.saldoAnterior), 190, f, 'right' );
+
+      doc.setFont(undefined,"normal")
+      totEfe = 0
+      f = this.cp(f, 30, 50, h, doc)
+      doc.text ( 'Area', 30, f )
+      f = this.cp(f, 10, 50, h, doc)
+      doc.line( 30, f, 70, f)
+      f = this.cp(f, 15, 50, h, doc)
+
+      doc.text ( 'Comprobantes', 30, f )
+      doc.text ( 'Ctt.', 148, f )
+      doc.text ( 'Efectivo', 218, f )
+      doc.text ( 'Tarjetas', 295, f )
+      doc.text ( 'Cheques', 369, f )
+      doc.text ( 'Bancos', 453, f )
+      doc.text ( 'Cta.Ctes.', 530, f );
+      
+      f = this.cp(f, 5, 50, h, doc)
+      doc.line( 30, f, 570, f);
+      f = this.cp(f, 15, 50, h, doc)
+      for (let z=0; z<=5; z++) {                  // 4, 5 incluye a bancos
         doc.setFont(undefined,"bold")
         doc.text ( this.rows[z].grupo, 30, f );
         doc.setFont(undefined,"normal")
-        f+=15;
+        f = this.cp(f, 15, 50, h, doc)
         let subCtt = 0; let subEfe = 0; let subTar = 0; let subChe = 0; let subBan = 0; let subCC = 0;
         for (let i=0; i<=this.rows[z].sucFis.length-1; i++) {
           for (let j=0; j<=this.rows[z].sucFis[i].op.length-1; j++) {
-            doc.text ( this.rows[z].sucFis[i].op[j].desde, 30, f )
+            doc.text ( this.kit.cpr(this.rows[z].sucFis[i].op[j].desde), 30, f )
             if (z==0||z==1||z==2) {
-              doc.text ( '/ '+this.rows[z].sucFis[i].op[j].hasta.substring(14,20), 125, f )
+              doc.text ( '/ '+this.rows[z].sucFis[i].op[j].hasta.substring(14,20), 100, f )
             }
             let coef = 1
             if (z==2||z==3||z==4) {
               coef = -1
             }
-            doc.text ( this.rows[z].sucFis[i].op[j].cttcprs.toString(), 180, f, 'right' );
-            doc.text ( '$'+this.formatMoney(this.rows[z].sucFis[i].op[j].efectivo*coef), 250, f, 'right' );
-            doc.text ( '$'+this.formatMoney(this.rows[z].sucFis[i].op[j].tarjetas*coef), 328, f, 'right' );
-            doc.text ( '$'+this.formatMoney(this.rows[z].sucFis[i].op[j].cheques*coef),  406, f, 'right' );
-            doc.text ( '$'+this.formatMoney(this.rows[z].sucFis[i].op[j].bancos*coef),   484, f, 'right' );
-            doc.text ( '$'+this.formatMoney(this.rows[z].sucFis[i].op[j].ctacte*coef),   569, f, 'right' ); f+=15;
+            doc.text ( this.rows[z].sucFis[i].op[j].cttcprs.toString(), 160, f, 'right' );
+            doc.text ( '$'+this.formatoImporte(this.rows[z].sucFis[i].op[j].efectivo*coef), 250, f, 'right' );
+            doc.text ( '$'+this.formatoImporte(this.rows[z].sucFis[i].op[j].tarjetas*coef), 328, f, 'right' );
+            doc.text ( '$'+this.formatoImporte(this.rows[z].sucFis[i].op[j].cheques*coef),  406, f, 'right' );
+            doc.text ( '$'+this.formatoImporte(this.rows[z].sucFis[i].op[j].bancos*coef),   484, f, 'right' );
+            doc.text ( '$'+this.formatoImporte(this.rows[z].sucFis[i].op[j].ctacte*coef),   569, f, 'right' );
+            
+            f = this.cp(f, 15, 50, h, doc)
             
             subCtt += this.rows[z].sucFis[i].op[j].cttcprs
             subEfe += this.rows[z].sucFis[i].op[j].efectivo*coef
@@ -1067,50 +1454,421 @@ export default {
             totChe += this.rows[z].sucFis[i].op[j].cheques*coef
             totBan += this.rows[z].sucFis[i].op[j].bancos*coef
             totCC += this.rows[z].sucFis[i].op[j].ctacte*coef
-
           }
         }
-        f-=5;
-        doc.line( 128, f, 570, f);f+=15;
-        doc.text ( 'Subtotal', 128, f )
-        doc.text ( subCtt.toString(), 180, f, 'right' );
-        doc.text ( '$'+this.formatMoney(subEfe), 250, f, 'right' );
-        doc.text ( '$'+this.formatMoney(subTar), 328, f, 'right' );
-        doc.text ( '$'+this.formatMoney(subChe), 406, f, 'right' );
-        doc.text ( '$'+this.formatMoney(subBan), 484, f, 'right' );
-        doc.text ( '$'+this.formatMoney(subCC), 569, f, 'right' ); f+=5;
-        f+=10;
+
+        f = this.cp(f, -5, 50, h, doc)
+        doc.line( 108, f, 570, f);
+        f = this.cp(f, 15, 50, h, doc)
+        
+        doc.text ( 'Subtotal', 108, f )
+        doc.text ( subCtt.toString(), 160, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(subEfe), 250, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(subTar), 328, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(subChe), 406, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(subBan), 484, f, 'right' );
+        doc.text ( '$'+this.formatoImporte(subCC), 569, f, 'right' );
+        
+        f = this.cp(f, 15, 50, h, doc)
+      
       }
 
       doc.setFont(undefined,"bold")
-      doc.line( 128, f, 570, f);f+=15;
-      doc.text ( 'Totales', 128, f )
-      doc.text ( totCtt.toString(), 180, f, 'right' );
-      doc.text ( '$'+this.formatMoney(totEfe), 250, f, 'right' );
-      doc.text ( '$'+this.formatMoney(totTar), 328, f, 'right' );
-      doc.text ( '$'+this.formatMoney(totChe), 406, f, 'right' );
-      doc.text ( '$'+this.formatMoney(totBan), 484, f, 'right' );
-      doc.text ( '$'+this.formatMoney(totCC), 569, f, 'right' ); f+=5;
-      doc.setFont(undefined,"normal")
-      f+=10;
+      doc.line( 108, f-5, 570, f-5);
+      
+      f = this.cp(f, 15, 50, h, doc)
+      
+      doc.text ( 'Totales', 108, f )
+      doc.text ( totCtt.toString(), 160, f, 'right' );
+      doc.text ( '$'+this.formatoImporte(totEfe), 250, f, 'right' );
+      doc.text ( '$'+this.formatoImporte(totTar), 328, f, 'right' );
+      doc.text ( '$'+this.formatoImporte(totChe), 406, f, 'right' );
+      doc.text ( '$'+this.formatoImporte(totBan), 484, f, 'right' );
+      doc.text ( '$'+this.formatoImporte(totCC), 569, f, 'right' );
+
+      let totEfeIng = 0
+      let totEfeEgr = 0
+      let totCheIng = 0
+      let totCheEgr = 0
+      let totTraIng = 0
+      let totTraEgr = 0
+      let totTarIng = 0
+      let totTarEgr = 0
+
+      let hayEfeIng = false
+      let hayEfeEgr = false
+      let hayCheIng = false
+      let hayCheEgr = false
+      let hayTraIng = false
+      let hayTraEgr = false
+      let hayTarIng = false
+      let hayTarEgr = false
+      for (let i=0; i<=this.movs.length-1; i++) {
+        if (this.movs[i].abrev=='EF') {
+          if (this.movs[i].tipo=='egreso') {
+            hayEfeEgr = true
+          } else if (this.movs[i].tipo=='ingreso') {
+            hayEfeIng = true
+          }
+        } else if (this.movs[i].abrev=='CH') {
+          if (this.movs[i].tipo=='egreso') {
+            hayCheEgr = true
+          } else if (this.movs[i].tipo=='ingreso') {
+            hayCheIng = true
+          }
+        } else if (this.movs[i].abrev=='TR') {
+          if (this.movs[i].tipo=='egreso') {
+            hayTraEgr = true
+          } else if (this.movs[i].tipo=='ingreso') {
+            hayTraIng = true
+          }
+        } else if (this.movs[i].abrev=='TJ') {
+          if (this.movs[i].tipo=='egreso') {
+            hayTarEgr = true
+          } else if (this.movs[i].tipo=='ingreso') {
+            hayTarIng = true
+          }
+        }
+      }
+
+      doc.setFontSize(8);
+      f = this.cp(f, 35, 50, h, doc)
+
+      //////////////////////////
+      /// EFECTIVO INGRESOS  ///
+      //////////////////////////
+      doc.setFontSize(8);
+      if (hayEfeIng) {
+        f = this.cp(f, 15, 50, h, doc)
+        doc.setFont(undefined,"bold")
+        doc.text ( 'EFECTIVO INGRESADO', 30, f )
+        doc.setFont(undefined,"normal")
+        f = this.cp(f, 15, 50, h, doc)
+        doc.text ( 'Cpr', 30, f )
+        doc.text ( 'Importe', 541, f );
+        f = this.cp(f, 5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.setFontSize(6);
+        for (let i=0; i<=this.movs.length-1; i++) {
+          if (this.movs[i].abrev=='EF') {
+            if (this.movs[i].tipo=='ingreso') {
+              if (this.movs[i].cpr!=null) {
+                doc.text ( this.kit.cpr(this.movs[i].cpr)+' '+this.movs[i].cliente, 30, f )
+              } else {
+                doc.text ( this.movs[i].observ+' '+this.movs[i].banco+' '+this.movs[i].cuenta, 30, f )
+              }
+              doc.text ( '$'+this.formatoImporte(this.movs[i].importe), 569, f, 'right' );
+              f = this.cp(f, 10, 50, h, doc)
+              totEfeIng += this.movs[i].importe
+            }
+          }
+        }
+        f = this.cp(f, -5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 8, 50, h, doc)
+        doc.text ( 'Total', 30, f )
+        doc.text ( '$'+this.formatoImporte(totEfeIng), 569, f, 'right' );
+
+      }
+
+
+      /////////////////////////
+      /// EFECTIVO EGRESOS  ///
+      /////////////////////////
+      doc.setFontSize(8);
+      if (hayEfeEgr) {
+
+        f = this.cp(f, 15, 50, h, doc)
+        doc.setFont(undefined,"bold")
+        doc.text ( 'EFECTIVO EGRESADO', 30, f )
+        doc.setFont(undefined,"normal")
+        f = this.cp(f, 15, 50, h, doc)
+        doc.text ( 'Cpr', 30, f )
+        doc.text ( 'Importe', 541, f );
+        f = this.cp(f, 5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.setFontSize(6);
+
+        for (let i=0; i<=this.movs.length-1; i++) {
+          if (this.movs[i].abrev=='EF') {
+            if (this.movs[i].tipo=='egreso') {
+              let imp = Math.abs(this.movs[i].importe)*-1
+              if (this.movs[i].cpr!=null) {
+                doc.text ( this.kit.cpr(this.movs[i].cpr+' '+this.movs[i].proveedor), 30, f )
+              } else {
+                doc.text ( this.movs[i].observ+' '+this.movs[i].banco+' '+this.movs[i].cuenta, 30, f )
+              }
+              doc.text ( '$'+this.formatoImporte(imp), 569, f, 'right' );
+              f = this.cp(f, 10, 50, h, doc)
+              totEfeEgr += imp
+            }
+          }
+        }
+        f = this.cp(f, -5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 8, 50, h, doc)
+        doc.text ( 'Total', 30, f )
+        doc.text ( '$'+this.formatoImporte(totEfeEgr), 569, f, 'right' );
+      }
+
+
+      ////////////////////////
+      /// CHEQUES EGRESOS  ///
+      ////////////////////////
+      if (hayCheEgr) {
+        doc.setFontSize(8);
+        f = this.cp(f, 15, 50, h, doc)
+        doc.setFont(undefined,"bold")
+        doc.text ( 'CHEQUES EGRESADOS', 30, f )
+        doc.setFont(undefined,"normal")
+        f = this.cp(f, 15, 50, h, doc)
+        doc.text ( 'Cpr', 30, f )
+        doc.text ( 'Detalles', 90, f )
+        doc.text ( 'Librador', 365, f )
+        doc.text ( 'Importe', 541, f );
+        f = this.cp(f, 5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.setFontSize(6);
+        for (let i=0; i<=this.movs.length-1; i++) {
+          if (this.movs[i].abrev=='CH') {
+            if (this.movs[i].tipo=='egreso') {
+              doc.text ( this.kit.cpr(this.movs[i].cpr), 30, f )
+              doc.text ( this.movs[i].observ+' '+this.movs[i].banco+' '+this.movs[i].cuenta, 90, f )
+              doc.text ( this.movs[i].librador, 365, f )
+              doc.text ( '$'+this.formatoImporte(this.movs[i].importe), 569, f, 'right' );
+              f = this.cp(f, 10, 50, h, doc)
+              totCheEgr += this.movs[i].importe
+            }
+          }
+        }
+        f = this.cp(f, -5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 8, 50, h, doc)
+        doc.text ( 'Total', 30, f )
+        doc.text ( '$'+this.formatoImporte(totCheEgr), 569, f, 'right' );
+      }
+
+
+      ////////////////////////
+      /// CHEQUES INGRESOS ///
+      ////////////////////////
+      if (hayCheIng) {
+        doc.setFontSize(8);
+        f = this.cp(f, 15, 50, h, doc)
+        doc.setFont(undefined,"bold")
+        doc.text ( 'CHEQUES INGRESADOS', 30, f )
+        doc.setFont(undefined,"normal")
+        f = this.cp(f, 15, 50, h, doc)
+
+        doc.text ( 'Cpr', 30, f )
+        doc.text ( 'Detalles', 90, f )
+        doc.text ( 'Librador', 415, f )
+        doc.text ( 'Importe', 541, f );
+
+        f = this.cp(f, 5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.setFontSize(6);
+
+        for (let i=0; i<=this.movs.length-1; i++) {
+          if (this.movs[i].abrev=='CH') {
+            if (this.movs[i].tipo=='ingreso') {
+              doc.text ( this.kit.cpr(this.movs[i].cpr), 30, f )
+              doc.text ( this.movs[i].observ+' '+this.movs[i].banco+' '+this.movs[i].cuenta, 90, f )
+              doc.text ( this.movs[i].librador, 415, f )
+              doc.text ( '$'+this.formatoImporte(this.movs[i].importe), 569, f, 'right' );
+              f = this.cp(f, 10, 50, h, doc)
+              totCheIng += this.movs[i].importe
+            }
+          }
+        }
+        f = this.cp(f, -5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 8, 50, h, doc)
+        doc.text ( 'Total', 30, f )
+        doc.text ( '$'+this.formatoImporte(totCheIng), 569, f, 'right' );
+      }
+
+
+      ////////////////////////////////
+      /// TRANSFERENCIAS INGRESOS  ///
+      ////////////////////////////////
+      if (hayTraIng) {
+        doc.setFontSize(8);
+        f = this.cp(f, 15, 50, h, doc)
+        doc.setFont(undefined,"bold")
+        doc.text ( 'TRANSFERENCIAS INGRESADAS', 30, f )
+        doc.setFont(undefined,"normal")
+        f = this.cp(f, 15, 50, h, doc)
+        doc.text ( 'Cpr', 30, f )
+        doc.text ( 'Detalles', 90, f )
+        doc.text ( 'Importe', 541, f );
+        f = this.cp(f, 5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.setFontSize(6);
+
+        for (let i=0; i<=this.movs.length-1; i++) {
+          if (this.movs[i].abrev=='TR') {
+            if (this.movs[i].tipo=='ingreso') {
+              doc.text ( this.kit.cpr(this.movs[i].cpr), 30, f )
+
+              let txt = this.movs[i].observ
+              if (this.movs[i].banco!=null) {
+                txt += ' - '+this.movs[i].banco
+              }
+              if (this.movs[i].cuenta!=null) {
+                txt += ' - '+this.movs[i].cuenta
+              }
+
+              doc.text ( txt, 90, f )
+              doc.text ( '$'+this.formatoImporte(this.movs[i].importe), 569, f, 'right' );
+              f = this.cp(f, 10, 50, h, doc)
+              totTraIng += this.movs[i].importe
+            }
+          }
+        }
+        f = this.cp(f, -5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 8, 50, h, doc)
+        doc.text ( 'Total', 30, f )
+        doc.text ( '$'+this.formatoImporte(totTraIng), 569, f, 'right' );
+      }
+
+
+      ///////////////////////////////
+      /// TRANSFERENCIAS EGRESOS  ///
+      ///////////////////////////////
+      if (hayTraEgr) {
+        doc.setFontSize(8);
+        f = this.cp(f, 15, 50, h, doc)
+        doc.setFont(undefined,"bold")
+        doc.text ( 'TRANSFERENCIAS EGRESADAS', 30, f )
+        doc.setFont(undefined,"normal")
+        f = this.cp(f, 15, 50, h, doc)
+        doc.text ( 'Cpr', 30, f )
+        doc.text ( 'Detalles', 90, f )
+        doc.text ( 'Importe', 541, f );
+        f = this.cp(f, 5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.setFontSize(6);
+
+        for (let i=0; i<=this.movs.length-1; i++) {
+          if (this.movs[i].abrev=='TR') {
+            if (this.movs[i].tipo=='egreso') {
+              doc.text ( this.kit.cpr(this.movs[i].cpr), 30, f )
+              doc.text ( this.movs[i].observ+' '+this.movs[i].banco+' '+this.movs[i].cuenta, 90, f )
+              doc.text ( '$'+this.formatoImporte(this.movs[i].importe), 569, f, 'right' );
+              f = this.cp(f, 10, 50, h, doc)
+              totTraEgr += this.movs[i].importe
+            }
+          }
+        }
+        f = this.cp(f, -5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 8, 50, h, doc)
+        doc.text ( 'Total', 30, f )
+        doc.text ( '$'+this.formatoImporte(totTraEgr), 569, f, 'right' );
+      }
+
+
+      //////////////////////////
+      /// TARJETAS INGRESOS  ///
+      //////////////////////////
+      if (hayTarIng) {
+        doc.setFontSize(8);
+        f = this.cp(f, 15, 50, h, doc)
+        doc.setFont(undefined,"bold")
+        doc.text ( 'TARJETAS INGRESADAS', 30, f )
+        doc.setFont(undefined,"normal")
+        f = this.cp(f, 15, 50, h, doc)
+        doc.text ( 'Cpr', 30, f )
+        doc.text ( 'Detalles', 90, f )
+        doc.text ( 'Importe', 541, f );
+        f = this.cp(f, 5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.setFontSize(6);
+
+        for (let i=0; i<=this.movs.length-1; i++) {
+          if (this.movs[i].abrev=='TC') {
+            if (this.movs[i].tipo=='ingreso') {
+              doc.text ( this.kit.cpr(this.movs[i].cpr), 30, f )
+              doc.text ( this.movs[i].observ+' '+this.movs[i].banco+' '+this.movs[i].cuenta, 90, f )
+              doc.text ( '$'+this.formatoImporte(this.movs[i].importe), 569, f, 'right' );
+              f = this.cp(f, 10, 50, h, doc)
+              totTarIng += this.movs[i].importe
+            }
+          }
+        }
+        f = this.cp(f, -5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 8, 50, h, doc)
+        doc.text ( 'Total', 30, f )
+        doc.text ( '$'+this.formatoImporte(totTarIng), 569, f, 'right' );
+      }
+
+
+      /////////////////////////
+      /// TARJETAS EGRESOS  ///
+      /////////////////////////
+      if (hayTarEgr) {
+        doc.setFontSize(8);
+        f = this.cp(f, 15, 50, h, doc)
+        doc.setFont(undefined,"bold")
+        doc.text ( 'TARJETAS EGRESADAS', 30, f )
+        doc.setFont(undefined,"normal")
+        f = this.cp(f, 15, 50, h, doc)
+        doc.text ( 'Cpr', 30, f )
+        doc.text ( 'Detalles', 90, f )
+        doc.text ( 'Importe', 541, f );
+        f = this.cp(f, 5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 10, 50, h, doc)
+        doc.setFontSize(6);
+
+        for (let i=0; i<=this.movs.length-1; i++) {
+          if (this.movs[i].abrev=='TC') {
+            if (this.movs[i].tipo=='egreso') {
+              doc.text ( this.kit.cpr(this.movs[i].cpr), 30, f )
+              doc.text ( this.movs[i].observ+' '+this.movs[i].banco+' '+this.movs[i].cuenta, 90, f )
+              doc.text ( '$'+this.formatoImporte(this.movs[i].importe), 569, f, 'right' );
+              f = this.cp(f, 10, 50, h, doc)
+              totTarEgr += this.movs[i].importe
+            }
+          }
+        }
+        f = this.cp(f, -5, 50, h, doc)
+        doc.line( 30, f, 570, f);
+        f = this.cp(f, 8, 50, h, doc)
+        doc.text ( 'Total', 30, f )
+        doc.text ( '$'+this.formatoImporte(totTarEgr), 569, f, 'right' );
+      }
+
+    },
+
+    cp(f, s, i, t, d) {
+      // f = fila
+      // s = a sumar
+      // i = fila inicial ante nueva pagina
+      // t = tope de lineas
+      // d = documento
+      if ((f+s)>t) {
+        d.addPage()
+        f = i
+        return f
+      }
+      f += s
+      return f
     },
 
     formatoImporte(value) {
       let val = (value/1).toFixed(2).replace('.', ',')
       return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-    },
-
-    formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
-      try {
-        decimalCount = Math.abs(decimalCount);
-        decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
-        const negativeSign = amount < 0 ? "-" : "";
-        let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
-        let j = (i.length > 3) ? i.length % 3 : 0;
-        return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
-      } catch (e) {
-        console.log(e)
-      }
     },
 
     formatoFecha(value) {

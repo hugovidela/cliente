@@ -22,8 +22,8 @@
             <v-spacer></v-spacer>
 
             <v-btn
-              :color="temas.cen_btns_bg"
-              :dark="temas.cen_btns_dark==true"
+              :dark="temas.forms_titulo_dark==true"
+              color="teal accent-4"
               class="ma-2 white--text" @click="guardar">
               Guardar
             </v-btn>
@@ -43,22 +43,22 @@
                   <v-tab href="#sucursales" v-if="accesoCEO && !externo">
                     Sucursales
                   </v-tab>
-                  <v-tab href="#usuarios" v-if="accesoCEO && !externo">
+                  <v-tab href="#usuarios" v-if="accesoCEO && !externo && tipo!='PR'">
                     Equipo
                   </v-tab>
-                  <v-tab href="#tarjetascobros" v-if="accesoCEO && !externo">
+                  <v-tab href="#tarjetascobros" v-if="accesoCEO && !externo && tipo!='PR'">
                     Tarjetas
                   </v-tab>
                   <v-tab href="#password">
                     Contraseña
                   </v-tab>
-                  <v-tab href="#cprs" v-if="accesoCEO && !externo">
+                  <v-tab href="#cprs" v-if="accesoCEO && !externo && tipo!='PR'">
                     Comprobantes
                   </v-tab>
-                  <v-tab href="#importaciones" v-if="accesoCEO && !externo">
+                  <v-tab href="#importaciones" v-if="accesoCEO">
                     Importaciones
                   </v-tab>
-                  <v-tab href="#impuestos" v-if="accesoCEO && !externo">
+                  <v-tab href="#impuestos" v-if="accesoCEO && !externo && tipo!='PR'">
                     Impuestos
                   </v-tab>
 
@@ -70,9 +70,9 @@
                       <v-col cols="12" sm="6">
                         <v-text-field
                           ref="username"
-                          disabled
+                          :disabled="!externo"
                           v-model="editado.username"
-                          label="Razón Social"
+                          :label="externo?'Tu nombre':'Razón Social'"
                           required
                           :counter="80"
                           :maxlength="80">
@@ -82,15 +82,15 @@
                         <v-text-field
                           v-model="editado.email"
                           label="Correo Electrónico"
-                          disabled
+                          :disabled="!externo"
                           :counter="80"
                           :maxlength="80">
                         </v-text-field>
                       </v-col>
                     </v-row>
 
-                    <v-row>
-                      <v-col cols="12" sm="8">
+                    <v-row v-if="!externo">
+                      <v-col cols="12" sm="8" v-if="tipo!='PR'">
                         <v-select
                           v-model="rubValue"
                           :color="temas.forms_titulo_bg"
@@ -104,7 +104,6 @@
                           outlined>
                         </v-select>
                       </v-col>
-
                       <v-col cols="12" sm="3" class="pt-6 md-6">
                         <v-file-input
                           v-model="logotipo1"
@@ -126,24 +125,18 @@
                       </v-col>
                     </v-row>
 
-                    <v-row>
-                      <v-col cols="4" sm="4">
-                        <v-autocomplete
-                          v-model="editado.tercero_id"
+                    <v-row v-if="!externo">
+                      <v-col cols="12" sm="4" v-if="tipo!='PR'">
+
+                        <v-text-field
+                          v-model="editado.tercero.nombre"
+                          outlined disabled
                           :color="temas.forms_titulo_bg"
-                          :items="itemsTerceros"
-                          :loading="isLoadingTerceros"
-                          :search-input.sync="searchTerceros"
-                          :disabled="externo"
-                          item-text="nombre"
-                          item-value="id"
-                          label="Tercero al cual esta ligado el usuario"
-                          placeholder="Escriba para buscar"
-                          prepend-icon="mdi-database-search">
-                        </v-autocomplete>
+                          label="Tercero">
+                        </v-text-field>
                       </v-col>
 
-                      <v-col cols="4" sm="4">
+                      <v-col cols="12" sm="4">
                         <v-select
                           v-model="editado.tipo"
                           :color="temas.forms_titulo_bg"
@@ -157,7 +150,7 @@
                         </v-select>
                       </v-col>
 
-                      <v-col cols="3" sm="3" align="center" class="md-6">
+                      <v-col cols="12" sm="3" align="center" class="md-6">
                         <v-file-input
                           v-model="logotipo2"
                           outlined
@@ -172,9 +165,9 @@
                       </v-col>
                     </v-row>
 
-                    <v-row>
-                      <v-col cols="2" sm="2" md="2">
-                        <v-text-field v-if="!externo"
+                    <v-row v-if="!externo && tipo!='PR'">
+                      <v-col cols="12" sm="2" md="2">
+                        <v-text-field
                           disabled
                           ref="porrem"
                           outlined
@@ -184,8 +177,8 @@
                           min="0" max="100">
                         </v-text-field>
                       </v-col>
-                      <v-col cols="2" sx="2" mx="2" class="pl-0">
-                        <v-text-field v-if="!externo"
+                      <v-col cols="12" sm="2" class="pl-0">
+                        <v-text-field
                           ref="Prefijo Artículos"
                           outlined
                           v-model="editado.prefijo"
@@ -196,10 +189,10 @@
                           :maxlength="5">
                         </v-text-field>
                       </v-col>
-                      <v-col cols="2" sx="2" mx="2" class="pl-0">
+                      <v-col cols="12" sm="2" class="pl-0">
                       </v-col>
-                      <v-col cols="2" sx="2" mx="2" class="pl-0">
-                        <v-select v-if="!externo"
+                      <v-col cols="12" sm="2" class="pl-0">
+                        <v-select
                           v-model="editado.timeout_refresh"
                           :disabled="externo"
                           :color="temas.forms_titulo_bg"
@@ -219,8 +212,8 @@
                         </v-img>
                       </v-col>
                     </v-row>
-                    <v-row>
-                      <v-col cols="2" sx="2" mx="2" class="pt-0" v-show="!externo">
+                    <v-row v-if="!externo">
+                      <v-col cols="12" sm="2" class="pt-0">
                         <v-radio-group
                           v-model="editado.faeproduccion" column outlined>
                           <div>Facturación Electrónica</div>
@@ -233,7 +226,7 @@
                             class="pl-6"></v-radio>
                         </v-radio-group>
                       </v-col>
-                      <v-col cols="2" sx="2" mx="2" class="pt-12 pl-6" v-show="!externo">
+                      <v-col cols="12" sm="2" class="pt-12 pl-6" v-show="!externo">
                         <v-text-field
                           v-model="editado.faevencimiento"
                           outlined
@@ -243,7 +236,7 @@
                           label="Vencimiento del Certificado">
                         </v-text-field>
                       </v-col>
-                      <v-col cols="2" sx="2" mx="2" class="pt-12 pl-6" v-show="!externo">
+                      <v-col cols="12" sm="2" class="pt-12 pl-6" v-show="!externo">
                         <v-text-field
                           v-model="editado.faearchivocrt"
                           outlined
@@ -252,7 +245,7 @@
                           label="Archivo CRT">
                         </v-text-field>
                       </v-col>
-                      <v-col cols="2" sx="2" mx="2" class="pt-12 pl-6" v-show="!externo">
+                      <v-col cols="12" sm="2" class="pt-12 pl-6" v-show="!externo">
                         <v-text-field
                           v-model="editado.faearchivokey"
                           outlined
@@ -261,25 +254,37 @@
                           label="Archivo KEY">
                         </v-text-field>
                       </v-col>
-                      <v-col cols="2" sx="2" mx="2" class="pt-12 pl-6" v-show="!externo">
+                      <v-col cols="12" sm="2" class="pt-12 pl-6" v-show="!externo">
                         <v-btn
-                          :color="temas.cen_btns_bg"
-                          :dark="temas.cen_btns_dark==true"
+                          :color="temas.forms_titulo_bg"
+                          :dark="temas.forms_titulo_dark==true"
                           class="ma-2 white--text" @click="actCertificado">
                           Actualizar CRT&KEY
                         </v-btn>
                       </v-col>
-                      <v-col cols="2" sx="2" mx="2" class="pt-12 pl-6" v-show="!externo">
+                      <v-col cols="12" sm="2" class="pt-12 pl-6" v-show="!externo">
                         <v-btn
-                          :color="temas.cen_btns_bg"
-                          :dark="temas.cen_btns_dark==true"
+                          :color="temas.forms_titulo_bg"
+                          :dark="temas.forms_titulo_dark==true"
                           class="ma-2 white--text" @click="chequearAfip">
                           Chequear AFIP
                         </v-btn>
                       </v-col>
                     </v-row>
+                    <v-row class="pt-0 pb-0 pl-3" v-if="!externo && tipo!='PR'">
+                      <v-col cols="12" sm="12" class="pt-0 pb-0">
+                        <v-switch class="pt-0 pb-0"
+                          label=
+                          "¿Comercializas tus productos en forma Mayorista?. Podrás
+                          publicar tus artículos con dos porcentajes de remarcación,
+                          uno para tus clientes revendedores y otro para el público minorista."
+                          v-model="editado.distribuidor"
+                          :color="temas.forms_titulo_bg">
+                        </v-switch>
+                      </v-col>
+                    </v-row>
                     <v-row class="pt-0 pb-0 pl-3" v-if="!externo">
-                      <v-col cols="12" sx="12" mx="12" class="pt-0 pb-0">
+                      <v-col cols="12" sm="12" class="pt-0 pb-0">
                         <v-switch class="pt-0 pb-0"
                           label=
                           "¿Realizas comprobantes M?, Por diferentes motivos AFIP
@@ -291,7 +296,7 @@
                       </v-col>
                     </v-row>
                     <v-row class="pt-0 pb-0 pl-3" v-if="!externo">
-                      <v-col cols="12" sx="12" mx="12" class="pt-0 pb-0">
+                      <v-col cols="12" sm="12" class="pt-0 pb-0">
                         <v-switch class="pt-0 pb-0"
                           label=
                           "¿Habilitas Turnos?, Característia utilizada por aquellas empresas
@@ -303,7 +308,7 @@
                       </v-col>
                     </v-row>
                     <v-row v-if="editado.turnos && !externo">
-                      <v-col cols="12" sm="12" md="12">
+                      <v-col cols="12" sm="12">
                         <v-combobox
                           outlined
                           v-model="editado.turnoslv"
@@ -329,7 +334,7 @@
                       </v-col>
                     </v-row>
                     <v-row v-if="editado.turnos">
-                      <v-col cols="12" sm="12" md="12">
+                      <v-col cols="12" sm="12">
                         <v-combobox
                           outlined
                           v-model="editado.turnossd"
@@ -354,135 +359,107 @@
                         </v-combobox>
                       </v-col>
                     </v-row>
-                    <v-row class="pt-0 pb-0 pl-3" v-if="!externo">
-                      <v-col cols="4" sx="4" mx="4" class="pt-0 pb-0">
+                    <v-row class="pt-0 pb-0 pl-3" v-if="!externo && tipo!='PR'">
+                      <v-col cols="12" sm="4" class="pt-0 pb-0">
                         <v-switch  class="pt-0 pb-0"
                           label="Informar precios con IVA en el Carro de Compras"
                           v-model="editado.preciosconiva"
                           :color="temas.forms_titulo_bg">
                         </v-switch>
                       </v-col>
-                      <v-col cols="4" sx="4" mx="4" class="pt-0 pb-0">
+                      <v-col cols="12" sm="4" class="pt-0 pb-0" v-if="tipo!='PR'">
                         <v-switch  class="pt-0 pb-0"
                           label="Bonificaciones en Compras ¿Las aplicas a tus Costos?"
                           v-model="editado.aplicarBonifDeProvEnVtas"
                           :color="temas.forms_titulo_bg">
                         </v-switch>
                       </v-col>
-<!--
-                      <v-col cols="2" sx="2" mx="2" class="pt-0 pb-0 pl-0" v-show="!externo">
+
+                      <v-col cols="12" sm="2" class="pt-0 pb-0 pl-0" v-show="!externo">
                         <v-btn
                           fab x-small
-                          :color="temas.cen_btns_bg"
-                          :dark="temas.cen_btns_dark==true"
-                          class="mt-5 white--text" @click="dialogCostosBonificados=true">
-                          <v-icon dark>mdi-help</v-icon>
-                        </v-btn>
-                      </v-col>
--->
-                      <v-col cols="2" sx="2" mx="2" class="pt-0 pb-0 pl-0" v-show="!externo">
-                        <v-btn
-                          fab x-small
-                          :color="temas.cen_btns_bg"
-                          :dark="temas.cen_btns_dark==true"
+                          :color="temas.forms_titulo_bg"
+                          :dark="temas.forms_titulo_dark==true"
                           class="mt-5 white--text" @click="dialogCostosBonificados=true"
                           link :to="{name: 'ayuda', params: {id: 2}}">
                           <v-icon dark>mdi-help</v-icon>
                         </v-btn>
                       </v-col>
-
                     </v-row>
-                    <v-row class="pt-0 pb-0 pl-3">
-                      <v-col cols="5" sx="5" mx="5" class="pt-0 pb-0 pr-0" v-show="!externo">
+
+                    <v-row class="pt-0 pb-0 pl-3" v-if="tipo!='PR'">
+                      <v-col cols="12" sm="5" class="pt-0 pb-0 pr-0" v-show="!externo">
                         <v-switch
                           :label="`¿Anclar Precios al Dolar? (${cttArticulosAnclados}
                           Artículos/Anclados)`"
                           :disabled="cttArticulosAnclados>0"
-                          :color="temas.cen_btns_bg"
+                          :color="temas.forms_titulo_bg"
                           v-model="editado.anclarcostos">
                         </v-switch>
                       </v-col>
-                      <v-col cols="5" sx="5" mx="5" class="pt-0 pb-0 pl-0" v-show="!externo">
+                      <v-col cols="12" sm="5" class="pt-0 pb-0 pl-0" v-show="!externo">
                         <v-switch
                           label=
                           "Utilizar el costo anclado solo cuando sea mayor al último costo
                           cargado."
                           :disabled="!editado.anclarcostos"
-                          :color="temas.cen_btns_bg"
+                          :color="temas.forms_titulo_bg"
                           v-model="editado.desanclarautomaticamente">
                         </v-switch>
                       </v-col>
-                      <v-col cols="2" sx="2" mx="2" class="pt-0 pb-0 pl-0" v-show="!externo">
+                      <v-col cols="12" sm="2" class="pt-0 pb-0 pl-0" v-show="!externo">
                         <v-btn
                           fab x-small
-                          :color="temas.cen_btns_bg"
-                          :dark="temas.cen_btns_dark==true"
+                          :color="temas.forms_titulo_bg"
+                          :dark="temas.forms_titulo_dark==true"
                           class="mt-5 white--text" @click="dialogAnclarUsd=true">
                           <v-icon dark>mdi-help</v-icon>
                         </v-btn>
                       </v-col>
                     </v-row>
-                    <v-row class="fg115 pt-0 pb-0 pl-3" v-if="exclusivoDe.id==null">
-                      <v-col cols="4" sm="4" md="4">
-                        <p>
-                          Porcentajes de remarcaciones generales
-                          para asignar precios sugeridos a tus clientes.
-                        </p>
-                      </v-col>
-                      <v-col cols="1" sm="1" md="1">
-                        <v-text-field class="pt-0 pb-0"
-                          v-model="editado.porrev1"
-                          :color="temas.cen_btns_bg"
-                          label="%Rem.1" type="number" min="0" max="500" @change="porRev('1')">
-                        </v-text-field>
-                      </v-col>
-                      <v-col cols="1" sm="1" md="1" class="fg">
-                        <v-text-field class="pt-0 pb-0"
-                          v-model="editado.porrev2"
-                          :color="temas.cen_btns_bg"
-                          label="%Rem.2" type="number" min="0" max="500" @change="porRev('2')">
-                        </v-text-field>
-                      </v-col>
-                      <v-col cols="1" sm="1" md="1">
-                        <v-text-field class="pt-0 pb-0"
-                          v-model="editado.porrev3"
-                          :color="temas.cen_btns_bg"
-                          label="%Rem.3" type="number" min="0" max="500" @change="porRev('3')">
-                        </v-text-field>
-                      </v-col>
-                      <v-col cols="2" sx="2" mx="2" class="pt-0 pb-0 pl-0" v-show="!externo">
-                        <v-btn
-                          fab x-small
-                          :color="temas.cen_btns_bg"
-                          :dark="temas.cen_btns_dark==true"
-                          class="mt-5 white--text" @click="dialogPreciosSugeridos=true">
-                          <v-icon dark>mdi-help</v-icon>
-                        </v-btn>
-                      </v-col>
-                    </v-row>
 
-                    <v-row>
-                      <v-col cols="3" sx="2" mx="2" class="pt-0 pb-0 pl-6" v-show="!externo">
+                    <v-row v-if="!externo&&tipo!='PR'">
+                      <v-col cols="12" sm="3" class="pt-0 pb-0 pl-6">
                         <v-switch
-                          label=
-                          "Facturar solo los artículos comprados."
-                          :color="temas.cen_btns_bg"
+                          label="Facturar solo los artículos comprados."
+                          :color="temas.forms_titulo_bg"
                           v-model="editado.soloartcomprados">
                         </v-switch>
                       </v-col>
-                      <v-col cols="2" sx="2" mx="2" class="pt-0 pb-2 pl-0" v-show="!externo">
+                      <v-col cols="12" sm="2" class="pt-0 pb-2 pl-3">
                         <v-btn
                           fab x-small
-                          :color="temas.cen_btns_bg"
-                          :dark="temas.cen_btns_dark==true"
-                          class="mt-5 white--text" @click="dialogSoloArtConPrecios=true">
-                          <v-icon dark>mdi-help</v-icon>
+                          :color="temas.forms_titulo_bg"
+                          :dark="temas.forms_titulo_dark==true"
+                          class="mt-5"
+                          @click="dialogSoloArtConPrecios=true">
+                          <v-icon>mdi-help</v-icon>
                         </v-btn>
                       </v-col>
                     </v-row>
 
-                    <v-row v-show="tipo!='PP'">
-                      <v-col cols="12" sx="12" mx="12" class="pt-0 pb-0 pl-6">
+                    <v-row v-if="!externo&&tipo!='PR'">
+                      <v-col cols="12" sm="4" class="pt-0 pb-0 pl-6">
+                        <v-switch
+                          label="Ver solo los artículos propios y comprados en ficha de Artículos."
+                          :color="temas.forms_titulo_bg"
+                          v-model="editado.versoloartcomprados">
+                        </v-switch>
+                      </v-col>
+                      <v-col cols="12" sm="2" class="pt-0 pb-2 pl-3">
+                        <v-btn
+                          fab x-small
+                          :color="temas.forms_titulo_bg"
+                          :dark="temas.forms_titulo_dark==true"
+                          class="mt-5"
+                          @click="dialogSoloArtConPrecios=true">
+                          <v-icon>mdi-help</v-icon>
+                        </v-btn>
+                      </v-col>
+                    </v-row>
+
+                    <v-row v-show="tipo!='PP'&&!externo&&tipo!='PR'">
+                      <v-col cols="12" sm="12" class="pt-0 pb-0 pl-6">
                         <v-radio-group v-model="editado.comoinfstock" row outlined>
                           <div class="pr-3">
                             ¿Como quieres que tus clientes vean tu Stock?
@@ -499,8 +476,9 @@
                       </v-col>
                     </v-row>
 
-                    <v-row v-show="tipo!='PP'">
-                      <v-col cols="12" sx="12" mx="12" class="pt-0 pb-0 pl-6">
+<!--                <v-row v-show="tipo!='PP'&&!externo">-->
+                    <v-row v-show="!externo">
+                      <v-col cols="12" sm="12" class="pt-0 pb-0 pl-6">
                         <v-radio-group v-model="editado.codigooid" row outlined>
                           <div class="pr-3">
                             ¿Mostrar y buscar Artículos por sus ID's o por sus Códigos?
@@ -517,8 +495,8 @@
                       </v-col>
                     </v-row>
 
-                    <v-row class="fg115 pt-0 pb-0 pl-3">
-                      <v-col cols="7" sm="7" md="7">
+                    <v-row v-if="!externo&&tipo!='PR'" class="fg115 pt-0 pb-0 pl-3">
+                      <v-col cols="12" sm="7">
                         <p>
                           Cantidad de Artículos a cargar desde el servidor en Búsquedas.<br>
                           Si tu servicio de internet no es el óptimo, baja este número para
@@ -526,11 +504,11 @@
                           Los valores permitidos son entre 10 y 300.
                         </p>
                       </v-col>
-                      <v-col cols="1" sm="1" md="1">
+                      <v-col cols="12" sm="1">
                         <v-text-field class="pt-0 pb-0"
                           v-model="editado.cttloadreg"
                           type="number"
-                          :color="temas.cen_btns_bg"
+                          :color="temas.forms_titulo_bg"
                           label="Ctt" min="10" max="300"
                           @change="cttRegLoad">
                         </v-text-field>
@@ -554,33 +532,33 @@
                     </v-row>
                     -->
 
-                    <v-row class="pt-0 pb-0 pl-3" v-show="tipo!='PP'">
-                      <v-col cols="12" sx="12" mx="12" class="pt-0 pb-0">
+                    <v-row class="pt-0 pb-0 pl-3" v-if="tipo!='PP'&&tipo!='PR'&&!externo">
+                      <v-col cols="12" sm="12" class="pt-0 pb-0">
                         <v-switch
                           label=
                           "¿Usas Maletines?. Puede ser útil si tu estructura de ventas es zonal,
                           con personal que se encargan de entregar mercadería y recolectar valores.
                           Para mas información revisa la ayuda en el apartado Maletines."
-                          :color="temas.cen_btns_bg"
+                          :color="temas.forms_titulo_bg"
                           v-model="editado.usamaletines">
                         </v-switch>
                       </v-col>
                     </v-row>
 
-                    <v-row class="pt-0 pb-0 pl-3" v-show="tipo!='PP'">
-                      <v-col cols="12" sx="12" mx="12" class="pt-0 pb-0">
+                    <v-row class="pt-0 pb-0 pl-3" v-show="tipo!='PP'&&tipo!='PR'&&!externo">
+                      <v-col cols="12" sm="12" class="pt-0 pb-0">
                         <v-switch
                           label=
                           "¿Quieres ser invisible para el resto de los usuarios?
                           (No aparecerás en el módulo de vinculaciones, y las que ya tengas
                           permanecerán activas)"
-                          :color="temas.cen_btns_bg"
+                          :color="temas.forms_titulo_bg"
                           v-model="editado.invisible">
                         </v-switch>
                       </v-col>
                     </v-row>
 
-                    <v-row class="pt-0 pb-0 pl-3" v-show="tipo!='PP'">
+                    <v-row v-if="!externo" class="pt-0 pb-0 pl-3">
                       <v-col cols="12" sm="3" class="pt-0 pb-0">
                         <v-select
                           v-model="editado.transition"
@@ -592,16 +570,18 @@
                           label="Tipo de Transición en Formularios"
                           outlined>
                         </v-select>
-                        <!-- <v-switch
-                          label=
-                          "Activar Transition en formularios"
+                      </v-col>
+                      <v-col cols="12" sm="3" class="pt-0 pb-0">
+                        <v-switch
+                          label="Modo Dark"
                           :color="temas.cen_btns_bg"
-                          v-model="editado.transition">
-                        </v-switch> -->
+                          v-model="editado.dark"
+                          @click="setDarkOnOff()">
+                        </v-switch>
                       </v-col>
                     </v-row>
 
-                    <v-row class="pt-0">
+                    <v-row v-if="!externo" class="pt-0">
                       <v-dialog v-model="dialogPreciosSugeridos" max-width="800px"
                         :transition="transition==null?'false':transition">
                         <v-card class="fg">
@@ -845,8 +825,8 @@
                             </span>
                             <v-spacer></v-spacer>
                             <v-btn v-if="nuevoCRT&&nuevoKEY"
-                              :color="temas.cen_btns_bg"
-                              :dark="temas.cen_btns_dark==true"
+                              :color="temas.forms_titulo_bg"
+                              :dark="temas.forms_titulo_dark==true"
                               class="ma-2 white--text"
                               @click="uploadCrtAndKey()">
                               Subir Archivos al Servidor
@@ -910,7 +890,6 @@
                         </v-textarea>
                       </v-col>
                     </v-row>
-
                   </v-tab-item>
                   <!--
                     TAB OPERADORES
@@ -941,19 +920,13 @@
 
                     <v-row>
                       <v-col cols="12" sm="6">
-                        <v-autocomplete
-                          v-model="editado.tercero_id"
-                          disabled
+
+                        <v-text-field
+                          v-model="editado.tercero.nombre"
+                          outlined disabled
                           :color="temas.forms_titulo_bg"
-                          :items="itemsTerceros"
-                          :loading="isLoadingTerceros"
-                          :search-input.sync="searchTerceros"
-                          item-text="nombre"
-                          item-value="id"
-                          label="Tercero al cual esta ligado el usuario"
-                          placeholder="Escriba para buscar"
-                          prepend-icon="mdi-database-search">
-                        </v-autocomplete>
+                          label="Tercero">
+                        </v-text-field>
                       </v-col>
                       <v-col cols="12" sm="3" class="md-6">
                         <v-file-input
@@ -989,6 +962,16 @@
                           outlined>
                         </v-select>
                       </v-col>
+
+                      <v-col cols="12" sm="3" class="pt-0 pb-0">
+                        <v-switch
+                          label="Modo Dark"
+                          :color="temas.cen_btns_bg"
+                          v-model="editado.dark"
+                          @click="setDarkOnOff()">
+                        </v-switch>
+                      </v-col>
+
                     </v-row>
 
                   </v-tab-item>
@@ -1000,6 +983,13 @@
                       :headers="headersSuc"
                       :items="suc"
                       dense
+                      :footer-props="{
+                        itemsPerPageOptions: [10],
+                        showFirstLastPage: true,
+                        showCurrentPage: true,
+                        nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                        prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                      }"
                       class="elevation-3 mt-3">
                       <template v-slot:top>
                         <v-toolbar flat
@@ -1009,8 +999,8 @@
                             :transition="transition==null?'false':transition">
                             <template v-slot:activator="{ on, attrs }">
                               <v-btn fab x-small
-                                :color="temas.cen_btns_bg"
-                                :dark="temas.cen_btns_dark==true"
+                                :color="temas.forms_titulo_bg"
+                                :dark="temas.forms_titulo_dark==true"
                                 @click="nuevaSucursal">
                                 <v-icon>mdi-plus</v-icon>
                               </v-btn>
@@ -1119,8 +1109,8 @@
                                               :transition="transition==null?'false':transition">
                                               <template v-slot:activator="{ on, attrs }">
                                                 <v-btn fab x-small
-                                                  :color="temas.cen_btns_bg"
-                                                  :dark="temas.cen_btns_dark==true"
+                                                  :color="temas.forms_titulo_bg"
+                                                  :dark="temas.forms_titulo_dark==true"
                                                   @click="nuevoDeposito">
                                                   <v-icon>mdi-plus</v-icon>
                                                 </v-btn>
@@ -1148,15 +1138,15 @@
                                                 <v-card-actions>
                                                   <v-spacer></v-spacer>
                                                   <v-btn
-                                                    :color="temas.cen_btns_bg"
-                                                    :dark="temas.cen_btns_dark==true"
+                                                    :color="temas.forms_titulo_bg"
+                                                    :dark="temas.forms_titulo_dark==true"
                                                     text
                                                     @click="cancelarDep">
                                                     Cancelar
                                                   </v-btn>
                                                   <v-btn
-                                                    :color="temas.cen_btns_bg"
-                                                    :dark="temas.cen_btns_dark==true"
+                                                    :color="temas.forms_titulo_bg"
+                                                    :dark="temas.forms_titulo_dark==true"
                                                     text
                                                     @click="guardarDep(editadoDep)">
                                                     Guardar
@@ -1255,7 +1245,14 @@
                       :headers="headersUsr"
                       :items="usr"
                       dense
-                      class="elevation-3 pt-3">
+                      class="elevation-3 pt-3"
+                      :footer-props="{
+                        itemsPerPageOptions: [10],
+                        showFirstLastPage: true,
+                        showCurrentPage: true,
+                        nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                        prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                      }">
                       <template v-slot:top>
                         <v-toolbar flat
                           :color="temas.forms_titulo_bg"
@@ -1264,8 +1261,8 @@
                             :transition="transition==null?'false':transition">
                             <template v-slot:activator="{ on, attrs }">
                               <v-btn fab x-small
-                                :color="temas.cen_btns_bg"
-                                :dark="temas.cen_btns_dark==true"
+                                :color="temas.forms_titulo_bg"
+                                :dark="temas.forms_titulo_dark==true"
                                 @click="nuevoUsuario">
                                 <v-icon>mdi-plus</v-icon>
                               </v-btn>
@@ -1399,6 +1396,13 @@
                       :headers="headersTarjetasCobros"
                       :items="tarjetasCobros"
                       dense
+                      :footer-props="{
+                        itemsPerPageOptions: [10],
+                        showFirstLastPage: true,
+                        showCurrentPage: true,
+                        nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                        prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                      }"
                       class="elevation-3 pt-3">
                       <template v-slot:top>
                         <v-toolbar flat
@@ -1409,8 +1413,8 @@
                             :transition="transition==null?'false':transition">
                             <template v-slot:activator="{ on, attrs }">
                               <v-btn fab x-small
-                                :color="temas.cen_btns_bg"
-                                :dark="temas.cen_btns_dark==true"
+                                :color="temas.forms_titulo_bg"
+                                :dark="temas.forms_titulo_dark==true"
                                 @click="nuevoTarjetaCobro">
                                 <v-icon>mdi-plus</v-icon>
                               </v-btn>
@@ -1558,8 +1562,8 @@
                     <v-row class="pt-3">
                       <v-col cols="3" sm="3">
                         <v-btn
-                          :color="temas.cen_btns_bg"
-                          :dark="temas.cen_btns_dark==true"
+                          :color="temas.forms_titulo_bg"
+                          :dark="temas.forms_titulo_dark==true"
                           class="ma-2 white--text" @click="cambiarPassword">
                           Cambiar Contraseña
                         </v-btn>
@@ -1692,11 +1696,101 @@
                   -->
                   <v-tab-item value="importaciones">
                     <v-container fluid>
-                      <v-row justify="start">
+                      <v-row justify="start" class="pt-6">
+                        <v-col cols="6" sm="3">
+                          <span class="pt-5 mt-5">
+                            Número de Hoja de la planilla Excel donde estan los datos
+                          </span>
+                        </v-col>
+                        <v-col cols="6" sm="1" class="pt-0">
+                          <v-text-field
+                            v-model="editado.xls_hoja"
+                            type="number" max="20" min="1">
+                          </v-text-field>
+                        </v-col>
+                        <v-col cols="6" sm="3">
+                          <span class="pt-5 mt-5">
+                            Número de fila donde comienzan los datos
+                          </span>
+                        </v-col>
+                        <v-col cols="6" sm="1" class="pt-0">
+                          <v-text-field
+                            v-model="editado.xls_fila"
+                            type="number" max="100" min="0">
+                          </v-text-field>
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col cols="6" sm="3">
+                          <span class="pt-2 mt-2">
+                            Letras de la Columna donde esta el <b>código del artículo</b>.
+                            Si son más de una ingresar por ejemplo: A:B
+                          </span>
+                        </v-col>
+                        <v-col cols="6" sm="1" class="pt-0">
+                          <v-text-field
+                            v-model="editado.xls_codigo">
+                          </v-text-field>
+                        </v-col>
+                        <v-col cols="6" sm="3">
+                          <span class="pt-2 mt-2">
+                            Letras de la Columna donde esta el <b>nombre del artículo</b>.
+                            Si son más de una ingresar por ejemplo: A:B
+                          </span>
+                        </v-col>
+                        <v-col cols="6" sm="1" class="pt-0">
+                          <v-text-field
+                            v-model="editado.xls_nombre">
+                          </v-text-field>
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col cols="12" sm="3">
+                          <span class="pt-2 mt-2">
+                            Letra de la Columna donde esta el <b>precio del artículo</b>.
+                          </span>
+                        </v-col>
+                        <v-col cols="12" sm="1" class="pt-0">
+                          <v-text-field
+                            v-model="editado.xls_precio">
+                          </v-text-field>
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col cols="12" sm="3">
+                          <span class="pt-2 mt-2">
+                            Letra de la Columna donde esta la <b>tasa de IVA del artículo</b>.
+                          </span>
+                        </v-col>
+                        <v-col cols="12" sm="1" class="pt-0">
+                          <v-text-field
+                            v-model="editado.xls_iva">
+                          </v-text-field>
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col cols="12" sm="6" class="pt-0">
+                          <v-switch
+                            label="Los precios incluyen el IVA."
+                            :color="temas.forms_titulo_bg"
+                            v-model="editado.xls_ivainc">
+                          </v-switch>
+                        </v-col>
+                      </v-row>
+
+
+                        <!--
                         <v-data-table
                           :headers="headersJSONArt"
                           :items="JSONArt"
                           dense
+                          :footer-props="{
+                            itemsPerPageOptions: [10],
+                            showFirstLastPage: true,
+                            showCurrentPage: true,
+                            nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                            prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                          }"
                           class="elevation-3 pt-3">
                           <template v-slot:top>
                             <v-toolbar flat
@@ -1706,8 +1800,8 @@
                                 :transition="transition==null?'false':transition">
                                 <template v-slot:activator="{ on, attrs }">
                                   <v-btn fab x-small
-                                    :color="temas.cen_btns_bg"
-                                    :dark="temas.cen_btns_dark==true"
+                                    :color="temas.forms_titulo_bg"
+                                    :dark="temas.forms_titulo_dark==true"
                                     @click="nuevoJSONArt">
                                     <v-icon>mdi-plus</v-icon>
                                   </v-btn>
@@ -1784,15 +1878,6 @@
                                         </v-col>
                                       </v-row>
                                       <v-row>
-                                        <!--
-                                        <v-col cols="4" sx="4" mx="4">
-                                          <v-text-field
-                                            v-model="editadoJSONArt.grupo"
-                                            label="Columna en donde esta el Grupo"
-                                            required>
-                                          </v-text-field>
-                                        </v-col>
-                                        -->
                                         <v-col cols="4" sx="4" mx="4">
                                           <v-text-field
                                             v-model="editadoJSONArt.moneda"
@@ -1825,6 +1910,7 @@
                           </template>
                         </v-data-table>
                       </v-row>
+                    -->
                     </v-container>
                   </v-tab-item>
                   <!--
@@ -2000,6 +2086,7 @@ export default {
       {id:'ME', nombre:'ERP medio'},
       {id:'BA', nombre:'ERP básico'},
       {id:'PP', nombre:'Precios y Pedidos'},
+      {id:'PR', nombre:'Profesionales'},
       {id:'TI', nombre:'Tienda'}
     ],
     transiciones: [
@@ -2067,7 +2154,6 @@ export default {
       { text: 'C/IVA',    value:'coniva',   align: 'left', width: 105},
       { text: 'ACCIONES', value:'accion',   sortable: false },
     ],
-
     timeoutRefreshList: [],
     msg: {
       msgAccion: null,
@@ -2086,7 +2172,6 @@ export default {
     editedIndexCpr: -1,
     editedIndexJSONArt: -1,
     loading: false,
-    searchTerceros: '',     // para el cuadro de búsqueda de datatables
     dialog: true,
     dialogUsr: false,
     dialogTarjetaCobro: false,
@@ -2102,124 +2187,35 @@ export default {
     dialogActCertificado: false,
     editedIndex: -1,
     editado: {
-      id: null,
-      username: null,
-      email: null,
-      tercero_id: null,
-      tipo: null,
-      porrem: null,
-      prefijo: null,
-      cttloadreg: null,
-      avatar: [],
-      timeout_refresh: null,
-      preciosconiva: false,
-      aplicarBonifDeProvEnVtas: false,
-      faeproduccion: null,
-      faevencimiento: null,
-      faearchivocrt: null,
-      faearchivokey: null,
-      observ: null,
-      maxdiaschq: null,
-      invisible: 0,
-      soloartcomprados: 0,
-      anclarcostos: 0,
-      desanclarautomaticamente: 0,
-      haceperiva: null,
-      porperiva: null,
-      haceperiibb: null,
-      codactiibb_id: null,
-      nroiibb: null,
-      esageretgan: null,
-      conceptogan_id: null,
-      turnos: null,
-      turnoslv: '',
-      turnossd: '',
-      porrev1: '',
-      porrev2: '',
-      porrev3: '',
-      comoinfstock: 'U',
-      codigooid: 'C',
-      comprobantesm: false,
-      administragohu: false,
-      usamaletines: false,
-      transition: false,
+      id: null, username: null, email: null, tercero_id: null, tipo: null, porrem: null, prefijo: null, cttloadreg: null, avatar: [],
+      distribuidor: false, timeout_refresh: null, preciosconiva: false, aplicarBonifDeProvEnVtas: false, faeproduccion: null,
+      faevencimiento: null, faearchivocrt: null, faearchivokey: null, observ: null, maxdiaschq: null, invisible: 0,
+      soloartcomprados: 0, versoloartcomprados: 0, anclarcostos: 0, desanclarautomaticamente: 0, haceperiva: null, porperiva: null,
+      haceperiibb: null, codactiibb_id: null, nroiibb: null, esageretgan: null, conceptogan_id: null, turnos: null, turnoslv: '',
+      turnossd: '', comoinfstock: 'U', codigooid: 'C', comprobantesm: false, administragohu: false, usamaletines: false,
+      transition: false, dark: false, xls_hoja: 0, xls_fila: 0, xls_codigo: '', xls_nombre: '', xls_precio: '', xls_iva: '', xls_ivainc: false,
     },
-    editadoUsr: {
-      id: null,
-      activo: null,
-      username: null,
-      password: null,
-      email: null,
-      level: null,
-      user_id: null
-    },
-    defaultItemUsr: {
-      id: null,
-      activo: null,
-      username: null,
-      password: null,
-      email: null,
-      level: null,
-      user_id: null
-    },
+    editadoUsr: {id: null, activo: null, username: null, password: null, email: null, level: null, user_id: null },
+    defaultItemUsr: {id: null, activo: null, username: null, password: null, email: null, level: null, user_id: null },
     editadoTarjetaCobro: {
-      activo: 1,
-      cuenta_id: null,
-      cuotas: 0,
-      debito: 0,
-      id: 0,
-      interes: 0,
-      recargo: 0,
-      tarjeta_id: null,
-      banconombre: null,
-      tarjetanombre: null,
-      user_id: 0,
+      activo: 1, cuenta_id: null, cuotas: 0, debito: 0, id: 0, interes: 0, recargo: 0, tarjeta_id: null,
+      banconombre: null, tarjetanombre: null, user_id: 0,
     },
     defaultItemTarjetaCobro: {
-      activo: 1,
-      cuenta_id: null,
-      cuotas: 0,
-      debito: 0,
-      id: 0,
-      interes: 0,
-      recargo: 0,
-      tarjeta_id: null,
-      tarjetanombre: null,
-      user_id: 0,
+      activo: 1, cuenta_id: null, cuotas: 0, debito: 0, id: 0, interes: 0, recargo: 0, tarjeta_id: null,
+      banconombre: null, tarjetanombre: null, user_id: 0,
     },
     logotipo1: [],
     logotipo2: [],
     turnosHorasLV: [],
     turnosHorasSD: [],
     editadoSuc: {
-      abreviado: null,
-      color: null,
-      electronica: null,
-      fiscal: null,
-      manual: null,
-      iniactividad: null,
-      nombre: null,
-      sucursaldemo: null,
-      user_id: null,
-      activo: null,
-      depositos: [],
-      logotipo: ['Sin Imagen.jpg'],
-      tema: '',
+      abreviado: null, color: null, electronica: null, fiscal: null, manual: null, iniactividad: null, nombre: null,
+      sucursaldemo: null, user_id: null, activo: null, depositos: [], logotipo: ['Sin Imagen.jpg'], tema: '',
     },
     defaultItemSuc: {
-      abreviado: null,
-      color: null,
-      electronica: null,
-      fiscal: null,
-      manual: null,
-      iniactividad: null,
-      nombre: null,
-      sucursaldemo: null,
-      user_id: null,
-      activo: null,
-      depositos: [],
-      logotipo: 'Sin Imagen.jpg',
-      tema: '',
+      abreviado: null, color: null, electronica: null, fiscal: null, manual: null, iniactividad: null, nombre: null,
+      sucursaldemo: null, user_id: null, activo: null, depositos: [], logotipo: 'Sin Imagen.jpg', tema: '',
     },
     editadoDep: {
       nombre: null,
@@ -2230,29 +2226,16 @@ export default {
       activo: null,
     },
     editadoCpr: {
-      id: null,
-      user_id: null,
-      cpr: null,
-      tipo: null,
-      observ: null,
-      porcentaje: null,
-      activo: null,
+      id: null, user_id: null, cpr: null, tipo: null, observ: null, porcentaje: null, activo: null,
     },
     defaultItemTip: {
-      id: null,
-      user_id: null,
-      cpr: null,
-      tipo: null,
-      observ: null,
-      porcentaje: null,
+      id: null, user_id: null, cpr: null, tipo: null, observ: null, porcentaje: null,
     },
     activo: null,
     editadoJSONArt: { comienza:1, codigo:'A', nombre:'B', precio:'C', tasaiva:'D', marca:'E', moneda:'G', coniva:0 },
     defaultJSONArt: { comienza:1, codigo:'A', nombre:'B', precio:'C', tasaiva:'D', marca:'E', moneda:'G', coniva:0 },
     JSONArt: [],
     descriptionLimit: 60,
-    entriesTerceros: [],
-    isLoadingTerceros: false,
   }),
   computed: {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId']),
@@ -2281,6 +2264,7 @@ export default {
       'porRem',
       'timeoutRefresh',
       'transition',
+      'dark',
     ]),    
 
     formTitle () {
@@ -2304,46 +2288,9 @@ export default {
     formTitleJSONArt () {
       return this.editedIndexJSONArt === -1 ? 'Nueva Fila' : 'Editar Fila';
     },
-    itemsTerceros () {
-      return this.entriesTerceros.map(entry => {
-        const nombre = entry.nombre.length > this.descriptionLimit
-          ? entry.nombre.slice(0, this.descriptionLimit) + '...'
-          : entry.nombre
-        return Object.assign({}, entry, { nombre })
-        })
-      },    
   },
 
-  watch: {
-    searchTerceros (val) {
-      // Items have already been loaded
-      // if (this.entriesPaises.length > 0) return
-      // Items have already been requested
-      if (this.isLoadingTerceros) return
-      this.isLoadingTerceros = true
-      // Lazily load input items
-      return HTTP().get('/terceros')
-        .then(({ data }) => {
-          this.entriesTerceros = data;
-        })
-        .catch(err => {
-          console.log(err)
-        })
-        .finally(() => (
-          this.isLoadingTerceros = false
-        ))
-    },
-
-  },
-    
   mounted() {
-
-    debugger
-    let a1 = this.operario;
-    let a2 = this.operarioTerceroId;
-    let a3 = this.operarioUserId;
-    let a4 = this.operarioEsVendedor;
-    let a5 = this.level;
 
     if (!this.isLoggedIn) {
       return router.push('/login');
@@ -2355,18 +2302,21 @@ export default {
     for (let i=120; i<=360; i++) {
       this.timeoutRefreshList.push(i)
     }
+    
+    debugger
     if (!this.accesoCEO) {
+
       return HTTP().get('/user/'+this.operarioUserId).then(({ data }) => {
-        this.editado   = data[0]
+
+        debugger
+        this.editado = data[0]
         this.logotipo1.name = data[0].avatar
       })
 
     } else {
-      
+
       debugger
       return HTTP().get('/user/'+this.userId).then(({ data }) => {
-
-        debugger
         this.editado = data[0]
         this.editado.turnoslv = this.editado.turnoslv ? this.editado.turnoslv.split('-') : ''
         this.editado.turnossd = this.editado.turnossd ? this.editado.turnossd.split('-') : ''
@@ -2376,7 +2326,6 @@ export default {
         this.usr = data[0].users
         this.suc = data[0].sucursales
         this.cprs = data[0].cprs
-
         for (let i=0; i<=data[0].cprs.length-1; i++) {
           let pos = this.cprsDefs.findIndex(x=>x.id == data[0].cprs[i].cpr)
           if (data[0].cprs[i].tipo=='M') {
@@ -2403,7 +2352,7 @@ export default {
           this.rubValue.push(element.rubro.nombre)
         });
 
-        this.vin       = data[0].vinculos
+        this.vin = data[0].vinculos
         for (let i=0; i<= this.vin.length-1; i++) {
           this.vin[i].estabaVinculado = this.vin[i].vinculado
         }
@@ -2425,9 +2374,79 @@ export default {
           desde = this.vin[0].user_id_desde
         }
 
+        debugger
+
+        return HTTP().get(`getprofile/`+this.userId+'/'+desde).then(({ data }) => {
+
+          debugger
+
+          this.registros = data.articulosavincular
+
+          this.rubItems = [];
+          this.rubObj = [];
+          data.rub.forEach(element => {
+            this.rubItems.push(element.nombre)
+            this.rubObj.push(element)
+          })
+
+          this.medItems = []
+          data.mediosdepagomenosctacte.forEach(e => {
+            this.medItems.push({id: e.id, nombre: e.nombre})
+          })
+
+          this.tarjetasCobros = []
+          for (let i=0; i<=data.tarjetascobros.length-1; i++) {
+            this.tarjetasCobros.push(data.tarjetascobros[i])
+          }
+
+          this.tarjetas = []
+          for (let i=0; i<=data.tarjetas.length-1; i++) {
+            this.tarjetas.push(data.tarjetas[i])
+          }
+
+          this.bancos = []
+          for (let i=0; i<=data.bancos.length-1; i++) {
+            this.bancos.push(data.bancos[i])
+          }
+
+          this.cueItems = []
+          for (let i=0; i<=data.tercero[0].cuentas.length-1; i++) {
+            this.cueItems.push(data.tercero[0].cuentas[i])
+          }
+
+          this.ibItems = []
+          for (let i=0; i<=data.codactiibb.length-1; i++) {
+            this.ibItems.push({id: data.codactiibb[i].id, nombre: data.codactiibb[i].nombre})
+          }
+
+          this.comprobantes = []
+          for (let i=0; i<=data.afipcomprobantes.length-1; i++) {
+            this.comprobantes.push({id: data.afipcomprobantes[i].id, nombre: data.afipcomprobantes[i].nombre})
+          }
+
+          this.JSONArt = []
+          for (let i=0; i<=data.configarticulosexcel.length-1; i++) {
+            this.JSONArt.push({
+              comienza: data.configarticulosexcel[i].comienza,
+              codigo: data.configarticulosexcel[i].codigo,
+              nombre: data.configarticulosexcel[i].nombre,
+              precio: data.configarticulosexcel[i].precio,
+              tasaiva: data.configarticulosexcel[i].tasaiva,
+              marca: data.configarticulosexcel[i].marca,
+              grupo: data.configarticulosexcel[i].grupo,
+              moneda: data.configarticulosexcel[i].moneda,
+              coniva: data.configarticulosexcel[i].coniva
+            })
+          }
+
+          this.cttArticulosAnclados = data.articulosanclados[0].anclados
+
+        /*
+        debugger
         return HTTP().post(`articulosavincular`, { usrdes: desde, usrhas: null, }).then ((res) => {
           this.registros = res.data.cttreg
 
+          debugger
           return HTTP().get('/rubrosall').then(({ data }) => {
             this.rubItems = [];
             this.rubObj = [];
@@ -2436,40 +2455,52 @@ export default {
               this.rubObj.push(element)
             })
 
+            debugger
             return HTTP().get('/mediosdepagosmenosctacte').then(({ data }) => {
               this.medItems = []
               data.forEach(e => {
                 this.medItems.push({id: e.id, nombre: e.nombre})
               })
+              debugger
               return HTTP().get('/tarjetascobros').then(({ data }) => {
                 this.tarjetasCobros = []
                 for (let i=0; i<=data.length-1; i++) {
                   this.tarjetasCobros.push(data[i])
                 }
+                debugger
                 return HTTP().get('/tarjetas').then(({ data }) => {
                   this.tarjetas = []
                   for (let i=0; i<=data.length-1; i++) {
                     this.tarjetas.push(data[i])
                   }
+                  debugger
                   return HTTP().get('/bancos').then(({ data }) => {
                     this.bancos = []
                     for (let i=0; i<=data.length-1; i++) {
                       this.bancos.push(data[i])
                     }
+                    debugger
                     return HTTP().get('/tercerocuentas/'+this.$store.state.tercero).then(({ data }) => {
-                      for (let i=0; i<=data[0].cuentas.length-1; i++) {
-                        this.cueItems.push(data[0].cuentas[i])
+                      debugger
+                      for (let i=0; i<=data.tercero[0].cuentas.length-1; i++) {
+                        this.cueItems.push(data.tercero[0].cuentas[i])
                       }
+                      debugger
                       return HTTP().get('/codactiibb').then(({data}) => {
+                        debugger
                         this.ibItems = []
                         for (let i=0; i<=data.length-1; i++) {
                           this.ibItems.push({id: data[i].id, nombre: data[i].nombre})
                         }
+                        debugger
                         return HTTP().get('/afipcomprobantes/').then(({ data }) => {
+                          debugger
                           for (let i=0; i<=data.length-1; i++) {
                             this.comprobantes.push({id: data[i].id, nombre: data[i].nombre})
                           }
+                          debugger
                           return HTTP().get('/configarticulosexcel/').then(({ data }) => {
+                            debugger
                             this.JSONArt = []
                             for (let i=0; i<=data.length-1; i++) {
                               this.JSONArt.push({
@@ -2496,6 +2527,7 @@ export default {
               })
             })
           })
+          */
         })
       })
     }
@@ -2519,6 +2551,7 @@ export default {
       'setProveedor',
       'setProveedores',
       'setTransition',
+      'setDark',
     ]),
     
     closeForm() {
@@ -2528,7 +2561,6 @@ export default {
 
     datosParaCambiarContraseniaOk() {
       let resp = true
-      debugger
       if (this.ope.password==''||this.ope.passowrd1==''||this.ope.password2=='') {
         resp = false
       }
@@ -2551,12 +2583,15 @@ export default {
       }
     },
 
+    setDarkOnOff() {
+      this.$vuetify.theme.dark = this.editado.dark;
+    },
+
     uploadCrtAndKey() {
       let formData = new FormData();
       formData.append('filecrt', this.nuevoCRT );
       formData.append('filekey', this.nuevoKEY );
       return HTTP().post('/descargarcrtykey', formData).then(({ data }) => { 
-        debugger
         this.progress = false
         let m = ''
         if (data=='error') {
@@ -2584,22 +2619,6 @@ export default {
     cttRegLoad () {
       if (this.editado.cttloadreg<10||this.editado.cttloadreg>300) {
         this.editado.cttloadreg = 300
-      }
-    },
-
-    porRev(cual) {
-      if (cual=='1') {
-        if (this.editado.porrev1<0||this.editado.porrev1>=500) {
-          this.editado.porrev1 = 30
-        }
-      } else if (cual=='2') {
-        if (this.editado.porrev2<0||this.editado.porrev2>=500) {
-          this.editado.porrev2 = 40
-        }
-      } else if (cual=='3') {
-        if (this.editado.porrev3<0||this.editado.porrev3>=500) {
-          this.editado.porrev3 = 50
-        }
       }
     },
 
@@ -2690,12 +2709,8 @@ export default {
           break
         }
       }
-      debugger
-      let porRev = []
-      porRev.push(data.porrev1)
-      porRev.push(data.porrev2)
-      porRev.push(data.porrev3)
       this.$store.commit('setTimeoutRefresh',           data.timeout_refresh, { root: true })
+      this.$store.commit('setDistribuidor',             data.distribuidor, { root: true })
       this.$store.commit('setSucursales',               data.suc, { root: true })
       this.$store.commit('setTipo',                     data.tipo, { root: true })
       this.$store.commit('setPublicarPreciosConIVA',    data.preciosconiva, { root: true })
@@ -2706,23 +2721,21 @@ export default {
       this.$store.commit('setTurnoslv',                 data.turnoslv, { root: true })
       this.$store.commit('setTurnossd',                 data.turnossd, { root: true })
       this.$store.commit('setSoloArtComprados',         data.soloartcomprados, { root: true })
+      this.$store.commit('setVerSoloArtComprados',      data.versoloartcomprados, { root: true })
       this.$store.commit('setCodigoOID',                data.codigooid, { root: true })
-      this.$store.commit('setPorRev',                   porRev, { root: true })
-
-      debugger
       if (data.transition=='Sin transición') {
         data.transition=null
       }
 
       this.$store.commit('setTransition',               data.transition, { root: true} )
+      this.$store.commit('setDark',                     data.dark, { root: true} )
       this.$store.commit('setCttLoadReg',               data.cttloadreg, { root: true })
       let profile = data
       profile.avatar   = this.logotipo1.name
       profile.logotipo = this.logotipo2.name
-      debugger
+
       if (!this.accesoCEO) {
         return HTTP().patch(`user/${profile.id}`, {profile: profile, operarioEsVendedor: true}).then((data) => {
-          debugger
           if (data==false) {
             this.mensaje('¡Opss, se ha producido un error al intentar actualizar su perfil', this.temas.snack_error_bg, 2500) 
           } else {
@@ -2732,7 +2745,6 @@ export default {
         })
       } else {
         return HTTP().patch(`user/${profile.id}`, {profile: profile, operarioEsVendedor: false}).then((data) => {
-          debugger
           if (data.data==false) {
             this.mensaje('¡Opss, se ha producido un error al intentar actualizar su perfil', this.temas.snack_error_bg, 2500) 
           } else {
@@ -2957,7 +2969,6 @@ export default {
     },
 
     guardarTarjetaCobro(item) {
-      debugger
       let postar = null
       let tarjetanombre = ''
       let banconombre = ''

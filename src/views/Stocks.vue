@@ -82,7 +82,13 @@
         show-expand
         dense
         class="elevation-3 fg"
-        :footer-props="footerProps">
+        :footer-props="{
+          itemsPerPageOptions: [5,10,15],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }">
         <template v-slot:top>
           <v-toolbar flat :color="temas.forms_titulo_bg">
             <v-btn icon @click="closeForm"
@@ -243,7 +249,13 @@
                             :items="selArt"
                             dense single-select
                             @click:row="selArtClick"
-                            :footer-props="footerProps">
+                            :footer-props="{
+                              itemsPerPageOptions: [5,10,15],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }">
                             <template v-slot:item.stock="{ item }">
                               <span>{{ formatoImporte(item.stock) }}</span>
                             </template>
@@ -259,6 +271,13 @@
                               :items="articulos"
                               dense
                               class="elevation-1 pr-0 ml-0"
+                              :footer-props="{
+                                itemsPerPageOptions: [10],
+                                showFirstLastPage: true,
+                                showCurrentPage: true,
+                                nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                                prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                              }"
                               @click:row="selArtClick2">
                               <template v-slot:item.activo="{ item }">
                                 <v-chip
@@ -426,7 +445,13 @@
                             show-select
                             dense
                             class="pl-1 pr-3 elevation-1 pt-0"
-                            :footer-props="footerProps">
+                            :footer-props="{
+                              itemsPerPageOptions: [5.10,15],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }">
                             <template #item.nombre="{ value }">
                               <div class="text-truncate" style="max-width: 320px">
                                 {{ value }}
@@ -508,6 +533,13 @@
                             :headers="headersArtExcel"
                             :items="conteoExcel"
                             dense
+                            :footer-props="{
+                              itemsPerPageOptions: [10],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }"
                             class="elevation-1 pl-0"
                             @click:row="editarArt">
                             <template #item.nombre="{ value }">
@@ -712,7 +744,6 @@ export default {
       msgBody: '',
       msgButtons: ['']
     },
-    footerProps: {'items-per-page-options': [5, 5, 15, 100]},
     busArt: '',
     search: '',             // para el cuadro de búsqueda de datatables
     dialogArt: false,       // para que la ventana de dialogo o modal no aparezca automáticamente
@@ -1207,8 +1238,6 @@ export default {
     },
 
     buscarArt() {
-
-      debugger
       if (this.busArt == '') return
       let estricto = this.busArt.indexOf('@')!=-1 ? true : false
       let b = this.busArt
@@ -1229,7 +1258,6 @@ export default {
         tipo: '', rubro: '', marca: '', grupo: '', proveedor: 0, ancla: false, saySoloArtsPropios: false, activos: true, limit: 300,
         descuentos:this.descuentos}).then(({ data }) => {
       */
-        debugger
         if (data.length==1) {
           this.editadoArt.cpritems     = null
           this.editadoArt.id           = data[0].id
@@ -1269,7 +1297,6 @@ export default {
     },
 
     selArtClick (item, row) {
-      debugger
       this.seleccionarArticulo = false;
       this.busArt = item.codigo
       this.buscarArt()
@@ -1278,7 +1305,6 @@ export default {
 
     selArtClick2 (item, row) {
       this.editarArt(item)
-      debugger
     },
 
     guardarItem(item) {

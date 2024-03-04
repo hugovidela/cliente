@@ -7,9 +7,14 @@
         :search="search"
         dense
         class="elevation-3 panel-font"
-        :footer-props="footerProps">
+        :footer-props="{
+          itemsPerPageOptions: [12],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }">
         <template v-slot:top>
-
           <v-toolbar flat
             :color="temas.forms_titulo_bg"
             :dark="temas.forms_titulo_dark==true">
@@ -19,7 +24,6 @@
               icon @click="closeForm">
               <v-icon>mdi-arrow-left-circle</v-icon>
             </v-btn>
-
             <v-toolbar-title
               :color="temas.forms_titulo_bg"
               :dark="temas.forms_titulo_dark==true"
@@ -184,8 +188,6 @@ export default {
       msgBody: '',
       msgButtons: ['']
     },
-    //footerProps: {'items-per-page-options': [5, 5, 15, 100]},
-    footerProps: {'items-per-page-options': [12] },
     search: '',               // para el cuadro de búsqueda de datatables
     dialog: false,            // para que la ventana de dialogo o modal no aparezca automáticamente
 

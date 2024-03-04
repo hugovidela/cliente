@@ -451,12 +451,9 @@ export default {
       this.isLoadingTerceros = true
       this.userDelTercero = 0
       this.userDelterceroDatos = null
-
-      let sea = val==''?'%%':'%'+val+'%'
-      debugger
-      return HTTP().get('/indexter/false/1/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/'+sea).then(({data})=>{
-
-        debugger
+      let sea = val==''?'null':val
+      return HTTP().get('/indexter/false/1/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/'+sea)
+        .then(({data})=>{
         this.entriesTerceros = []
         this.tercerosUserId = []
         for (let i=0; i<= data.length-1; i++) {
@@ -483,15 +480,12 @@ export default {
     searchArticulos (val) {
       if (this.isLoadingArticulos) return
       this.isLoadingArticulos = true
-      debugger
       return HTTP().post('/articuloz', {
         search: '',
         vinculosPadresLic: this.$store.state.vinculosPadresLic,
         vinculosPadresAll: this.$store.state.vinculosPadresAll,
         proveedor: 0, stockProv: false, grupo: '', marca: '', userex: null, soloArtComprados: false, descuentos: this.descuentos,
         dolar: this.$store.state.dolar, activos: true, limit: 300 }).then(({ data })=>{
-
-        debugger
         this.entriesArticulos = []
         for (let i=0; i<= data.length-1; i++) {
           this.entriesArticulos.push(data[i])

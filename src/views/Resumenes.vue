@@ -12,7 +12,13 @@
         show-select
         dense
         class="fg pl-1 pr-3 elevation-1 pt-2"
-        :footer-props="footerProps">
+        :footer-props="{
+          itemsPerPageOptions: [12],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }">
         <template v-slot:top>
           <v-toolbar flat
             :color="temas.forms_titulo_bg"
@@ -27,42 +33,41 @@
                 <template v-slot:activator="{ on }">
                   <v-btn
                     fab
-                    :color="temas.forms_btn_xls_bg"
-                    :dark="temas.forms_btn_xls_dark==true"
-                    class="mr-2"
-                    @click="queTipoDeDeudaVer('A')" v-on="on">
-                    <v-icon>mdi-emoticon</v-icon>
-                  </v-btn>
-                </template>
-                <span class="fg">Todos</span>
-              </v-tooltip>
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on }">
-                  <v-btn
-                    fab
-                    :color="temas.forms_btn_xls_bg"
+                    :color="tipoDeDeuda=='T'?'blue':temas.forms_btn_xls_bg"
                     :dark="temas.forms_btn_xls_dark==true"
                     class="mr-2"
                     @click="queTipoDeDeudaVer('T')" v-on="on">
-                    <v-icon>mdi-emoticon-sad</v-icon>
+                    <v-icon>mdi-emoticon-neutral</v-icon>
                   </v-btn>
                 </template>
-                <span class="fg">Con deudas</span>
+                <span class="fg">Todas las cuentas</span>
               </v-tooltip>
               <v-tooltip bottom>
                 <template v-slot:activator="{ on }">
                   <v-btn
                     fab
-                    :color="temas.forms_btn_xls_bg"
+                    :color="tipoDeDeuda=='S'?'blue':temas.forms_btn_xls_bg"
+                    :dark="temas.forms_btn_xls_dark==true"
+                    class="mr-2"
+                    @click="queTipoDeDeudaVer('S')" v-on="on">
+                    <v-icon>mdi-emoticon</v-icon>
+                  </v-btn>
+                </template>
+                <span class="fg">Solo con Saldos</span>
+              </v-tooltip>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on }">
+                  <v-btn
+                    fab
+                    :color="tipoDeDeuda=='V'?'blue':temas.forms_btn_xls_bg"
                     :dark="temas.forms_btn_xls_dark==true"
                     class="mr-2"
                     @click="queTipoDeDeudaVer('V')" v-on="on">
-                    <v-icon>mdi-emoticon-devil</v-icon>
+                    <v-icon>mdi-emoticon-sad</v-icon>
                   </v-btn>
                 </template>
-                <span class="fg">Con deudas vencidas</span>
+                <span class="fg">Saldos Vencidos</span>
               </v-tooltip>
-              <v-spacer></v-spacer>
               <v-tooltip bottom v-if="selected.length">
                 <template v-slot:activator="{ on }">
                   <v-btn
@@ -70,37 +75,11 @@
                     :color="temas.forms_btn_xls_bg"
                     :dark="temas.forms_btn_xls_dark==true"
                     class="mr-2"
-                    @click="selectFechas(1)" v-on="on">
+                    @click="cualInforme='1'; dialog=true" v-on="on">
                     <v-icon>mdi-format-list-bulleted</v-icon>
                   </v-btn>
                 </template>
-                <span class="fg">Informe Resumido</span>
-              </v-tooltip>
-              <v-tooltip bottom v-if="selected.length">
-                <template v-slot:activator="{ on }">
-                  <v-btn
-                    fab
-                    :color="temas.forms_btn_xls_bg"
-                    :dark="temas.forms_btn_xls_dark==true"
-                    class="mr-2"
-                    @click="selectFechas(2)" v-on="on">
-                    <v-icon>mdi-format-line-weight</v-icon>
-                  </v-btn>
-                </template>
-                <span class="fg">Informe c/Imputaciones</span>
-              </v-tooltip>
-              <v-tooltip bottom v-if="selected.length">
-                <template v-slot:activator="{ on }">
-                  <v-btn
-                    fab
-                    :color="temas.forms_btn_xls_bg"
-                    :dark="temas.forms_btn_xls_dark==true"
-                    class="mr-2"
-                    @click="selectFechas(3)" v-on="on">
-                    <v-icon>mdi-format-line-style</v-icon>
-                  </v-btn>
-                </template>
-                <span class="fg">Informe c/Imputaciones y Valores</span>
+                <span class="fg">Informes</span>
               </v-tooltip>
             </template>
             <v-toolbar-title class="white--text">{{tituloResumen}}</v-toolbar-title>
@@ -116,17 +95,17 @@
                   :color="temas.forms_titulo_bg"
                   :dark="temas.forms_titulo_dark==true">
                   <v-btn
-                    icon @click="dialog=false"
+                    icon @click="cualInforme='0'; dialog=false"
                     :color="temas.forms_close_bg"
                     :dark="temas.forms_close_dark==true">
                     <v-icon>mdi-arrow-left-circle</v-icon>
                   </v-btn>
                   <span class="text--right">
-                    {{formTitle}}
+                    Resúmen de Cuentas
                   </span>
                   <v-spacer></v-spacer>
                   <span class="text--right">
-                    <v-btn v-if="(fechaDesde<=fechaHasta || cualInforme===1)"
+                    <v-btn v-if="(fechaDesde<=fechaHasta || cualInforme==='1')"
                       :color="temas.cen_btns_bg"
                       :dark="temas.cen_btns_dark==true"
                       class="ma-2 white--text" @click="print()">
@@ -138,20 +117,40 @@
                   <v-card-text>
                     <v-container>
                       <v-row>
-                        <v-col cols="6" sx="6" mx="6">
-                          <v-text-field v-if="cualInforme!=1"
+                        <v-col cols="12" sm="12">
+                          <v-radio-group
+                            v-model="cualInforme">
+                            <v-radio
+                              label="Solo pendientes" value='1'>
+                            </v-radio>
+                            <v-radio
+                              label="Todos los Movimientos" value='2'>
+                            </v-radio>
+                            <!--
+                            <v-radio
+                              label="Detallado Valores" value='3'>
+                            </v-radio>
+                            -->
+                          </v-radio-group>
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col cols="12" sm="6">
+                          <v-text-field
                             outlined autofocus type="date"
+                            :disabled="cualInforme=='1'"
                             :color="temas.cen_btns_bg"
                             v-model="fechaDesde"
                             label="Fecha Desde">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="6" sx="6" mx="6">
+                        <v-col cols="12" sm="6">
                           <v-text-field
                             outlined type="date"
+                            :disabled="cualInforme=='1'"
                             :color="temas.cen_btns_bg"
                             v-model="fechaHasta"
-                            :label="cualInforme===1?'Vencidos al':'Fecha Hasta'">
+                            label="Fecha Hasta">
                           </v-text-field>
                         </v-col>
                       </v-row>
@@ -178,8 +177,8 @@
         <template v-slot:item.saldo="{ item }">
           $ {{ formatoImporte(item.saldo,2) }}
         </template>
-        <template v-slot:item.vencidos="{ item }">
-          $ {{ formatoImporte(item.vencidos,2) }}
+        <template v-slot:item.vencido="{ item }">
+          $ {{ formatoImporte(item.vencido,2) }}
         </template>
       </v-data-table>
       <SBar></SBar>
@@ -217,6 +216,7 @@ export default {
     fechaHasta: moment().format('YYYY-MM-DD'),
     selected: [],
     modelo: '',
+    cualInforme: '1',
     cual: '',
     tituloResumen: '',
     tipoDeDeuda: 'T',
@@ -235,12 +235,10 @@ export default {
     headers: [
       { text: 'CLIENTE', value:'tercero_id', width: 110},
       { text: 'NOMBRE', value:'nombre', width: 500},
-      { text: 'SUCURSAL', value:'sucnom', width: 200},
+//    { text: 'SUCURSAL', value:'sucnom', width: 200},
       { text: 'SALDO', value:'saldo', width: 160, align: 'end'},
-      { text: 'VENCIDO', value:'vencidos', width: 160, align: 'end'},
     ],
     formTitle: '',
-    cualInforme: 0,
   }),
   computed: {
     ...mapGetters('authentication', ['isLoggedIn']),
@@ -289,6 +287,23 @@ export default {
 
     queTipoDeDeudaVer(cual) {
       this.tipoDeDeuda = cual
+
+      if (cual=='T'||cual=='S') {
+        this.headers = [
+          { text: 'CLIENTE', value:'tercero_id', width: 110},
+          { text: 'NOMBRE', value:'nombre', width: 500},
+//          { text: 'SUCURSAL', value:'sucnom', width: 200},
+          { text: 'SALDO', value:'saldo', width: 160, align: 'end'},
+        ]
+      } else {
+        this.headers = [
+          { text: 'CLIENTE', value:'tercero_id', width: 110},
+          { text: 'NOMBRE', value:'nombre', width: 500},
+//        { text: 'SUCURSAL', value:'sucnom', width: 200},
+          { text: 'SALDO', value:'saldo', width: 160, align: 'end'},
+          { text: 'VENCIDO', value:'vencido', width: 160, align: 'end'},
+        ]
+      }
       this.listarHTTP();
     },
 
@@ -300,29 +315,42 @@ export default {
       XLSX.writeFile(workbook, `${filename}.xlsx`)
     },
 
-    selectFechas(cual) {
-      if (cual===1) {
-        this.formTitle = 'Informe de Vencimientos'
-      } else if (cual===2) {
-        this.formTitle = 'Informe de Imputaciones'
-      } else if (cual===3) {
-        this.formTitle = 'Informe de Imputaciones y Valores'
-      }
-      this.cualInforme = cual
-      this.dialog = true
-    },
-
     print() {
+      
       let rangoDeFechas = [{fecha: this.fechaDesde}, {fecha: this.fechaHasta}]
-      let tipo = this.cual == 'P' ? ["'CO'","'PG'","'GS'"] : ["'VE'","'RE'"]
+      let detallado = false
+      let tipodeuda = 'T'
 
       debugger
+      if (this.cualInforme=='0') {
+        if (this.cual==1) {
+          rangoDeFechas[0].fecha = '1900-12-31'
+          rangoDeFechas[1].fecha = '2200-12-31'
+        } 
+      }
+      if (this.cualInforme=='1') {         // solo pendientes
+        rangoDeFechas[0].fecha = '1900-12-31'
+        rangoDeFechas[1].fecha = '2200-12-31'
+        detallado = true
+        tipodeuda = 'S'
+      } else if (this.cualInforme=='2') {  // todos los movimientos
+        rangoDeFechas[0].fecha = moment(this.fechaDesde).format('YYYY-MM-DD')
+        rangoDeFechas[1].fecha = moment(this.fechaHasta).format('YYYY-MM-DD')
+        detallado = true
+        tipodeuda = 'T'
+      } 
 
+      debugger
       return HTTP().post('/infven_cuentascorrientes', {
-        tipinf: this.cualInforme, tipo: tipo, terceros: this.selected, sucursal: this.sucursal, fec: rangoDeFechas }).then((data) => {
-
+        tipinf: this.cualInforme,
+        terceros:this.selected,
+        clipro:this.cual,
+        sucursal:this.sucursal,
+        fec:rangoDeFechas,
+        tipodeuda:tipodeuda,
+        detallado:detallado }).then((data) => {
+        
         debugger
-
         if (data.data.length) {
           let orientacion = 'p'
           let informeTitulo = ''
@@ -344,6 +372,7 @@ export default {
     },
 
     cabecera(tipInf, informeTitulo, doc, orientacion) {
+      debugger
       let topDown = orientacion == 'p' ? 810 : 580
       let topWidth = orientacion == 'p' ? 527 : 777
       let av = ''
@@ -365,286 +394,141 @@ export default {
       doc.text ( 'Desde:'+moment(this.fechaDesde).format('DD/MM/YYYY'), 180, 67 )
       doc.text ( 'Hasta:'+moment(this.fechaHasta).format('DD/MM/YYYY'), 260, 67 )
       doc.text ( 'Página '+this.page.toString()+'/'+this.pages.toString(), topWidth, topDown )
-      if (tipInf===1) {
+      
+      if (tipInf==='1') {
+
+        doc.setFontSize(12);
+        doc.text ( 'PENDIENTES', 180, 90 )
+        doc.setFontSize(8);
+
         doc.text ( 'Cuenta', 40, 115 )
         doc.text ( 'Vencimiento', 80, 115 )
         doc.text ( 'Comprobante', 145, 115 )
         doc.text ( 'Pendiente', 440, 115 )
         doc.text ( 'Saldo', 545, 115 )
         doc.line( 40, 121, 570, 121)
-      } else if (tipInf===2) {
-        doc.text ( 'Codigo', 40, 115 )
+
+      } else if (tipInf==='2') {
+
+        doc.setFontSize(12);
+        doc.text ( 'TODOS LOS MOVIMIENTOS', 180, 90 )
+        doc.setFontSize(8);
+
+        doc.text ( 'Cuenta', 40, 115 )
         doc.text ( 'Nombre', 80, 115 )
         doc.text ( 'Fecha', 81, 130 )
         doc.text ( 'Comprobante', 145, 130 )
-        doc.text ( 'Debe', 347, 130 )
-        doc.text ( 'Haber', 445, 130 )
-        doc.text ( 'Saldo', 545, 130 )
-        doc.line( 40, 136, 570, 136)
-      } else if (tipInf===3) {
-        doc.text ( 'Codigo', 40, 115 )
-        doc.text ( 'Nombre', 40, 115 )
-        doc.text ( 'Comprobante', 95, 115 )
-        doc.text ( 'Vencimiento', 170, 115 )
-        doc.text ( 'Debe', 370, 115 )
-        doc.text ( 'Haber', 450, 115 )
-        doc.text ( 'Saldo', 545, 115 )
+        doc.text ( 'Debe', 347, 132 )
+        doc.text ( 'Haber', 445, 132 )
+        doc.text ( 'Saldo', 549, 132 )
         doc.line( 40, 121, 570, 121)
       }
     },
 
     detalles(tipInf, informeTitulo, doc, orientacion, data) {
-      let f = 135
+      
+      debugger
+      let f = tipInf==1?135:145;
       let topDown = orientacion == 'p' ? 780 : 540
-      let topWidth = orientacion == 'p' ? 570 : 800
-      let it = []
-      let ter1 = 0
-      let ter2 = 0
       let saldo = 0
       let total = 0
-      let coef = 1
+      let general = 0
 
-      let debtos = [1,2,6,7,11,12,51,52 ]    // FAC'S, NDD'S A, B, C y M
-
-      if (tipInf==1) {      // SOLO PENDIENTES
-        f = 135
-        ter1 = data[0].terid
+      debugger
+      if (tipInf==1||tipInf==2) {      // SOLO PENDIENTES O TODOS CON SALDO ANTERIOR
         for (let i=0; i<=data.length-1; i++) {
-          let pos = it.findIndex(x => x.id === data[i].terid)
-          if (pos==-1) {
-            it.push({
-              id: data[i].terid,
-              pendiente: data[i].pendiente
+          
+          saldo = 0;
+          
+          doc.setFontSize(9);
+          doc.setFont(undefined, 'bold')
+          doc.text ( data[i].tercero_id.toString(), 70, f, 'right' )
+          doc.text ( data[i].nombre, 80, f, 'left' )
+          if (tipInf==2) {
+            doc.text ( this.formatoImporte(data[i].saldoanterior.toString()), 570, f, 'right' )
+            saldo = data[i].saldoanterior
+          }
+          doc.setFontSize(9);
+          doc.setFont(undefined, 'normal');
+          f += 5;
+
+          if (tipInf==1) {
+            data[i].det.sort((o1, o2) => {
+              if (o1.vencimiento>o2.vencimiento) { return 1; }
+              else if (o1.vencimiento<o2.vencimiento) { return -1; } 
+              else { return 0; }
             })
           } else {
-            it[pos].pendiente += data[i].pendiente
+            data[i].det.sort((o1, o2) => {
+              if (o1.fecha>o2.fecha) { return 1; }
+              else if (o1.fecha<o2.fecha) { return -1; } 
+              else { return 0; }
+            })
           }
-        }
-        for (let i=0; i<=data.length-1; i++) {
-          ter1 = data[i].terid
-          if ((ter1!=ter2 || ter2===0) && this.tieneMovs(ter2==''?ter1:ter1, it)) {
-            if (ter2!=0) {
-              f += 15
-            }
-            doc.setFontSize(9);
-            doc.setFont(undefined, 'bold')
-            doc.text ( data[i].terid.toString(), 70, f, 'right' )
-            doc.text ( data[i].ternom, 80, f, 'left' )
-            //doc.line( 80, f+3, 250, f+3, 'DF');
-            doc.setFontSize(9);
-            doc.setFont(undefined, 'normal')
-            f += 5
-            saldo = 0
-          }
-          ter2 = data[i].terid
-          if (data[i].pendiente!=0) {
-            if (moment(data[i].vencimiento.substring(0,10)).format('YYYY-MM-DD')<=moment(this.fechaHasta).format('YYYY-MM-DD')) {
-              f+=10
-              doc.text ( moment(data[i].vencimiento.substring(0,10)).format('DD/MM/YYYY'), 80, f, 'left' )
-              doc.text ( data[i].cpr, 145, f )
 
-              debugger
-              let cp = data[i].comprobante_id
-              let debito = false
-              let fil = 0
-              
-              let fd = debtos.findIndex(x=>x==cp)!=-1
-              if (this.cual=='C') {
-                //                debito = fd ? true : false
-                coef = fd ? 1 : -1
-                //                fil = fd ? 370 : 470
-              } else {
-//                debito = fd ? false : true
-                coef = fd ? 1 : -1
-                //                fil = fd ? 470 : 370
+          if (tipInf==2) {
+            total = data[i].saldoanterior
+            general += data[i].saldoanterior
+          }
+
+          for (let j=0; j<=data[i].det.length-1; j++) {
+
+            if (tipInf==1) {
+
+              // solo pendientes
+              if (data[i].det[j].pendiente!=0) {
+                f+=10
+                doc.text ( moment(data[i].det[j].vencimiento.substring(0,10)).format('DD/MM/YYYY'), 80, f, 'left' )
+                doc.text ( data[i].det[j].cpr, 145, f )
+                doc.text ( this.formatoImporte(data[i].det[j].pendiente.toString()), 480, f, 'right' )
+                saldo += (data[i].det[j].pendiente)
+                total += (data[i].det[j].pendiente)
+                general += Math.abs(data[i].det[j].pendiente)
+                doc.text ( this.formatoImporte(saldo.toString()), 570, f, 'right' )
+                f+=4
+                if (f>topDown && i<data[i].det.length-1) {
+                  doc.addPage()
+                  this.page ++
+                  this.cabecera(tipInf, informeTitulo, doc, orientacion)
+                  f=135
+                }
               }
+
+            } else {
               
-              let pend = data[i].pendiente*coef
-              doc.text ( this.formatoImporte(pend.toString()), 480, f, 'right' )
-              saldo += (data[i].pendiente*coef)
-              total += (data[i].pendiente*coef)
+              // detallado
+              f+=10
+              doc.text ( moment(data[i].det[j].fecha.substring(0,10)).format('DD/MM/YYYY'), 80, f, 'left' )
+              doc.text ( data[i].det[j].cpr, 145, f )
+              if (data[i].det[j].debe!=0) {
+                doc.text ( this.formatoImporte(data[i].det[j].debe.toString()), 367, f, 'right' )
+              } else {
+                doc.text ( this.formatoImporte(data[i].det[j].haber.toString()), 467, f, 'right' )
+              }
+              saldo += (Math.abs(data[i].det[j].debe)-Math.abs(data[i].det[j].haber))
+              total += (Math.abs(data[i].det[j].debe)-Math.abs(data[i].det[j].haber))
+              general += (Math.abs(data[i].det[j].debe)-Math.abs(data[i].det[j].haber))
               doc.text ( this.formatoImporte(saldo.toString()), 570, f, 'right' )
               f+=4
-            }
-          }
-          if (f>topDown && i<data.length-1) {
-            doc.addPage()
-            this.page ++
-            this.cabecera(tipInf, informeTitulo, doc, orientacion)
-            f=135
-          }
-        }
-        f += 5
-        doc.line( 40, f, 570, f)
-        f += 15
-        doc.text ( 'TOTAL', 452, f )
-        doc.text ( this.formatoImporte(total.toString()), 570, f, 'right' )
-      
-      } else if (tipInf==2) {       // CON IMPUTACIONES
-
-        debugger
-        f = 150
-        for (let i=0; i<=data.length-1; i++) {
-          ter1 = data[i].tercero_id
-          if (ter1!=ter2 || ter2===0) {
-            if (ter2!=0) {
-              f += 15
-            }
-            doc.setFontSize(9);
-            doc.setFont(undefined, 'bold')
-            doc.text ( data[i].tercero.id.toString(), 70, f, 'right' )
-            doc.text ( data[i].tercero.nombre, 80, f, 'left' )
-            //doc.line( 80, f+3, 250, f+3, 'DF');
-            doc.setFontSize(9);
-            doc.setFont(undefined, 'normal')
-            f += 5
-            saldo = 0
-          }
-          ter2 = data[i].tercero_id
-          if (moment(data[i].fecha.substring(0,10)).format('YYYY-MM-DD')<=moment(this.fechaHasta).format('YYYY-MM-DD')) {
-            f+=10
-            doc.text ( moment(data[i].fecha.substring(0,10)).format('DD/MM/YYYY'), 80, f, 'left' )
-
-            let cp = data[i].comprobante_id
-            let debito = false
-            let fil = 0
-
-            let fd = debtos.findIndex(x=>x==cp)!=-1
-            if (this.cual=='C') {
-              debito = fd ? true : false
-              coef = fd ? 1 : -1
-              fil = fd ? 370 : 470
-            } else {
-              debito = fd ? false : true
-              coef = fd ? 1 : -1
-              fil = fd ? 470 : 370
-            }
-            
-            doc.text (data[i].cpr, 145, f )
-            //let fil = coef == 1?370:470
-            
-            let imp = data[i].total
-
-            saldo += (Math.abs(data[i].total)*coef)
-            total += (Math.abs(data[i].total)*coef)
-            doc.text ( this.formatoImporte(Math.abs(data[i].total).toString()), fil, f, 'right' )
-            doc.text ( this.formatoImporte(saldo.toString()), 570, f, 'right' )
-            if (data[i].cancelaciones.length>0) {
-              f+=10
-              doc.setFont(undefined, 'italic')
-              doc.setFont(undefined, 'bold')
-              doc.setFontSize(7);
-              for (let j=0; j<=data[i].cancelaciones.length-1; j++) {
-                doc.text ( data[i].cancelaciones[j].cancelado.comprobante.cpr, 145, f )
-                doc.text ( this.formatoImporte(data[i].cancelaciones[j].importe.toString()), 280, f, 'right' ); f+=8
-//                saldo += (data[i].cancelaciones[j].importe)*coef
-//                total += (data[i].cancelaciones[j].importe)*coef
-//              saldo -= (Math.abs(data[i].cancelaciones[j].importe)*coef)
-//              total -= (Math.abs(data[i].cancelaciones[j].importe)*coef)
+              if (f>topDown && i<data[i].det.length-1) {
+                doc.addPage()
+                this.page ++
+                this.cabecera(tipInf, informeTitulo, doc, orientacion)
+                f=135
               }
-              doc.setFontSize(9);
-            } else {
-              doc.setFont(undefined, 'normal')
+
             }
-            doc.setFont(undefined, 'normal')
-            f+=4
+
           }
-          if (f>topDown && i<data.length-1) {
-            doc.addPage()
-            this.page ++
-            this.cabecera(tipInf, informeTitulo, doc, orientacion)
-            f=135
-          }
+          f += 15
         }
         f += 5
         doc.line( 40, f, 570, f)
         f += 15
         doc.text ( 'TOTAL', 452, f )
-        doc.text ( this.formatoImporte(total), 570, f, 'right' )
-
-      } else if (tipInf==3) {       // CON IMPUTACIONES Y VALORES
-
-        debugger
-        f = 150
-        for (let i=0; i<=data.length-1; i++) {
-          ter1 = data[i].tercero_id
-          if (ter1!=ter2 || ter2===0) {
-            if (ter2!=0) {
-              f += 15
-            }
-            doc.setFontSize(9);
-            doc.setFont(undefined, 'bold')
-            doc.text ( data[i].tercero.id.toString(), 70, f, 'right' )
-            doc.text ( data[i].tercero.nombre, 80, f, 'left' )
-            //doc.line( 80, f+3, 250, f+3, 'DF');
-            doc.setFontSize(9);
-            doc.setFont(undefined, 'normal')
-            f += 5
-            saldo = 0
-          }
-          ter2 = data[i].tercero_id
-          if (moment(data[i].fecha.substring(0,10)).format('YYYY-MM-DD')<=moment(this.fechaHasta).format('YYYY-MM-DD')) {
-            f+=10
-            doc.text ( moment(data[i].fecha.substring(0,10)).format('DD/MM/YYYY'), 80, f, 'left' )
-
-            let cp = data[i].comprobante_id
-            let debito = false
-            let fil = 0
-
-            let fd = debtos.findIndex(x=>x==cp)!=-1
-            if (this.cual=='C') {
-              debito = fd ? true : false
-              coef = fd ? 1 : -1
-              fil = fd ? 370 : 470
-            } else {
-              debito = fd ? false : true
-              coef = fd ? 1 : -1
-              fil = fd ? 470 : 370
-            }
-            
-            doc.text (data[i].cpr, 145, f )
-            saldo += (Math.abs(data[i].total)*coef)
-            total += (Math.abs(data[i].total)*coef)
-            doc.text ( this.formatoImporte(Math.abs(data[i].total).toString()), fil, f, 'right' )
-            doc.text ( this.formatoImporte(saldo.toString()), 570, f, 'right' )
-            if (data[i].cancelaciones.length>0) {
-              f+=10
-              doc.setFont(undefined, 'italic')
-              doc.setFont(undefined, 'bold')
-              doc.setFontSize(7);
-              for (let j=0; j<=data[i].cancelaciones.length-1; j++) {
-                doc.text ( data[i].cancelaciones[j].cancelado.comprobante.cpr, 145, f )
-                doc.text ( this.formatoImporte(data[i].cancelaciones[j].importe.toString()), 280, f, 'right' ); f+=8
-              }
-              doc.setFontSize(9);
-            } else {
-              doc.setFont(undefined, 'normal')
-            }
-            doc.setFont(undefined, 'normal')
-            f+=4
-          }
-          if (f>topDown && i<data.length-1) {
-            doc.addPage()
-            this.page ++
-            this.cabecera(tipInf, informeTitulo, doc, orientacion)
-            f=135
-          }
-        }
-        f += 5
-        doc.line( 40, f, 570, f)
-        f += 15
-        doc.text ( 'TOTAL', 452, f )
-        doc.text ( this.formatoImporte(total), 570, f, 'right' )
-
-      }
-    },
-
-    tieneMovs(ter1, it) {
-      let pos = it.findIndex(x => x.id == ter1)
-      if (pos==-1) {
-        return false
-      } else {
-        return it[pos].pendiente!=0 ? true : false
+        doc.setFont(undefined, 'bold')
+        doc.text ( this.formatoImporte(general.toString()), 570, f, 'right' )
+        doc.setFont(undefined, 'normal')
       }
     },
 
@@ -668,18 +552,37 @@ export default {
     },
 
     listarHTTP:function() {
-      let fecdes = '1990-01-01'
-      let fechas = ''
-      this.selected = []
-      if (this.tipoDeDeuda=='T' || this.tipoDeDeuda=='A') {
-        fechas = '2190-12-31'
-      } else {
-        fechas  = moment().subtract(1, 'days').format('YYYY-MM-DD')
+
+      // las fechas
+      let fecDes = '1990-01-01'
+      let fecHas = '2190-12-31'
+      /*
+      if (this.tipoDeDeuda=='T' || this.tipoDeDeuda=='S') {
+        fecHas = '2190-12-31'
+      } else if (this.tipoDeDeuda=='V') {
+        fecHas  = moment().subtract(1, 'days').format('YYYY-MM-DD')
       }
-      let rangoDeFechas = [{fecha: fecdes}, {fecha: fechas}]
+      */
+      let rangoDeFechas = [{fecha: fecDes}, {fecha: fecHas}]
+
+      this.selected = []
+
+      /*
+        this.tipoDeDeuda
+        'T' Todas las cuentas
+        'S' Solo con saldos
+        'V' Saldos vencidos
+      */
+
       debugger
-      return HTTP().post('/'+this.modelo,{cual:this.cual,sucursal:this.sucursal,fec:rangoDeFechas,tipo:this.tipoDeDeuda}).then(({data})=>{
-        
+      return HTTP().post('/'+this.modelo, {
+        terceros: [],                               // id del tercero o [] todos
+        clipro:this.cual,                           // clipro 'C' clientes, 'P' proveedores
+        sucursal:this.sucursal,
+        fec:rangoDeFechas,
+        tipodeuda: this.tipoDeDeuda,
+        detallado: false }).then(({data})=>{
+
         debugger
         this.items = data;
         let saldo = 0

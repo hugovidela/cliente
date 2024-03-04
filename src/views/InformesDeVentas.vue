@@ -316,6 +316,7 @@ export default {
           let total = 0
           let cpr = ''
           let elCpr = ''
+          let coef = 1
           for (let i=0; i<=data.data.length-1; i++) {
             if (cpr!='') {
               if (data.data[i].cpr == cpr) {
@@ -326,19 +327,28 @@ export default {
             } else {
               elCpr = data.data[i].cpr
             }
+
+            debugger
+
+            coef = 1
+            if (data.data[i].comprob_id==3||data.data[i].comprob_id==8||data.data[i].comprob_id==13||data.data[i].comprob_id==53) {
+              coef = -1
+            }
+
             this.rows.push({
               fecha: moment(data.data[i].fecha).format('DD-MM-YYYY'),
               cpr: elCpr,
               codigo: this.codigooid=='C'?data.data[i].codigo:data.data[i].articulo_id,
               descripcion: data.data[i].descripcion,
               cantidad: data.data[i].cantidad,
-              precio: '$'+this.formatoImporte(data.data[i].precio),
-              totalitem: '$'+this.formatoImporte(data.data[i].totitem)
+              precio: '$'+this.formatoImporte(data.data[i].precio*coef),
+              totalitem: '$'+this.formatoImporte(data.data[i].totitem*coef)
             })
             cpr = data.data[i].cpr
-            total += data.data[i].totitem
+            total += data.data[i].totitem*coef
           }
-          this.rows.push({fecha:'TOTAL', cpr:'', codigo:'', descripcion:'', cantidad: '', precio: '', totalitem:'$'+this.formatoImporte(total)})
+          debugger
+          this.rows.push({fecha:'TOTAL', cpr:'', codigo:'', descripcion:'', cantidad: '', precio: '', totalitem:'$'+this.formatoImporte(total*coef)})
           this.print(this.informeTitulo, this.headersRes, this.rows, 'l' )
         })
 
@@ -413,8 +423,6 @@ export default {
       this.pages = Math.trunc(this.rows.length/44)+1
       this.cabecera(informeTitulo, doc, orientacion)
       this.detalles(informeTitulo, doc, orientacion)
-      
-      debugger
       doc.output ('dataurlnewwindow')
     },
 
@@ -514,7 +522,6 @@ export default {
         } else if (informeTitulo=='VENTAS DETALLADAS POR COMPROBANTES') {
           doc.text ( this.rows[i].fecha, 40, f )  //40
           doc.text ( this.rows[i].cpr, 100, f )  //40
-          debugger
           doc.text (this.rows[i].codigo.toString(), 205, f )  //155
           doc.text (this.rows[i].descripcion, 280, f) //250
           doc.text (this.rows[i].cantidad.toString(), 605, f, 'right' )

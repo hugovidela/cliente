@@ -168,18 +168,18 @@
                   <v-card-text>
                     <!--<v-container>-->
                       <v-row class="pt-2 pl-2 ml-2 mr-2">
-                        <v-col cols="1" xl="1" lg="1" md="2" sm="12" xs="12" class="fg pt-0 pb-0">
+                        <v-col cols="12" sm="1" xs="12" class="fg pt-0 pb-0">
                           <v-text-field
                             disabled
                             v-model="editado.id"
                             label="ID">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="2" xl="2" lg="2" md="3" sm="12" xs="12" class="fg pt-0 pb-0">
+                        <v-col cols="12" sm="2" class="fg pt-0 pb-0">
                           <v-text-field
                             ref="codigo"
                             :color="temas.forms_titulo_bg"
-                            :disabled="!(editedIndex===-1)"
+                            :disabled="!elArticuloEsMio"
                             :autofocus="(editedIndex===-1)"
                             v-model="editado.codigo"
                             label="Codigo"
@@ -190,7 +190,7 @@
                             v-on:keydown.tab="buscoCodigo">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="6" xl="6" lg="6" md="9" sm="12" xs="12" class="fg pt-0 pb-0">
+                        <v-col cols="12" sm="6" class="fg pt-0 pb-0">
                           <v-text-field
                             ref="nombre"
                             :disabled="!elArticuloEsMio"
@@ -204,7 +204,7 @@
                             maxlength="80">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="2" xl="2" lg="2" md="6" sm="12" xs="12" class="fg pt-0 pb-0">
+                        <v-col cols="12" sm="2" class="fg pt-0 pb-0">
                           <v-text-field
                             disabled
                             class="caption"
@@ -213,8 +213,7 @@
                             label="Creador">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="1" xl="1" lg="1" md="6" sm="12" xs="12"
-                          class="fg pt-0 pb-0">
+                        <v-col cols="12" sm="1" class="fg pt-0 pb-0">
                           <v-switch
                             label="Es Combo"
                             disabled
@@ -233,7 +232,7 @@
                           <v-row no-gutters class="pt-2 pl-2 pr-2">
 
                             <!-- RUBRO GRUPO ETC -->
-                            <v-col cols="3">
+                            <v-col cols="12" sm="3">
                               <v-card class="pa-2 pt-0" outlined tile>
                                 <v-row align="center" class="pt-2">
                                   <v-col cols="12" sx="12" mx="12" class="fg pt-4 pb-4">
@@ -269,7 +268,7 @@
                                 <v-row>
                                   <v-col cols="12" sx="12" mx="12" class="fg pt-0 pb-0">
                                     <v-card outlined>
-                                      <span class="pl-2">Grupo</span>
+                                      <span class="fg pl-2">Grupo</span>
                                       <v-chip
                                         class="ma-2"
                                         @click="clickEnGrupo">
@@ -278,6 +277,7 @@
                                     </v-card>
                                   </v-col>
                                 </v-row>
+
                                 <v-row>
                                   <v-col cols="12" sx="12" mx="12" class="fg pt-4 pb-0">
                                     <v-autocomplete
@@ -294,16 +294,33 @@
                                     </v-autocomplete>
                                   </v-col>
                                 </v-row>
+
+                                <v-row>
+                                  <v-col cols="12" sm="12" md="12">
+                                    <v-autocomplete
+                                      class="pt-0 pb-0"
+                                      v-model="editado.moneda_id"
+                                      :disabled="!elArticuloEsMio"
+                                      :color="temas.forms_titulo_bg"
+                                      :items="itemsMoneda"
+                                      :loading="isLoadingMoneda"
+                                      :search-input.sync="searchMoneda"
+                                      item-text="nombre"
+                                      item-value="id"
+                                      label="Moneda"
+                                      placeholder="Escriba para buscar"
+                                      prepend-icon="mdi-database-search">
+                                    </v-autocomplete>
+                                  </v-col>
+                                </v-row>
                               </v-card>
                             </v-col>
-                            <v-col cols="3">
+
+                            <v-col cols="12" sm="3">
                               <v-card class="fg pa-2 pt-0" outlined tile>
+
                                 <v-row class="pt-5">
-                                  <v-col cols="12" sm="12" md="12" class="pt-0 pb-0">
-                                    <barcode
-                                      :tag="tag"
-                                      :value="editado.codbar">
-                                    </barcode>
+                                  <v-col cols="6" sm="6">
                                     <v-text-field
                                       ref="nombre"
                                       v-model="editado.codbar"
@@ -314,87 +331,94 @@
                                       maxlength="14"
                                       class="pt-0 pb-0">
                                     </v-text-field>
-                                    <v-btn
-                                      :color="temas.forms_titulo_bg"
-                                      class="pt-0 pb-0 ma-2 white--text"
-                                      @click="codbarpropio()">
-                                      Crear código propio
-                                    </v-btn>
+                                  </v-col>
+                                  <v-col cols="6" sm="6" class="pt-0 pb-0">
+                                    <barcode
+                                      :tag="tag" width=1 height=38 fontSize=14
+                                      :value="editado.codbar">
+                                    </barcode>
                                   </v-col>
                                 </v-row>
 
                                 <v-row>
-                                  <v-col cols="12" sm="12" md="12">
+                                  <v-col cols="12" sm="12">
                                     <v-textarea
                                       v-model="editado.descripcion"
                                       :disabled="!elArticuloEsMio"
-                                      rows="3"
+                                      rows="11"
                                       :color="temas.forms_titulo_bg"
                                       label="Descripción">
                                     </v-textarea>
                                   </v-col>
                                 </v-row>
-                                <v-row>
-                                  <v-col cols="12" sm="12" md="12">
-                                    <v-autocomplete
-                                      class="pt-0 pb-0"
-                                      v-model="editado.moneda_id"
-                                      :disabled="!elArticuloEsMio"
-                                      :color="temas.forms_titulo_bg"
-                                      :items="itemsMoneda"
-                                      :loading="isLoadingMoneda"
-                                      :search-input.sync="searchMoneda"
-                                      item-text="nombre"
-                                      item-value="id"
-                                      label="Moneda"
-                                      placeholder="Escriba para buscar"
-                                      prepend-icon="mdi-database-search">
-                                    </v-autocomplete>
+                                <!--
+                                <v-row class="fg pt-0 mt-0">
+                                  <v-col>
+                                    <span>Descuentos por Unidades</span>
                                   </v-col>
                                 </v-row>
+                                <v-row>
+                                  <v-col cols="12" sm="12">
+                                    <v-data-table
+                                      class="elevation-3 pt-0 pb-0"
+                                      :headers="headersUnds"
+                                      :color="temas.forms_titulo_bg"
+                                      :items="unds"
+                                      dense
+                                      single-select
+                                      @click:row="selArtClick"
+                                      :footer-props="{
+                                        itemsPerPageOptions: [10],
+                                        showFirstLastPage: true,
+                                        showCurrentPage: true,
+                                        nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                                        prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                                      }">
+                                      <template v-slot:item.accion="{ item }">
+                                        <v-menu bottom left
+                                          v-if="item.loTengo||item.padre_id==null">
+                                          <template v-slot:activator="{ on, attrs }">
+                                            <v-btn icon v-bind="attrs" v-on="on">
+                                              <v-icon>mdi-18px mdi-dots-vertical</v-icon>
+                                            </v-btn>
+                                          </template>
+                                          <v-list dense>
+                                            <v-list-item-group :color="temas.forms_titulo_bg">
+                                              <v-list-item
+                                                v-for="(item, i) in accionesUnds" :key="i">
+                                                <v-list-item-icon>
+                                                  <v-icon
+                                                    class="font-size: 24px"
+                                                    @click="selAccionUnds(item)"
+                                                    v-text="item.icon">
+                                                  </v-icon>
+                                                </v-list-item-icon>
+                                                <v-list-item-content>
+                                                  <v-list-item-title
+                                                    class="caption"
+                                                    @click="selAccionUnds(item)">
+                                                    {{ item.nombre }}
+                                                  </v-list-item-title>
+                                                </v-list-item-content>
+                                              </v-list-item>
+                                            </v-list-item-group>
+                                          </v-list>
+                                        </v-menu>
+                                      </template>
 
-                              </v-card>
-                            </v-col>
-                            <!--
-                            <v-col cols="3">
-                              <v-card class="fg pa-2 pt-0 pb-0" outlined tile>
-                                <v-row class="pt-5">
-                                  <v-col cols="12" sm="12" md="12">
-                                    <v-textarea
-                                      v-model="editado.descripcion"
-                                      :disabled="!elArticuloEsMio"
-                                      :color="temas.forms_titulo_bg"
-                                      label="Descripción">
-                                    </v-textarea>
+                                    </v-data-table>
                                   </v-col>
                                 </v-row>
-                                <v-row>
-                                  <v-col cols="12" sm="12" md="12">
-                                    <v-autocomplete
-                                      class="pt-0 pb-0"
-                                      v-model="editado.moneda_id"
-                                      :disabled="!elArticuloEsMio"
-                                      :color="temas.forms_titulo_bg"
-                                      :items="itemsMoneda"
-                                      :loading="isLoadingMoneda"
-                                      :search-input.sync="searchMoneda"
-                                      item-text="nombre"
-                                      item-value="id"
-                                      label="Moneda"
-                                      placeholder="Escriba para buscar"
-                                      prepend-icon="mdi-database-search">
-                                    </v-autocomplete>
-                                  </v-col>
-                                </v-row>
+                                -->
                               </v-card>
                             </v-col>
-                            -->
 
                             <!-- PRECIOS -->
-                            <v-col cols="3" class="pt-0">
+                            <v-col cols="12" sm="3" class="pt-0">
                               <v-card class="fg pa-2 pt-5 pb-0" outlined tile>
+
                                 <v-row>
-                                  <v-col cols="5" sm="5" md="5" class="pt-0 pb-0">
+                                  <v-col cols="5" sm="5" class="pt-0 pb-0">
                                     <v-switch
                                       v-model="ancladoAlDolar"
                                       label="¿Anclado?"
@@ -403,12 +427,12 @@
                                       @click="costoAncladoAlDolar">
                                     </v-switch>
                                   </v-col>
-                                  <v-col cols="1" sm="1" md="1" class="pt-0 pb-0">
+                                  <v-col cols="1" sm="1" class="pt-0 pb-0">
                                   </v-col>
                                   <v-col v-if="precio.usd!=0"
-                                    cols="6" sm="6" md="6">
+                                    cols="6" sm="6">
                                     <v-chip v-if=
-                                      "roundTo(costoAnclado,4)<
+                                      "roundTo(costoAnclado,6)<
                                       roundTo(precio.costo,precio.decimales)
                                       &&!desanclarAutomaticamente"
                                       class="pt-0 pb-0"
@@ -424,7 +448,7 @@
                                 </v-row>
 
                                 <v-row v-if="elArticuloEsMio">
-                                  <v-col cols="6" sm="6" md="6">
+                                  <v-col cols="6" sm="6">
                                     <v-text-field class="pt-0 pb-0"
                                       v-model="$store.state.dolar"
                                       :color="temas.forms_titulo_bg"
@@ -433,7 +457,7 @@
                                       label="Ultima cotización">
                                     </v-text-field>
                                   </v-col>
-                                  <v-col cols="6" sm="6" md="6">
+                                  <v-col cols="6" sm="6">
                                     <v-text-field class="pt-0 pb-0"
                                       v-model="precio.usd"
                                       :color="temas.forms_titulo_bg"
@@ -444,7 +468,7 @@
                                   </v-col>
                                 </v-row>
                                 <v-row v-else>
-                                  <v-col cols="4">
+                                  <v-col cols="4" sm="4">
                                     <v-text-field class="pt-0 pb-0"
                                       v-model="precio.precioPadre"
                                       :color="temas.forms_titulo_bg"
@@ -453,7 +477,7 @@
                                       label="Costo Original">
                                     </v-text-field>
                                   </v-col>
-                                  <v-col cols="4">
+                                  <v-col cols="4" sm="4">
                                     <v-text-field class="pt-0 pb-0"
                                       v-model="precio.desc1"
                                       :color="temas.forms_titulo_bg"
@@ -462,7 +486,7 @@
                                       label="%Des.1">
                                     </v-text-field>
                                   </v-col>
-                                  <v-col cols="4">
+                                  <v-col cols="4" sm="4">
                                     <v-text-field class="pt-0 pb-0"
                                       v-model="precio.desc2"
                                       :color="temas.forms_titulo_bg"
@@ -474,7 +498,7 @@
                                 </v-row>
 
                                 <v-row>
-                                  <v-col cols="6" sm="6" md="6">
+                                  <v-col cols="6" sm="6">
                                     <v-text-field
                                       class="pt-0 pb-0"
                                       :disabled="!elArticuloEsMio || editado.escombo==1"
@@ -486,7 +510,7 @@
                                       @change="calpre()">
                                     </v-text-field>
                                   </v-col>
-                                  <v-col cols="6" sm="6" md="6">
+                                  <v-col cols="6" sm="6">
                                     <v-text-field v-if="!editado.escombo==1&&elArticuloEsMio"
                                       class="pt-0 pb-0"
                                       disabled
@@ -497,8 +521,9 @@
                                     </v-text-field>
                                   </v-col>
                                 </v-row>
+
                                 <v-row>
-                                  <v-col cols="3" sm="3" md="3">
+                                  <v-col cols="3" sm="3">
                                     <v-text-field class="pt-0 pb-0"
                                       :color="temas.forms_titulo_bg"
                                       type="number"
@@ -509,34 +534,10 @@
                                       @click="calpre()">
                                     </v-text-field>
                                   </v-col>
-                                  <v-col cols="3" sm="3" md="3">
-                                    <v-text-field class="pt-0 pb-0"
-                                      :color="temas.forms_titulo_bg"
-                                      type="number"
-                                      v-model="precio.porrev1"
-                                      label="%Rev.1">
-                                    </v-text-field>
-                                  </v-col>
-                                  <v-col cols="3" sm="3" md="3">
-                                    <v-text-field class="pt-0 pb-0"
-                                      :color="temas.forms_titulo_bg"
-                                      type="number"
-                                      v-model="precio.porrev2"
-                                      label="%Rev.2">
-                                    </v-text-field>
-                                  </v-col>
-                                  <v-col cols="3" sm="3" md="3">
-                                    <v-text-field class="pt-0 pb-0"
-                                      :color="temas.forms_titulo_bg"
-                                      type="number"
-                                      v-model="precio.porrev3"
-                                      label="%Rev.3">
-                                    </v-text-field>
-                                  </v-col>
                                 </v-row>
 
                                 <v-row>
-                                  <v-col cols="5" sm="5" md="5">
+                                  <v-col cols="5" sm="5">
                                     <v-text-field v-if="!(editado.escombo==1 && elArticuloEsMio)"
                                       class="pt-0 pb-0"
                                       v-model="precio.porrem"
@@ -546,17 +547,18 @@
                                       @change="calpre()">
                                     </v-text-field>
                                   </v-col>
-                                  <v-col cols="7" sm="7" md="7">
+                                  <v-col cols="7" sm="7">
                                     <v-text-field class="pt-0 pb-0"
                                       v-model="precio.precio"
                                       :disabled="editado.escombo==1"
                                       :color="temas.forms_titulo_bg"
-                                      label="PRECIO NETO">
+                                      label="Precio Neto">
                                     </v-text-field>
                                   </v-col>
                                 </v-row>
+
                                 <v-row>
-                                  <v-col cols="5" sm="5" md="5">
+                                  <v-col cols="5" sm="5">
                                     <v-autocomplete v-if="!editado.escombo==1"
                                       class="pt-0 pb-0"
                                       v-model="editado.iva_id"
@@ -573,7 +575,7 @@
                                       @change="calpre()">
                                     </v-autocomplete>
                                   </v-col>
-                                  <v-col cols="7" sm="7" md="7">
+                                  <v-col cols="7" sm="7">
                                     <v-text-field
                                       class="pt-0 pb-0 fgb"
                                       v-model="precio.publico"
@@ -581,21 +583,23 @@
                                       :color="temas.forms_titulo_bg"
                                       type="number"
                                       readonly
-                                      label="PRECIO AL PUBLICO">
+                                      label="Precio a Revendedor">
                                     </v-text-field>
                                   </v-col>
                                 </v-row>
+
                               </v-card>
                             </v-col>
 
                             <!-- OFERTAS -->
-                            <v-col cols="3" class="pt-0 pb-0">
+                            <v-col cols="12" sm="3" class="pt-0 pb-0">
                               <v-card class="fg pa-2 pt-5 pb-0" outlined tile>
+
                                 <v-row>
-                                  <v-col cols="3" sm="3" md="3" class="pt-6 pb-5">
-                                    <span>¿OFERTA?</span>
+                                  <v-col cols="6" sm="6" class="pt-6 pb-5">
+                                    <span>¿Oferta a Revendedor?</span>
                                   </v-col>
-                                  <v-col cols="9" sm="9" md="9" class="pt-4 pb-5">
+                                  <v-col cols="6" sm="6" class="pt-4 pb-5">
                                     <v-chip-group column multiple>
                                       <v-chip v-for="(est, i) in ofeEstados" :key="i"
                                         class="ml-1 ma-1" small
@@ -610,16 +614,7 @@
                                     </v-chip-group>
                                   </v-col>
                                 </v-row>
-                                <v-row>
-                                  <v-col cols="12" sm="12" md="12">
-                                    <v-textarea
-                                      v-model="precio.ofedetalles"
-                                      rows="3"
-                                      :color="temas.forms_titulo_bg"
-                                      label="Descripción">
-                                    </v-textarea>
-                                  </v-col>
-                                </v-row>
+
                                 <v-row>
                                   <v-col cols="4" sm="4" md="4">
                                     <v-text-field class="pt-0 pb-0"
@@ -635,7 +630,7 @@
                                       v-model="precio.ofeunidades"
                                       :color="temas.forms_titulo_bg"
                                       type="number"
-                                      label="A Publicar">
+                                      label="Publicados">
                                     </v-text-field>
                                   </v-col>
                                   <v-col cols="4" sm="4" md="4">
@@ -644,7 +639,7 @@
                                       :color="temas.forms_titulo_bg"
                                       disabled
                                       type="number"
-                                      label="Vendidas">
+                                      label="Vendidos">
                                     </v-text-field>
                                   </v-col>
                                 </v-row>
@@ -681,7 +676,6 @@
                                       label="Precio s/IVA">
                                     </v-text-field>
                                   </v-col>
-
                                 </v-row>
 
                                 <v-row>
@@ -701,13 +695,47 @@
                                       readonly
                                       :disabled="editado.escombo==1"
                                       :color="temas.forms_titulo_bg"
-                                      label="OFERTA AL PUBLICO">
+                                      label="Oferta a Revendedores">
                                     </v-text-field>
                                   </v-col>
                                 </v-row>
                               </v-card>
-
+                              <!-- OFERTAS AL PUBLICO FINAL -->
+                              <v-card class="fg pa-2 pt-5 pb-0" outlined tile v-if="distribuidor">
+                                <v-row>
+                                  <v-col cols="12" sm="7" class="pt-6 pb-5">
+                                    <span>¿Oferta al Publico?</span>
+                                  </v-col>
+                                </v-row>
+                                <v-row>
+                                  <v-col cols="5" sm="5">
+                                    <v-text-field
+                                      class="pt-0 pb-0 fg"
+                                      v-model="precio.porremmi"
+                                      :disabled="editado.escombo==1"
+                                      :color="temas.forms_titulo_bg"
+                                      type="number"
+                                      label="% Rem.Minorista"
+                                      @click="calpre()"
+                                      @change="calpre()">
+                                    </v-text-field>
+                                  </v-col>
+                                  <v-col cols="7" sm="7">
+                                    <v-text-field
+                                      class="pt-0 pb-0 fgb"
+                                      v-model="precio.publicomi"
+                                      :disabled="editado.escombo==1"
+                                      :color="temas.forms_titulo_bg"
+                                      type="number"
+                                      readonly
+                                      label="Precio al Público Minorista">
+                                    </v-text-field>
+                                  </v-col>
+                                </v-row>
+                              </v-card>
                             </v-col>
+
+
                           </v-row>
                         </v-tab-item>
 
@@ -717,14 +745,14 @@
                         <v-tab-item value="comercializacion" v-if="editado.escombo!=1">
 
                           <v-row class="fg pt-6">
-                            <v-col cols="2" sx="2" mx="2">
+                            <v-col cols="12" sm="2">
                               <v-switch
                                 label="Se compra"
                                 :color="temas.forms_titulo_bg"
                                 v-model="precio.secompra">
                               </v-switch>
                             </v-col>
-                            <v-col cols="3" sx="3" mx="3">
+                            <v-col cols="12" sm="3">
                               <v-autocomplete
                                 v-model="editado.unidad_id"
                                 :disabled="!elArticuloEsMio"
@@ -739,7 +767,7 @@
                                 prepend-icon="mdi-database-search">
                               </v-autocomplete>
                             </v-col>
-                            <v-col cols="2" sm="2" md="2">
+                            <v-col cols="12" sm="2">
                               <v-text-field
                                 type="number"
                                 :color="temas.forms_titulo_bg"
@@ -751,7 +779,7 @@
                                 @change="calpre()">
                               </v-text-field>
                             </v-col>
-                            <v-col cols="2" sm="2" md="2">
+                            <v-col cols="12" sm="2">
                               <v-text-field
                                 type="number"
                                 :color="temas.forms_titulo_bg"
@@ -763,7 +791,7 @@
                             </v-col>
                           </v-row>
                           <v-row class="pt-0">
-                            <v-col cols="2" sx="2" mx="2">
+                            <v-col cols="12" sm="2">
                               <v-switch
                                 label="Viene en envase"
                                 :color="temas.forms_titulo_bg"
@@ -771,7 +799,7 @@
                                 v-model="editado.esenvase">
                               </v-switch>
                             </v-col>
-                            <v-col cols="2" sm="2" md="2" class="pt-0">
+                            <v-col cols="12" sm="2" class="pt-0">
                               <v-text-field
                                 class="pt-6"
                                 type="number"
@@ -784,14 +812,14 @@
                             </v-col>
                           </v-row>
                           <v-row class="pt-0">
-                            <v-col cols="2" sx="2" mx="2">
+                            <v-col cols="12" sm="2">
                               <v-switch
                                 label="Se vende"
                                 :color="temas.forms_titulo_bg"
                                 v-model="precio.sevende">
                               </v-switch>
                             </v-col>
-                            <v-col cols="2" sm="2" md="2" class="pt-0" v-if="dialogPresentacion">
+                            <v-col cols="12" sm="2" class="pt-0" v-if="dialogPresentacion">
                               <v-text-field
                                 class="pt-6"
                                 :color="temas.forms_titulo_bg"
@@ -805,14 +833,14 @@
                           </v-row>
 
                           <v-row>
-                            <v-col cols="2" sx="2" mx="2">
+                            <v-col cols="12" sm="2">
                               <v-switch
                                 label="Administra Stock"
                                 :color="temas.forms_titulo_bg"
                                 v-model="precio.admstock">
                               </v-switch>
                             </v-col>
-                            <v-col cols="2" sm="2" md="2" class="pt-0">
+                            <v-col cols="12" sm="2" class="pt-0">
                               <v-text-field
                                 class="pt-6"
                                 type="number"
@@ -821,7 +849,7 @@
                                 label="Ex.Mínima">
                               </v-text-field>
                             </v-col>
-                            <v-col cols="3" sm="3" md="3">
+                            <v-col cols="12" sm="3">
                               <v-select class="pt-3"
                                 v-model="precio.sinstock"
                                 :items="arrSinStock"
@@ -830,7 +858,7 @@
                                 label="Cuando no hay stock...">
                               </v-select>
                             </v-col>
-                            <v-col cols="3" sx="3" mx="3">
+                            <v-col cols="12" sm="3">
                               <v-switch
                                 label="Es perecedero"
                                 :color="temas.forms_titulo_bg"
@@ -925,7 +953,13 @@
                                       dense
                                       single-select
                                       @click:row="selArtClick"
-                                      :footer-props="footerProps10">
+                                      :footer-props="{
+                                        itemsPerPageOptions: [10],
+                                        showFirstLastPage: true,
+                                        showCurrentPage: true,
+                                        nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                                        prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                                      }">
                                       <template v-slot:item.precio="{ item }">
                                         <span disable
                                           dark>${{ formatoImporte(item.precio) }}
@@ -942,8 +976,14 @@
                                       :items="editado.componentes"
                                       dense
                                       class="elevation-1 pr-0 ml-0"
+                                      :footer-props="{
+                                        itemsPerPageOptions: [6],
+                                        showFirstLastPage: true,
+                                        showCurrentPage: true,
+                                        nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                                        prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                                      }"
                                       @click:row="editarComponente">
-
                                       <template #item.componente.nombre="{ value }">
                                         <div
                                           class="text-truncate"
@@ -1099,7 +1139,7 @@
                   <v-card-text>
                 <!--<v-container>-->
                       <v-row>
-                        <v-col cols="1" sm="1" md="1">
+                        <v-col cols="12" sm="1">
                           <v-text-field
                             disabled
                             v-model="editado.id"
@@ -1107,7 +1147,7 @@
                             :color="temas.forms_titulo_bg">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="2" sm="2" md="2">
+                        <v-col cols="12" sm="2">
                           <v-text-field
                             disabled
                             v-model="editado.codigo"
@@ -1115,7 +1155,7 @@
                             :color="temas.forms_titulo_bg">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="6" sm="6" md="6">
+                        <v-col cols="16" sm="6">
                           <v-text-field
                             ref="nombre"
                             v-model="editado.nombre"
@@ -1128,7 +1168,7 @@
                             maxlength="80">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="2" sm="2" md="2">
+                        <v-col cols="12" sm="2">
                           <v-text-field
                             disabled
                             class="caption"
@@ -1136,7 +1176,7 @@
                             label="Creador">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="1" sx="1" mx="1">
+                        <v-col cols="12" sm="1">
                           <v-switch
                             label="Activo"
                             :color="temas.forms_titulo_bg"
@@ -1151,14 +1191,10 @@
                         </v-tab>
                         <v-tab-item value="general">
                           <v-row no-gutters>
-                            <v-col cols="3">
+                            <v-col cols="12" sm="3">
                               <v-card class="pa-2" outlined tile>
-                                <v-row>
-                                  <v-col cols="12" sm="12" md="12">
-                                    <barcode
-                                      :tag="tag"
-                                      :value="editado.codbar">
-                                    </barcode>
+                                <v-row class="pt-5">
+                                  <v-col cols="6" sm="6">
                                     <v-text-field
                                       ref="nombre"
                                       v-model="editado.codbar"
@@ -1166,22 +1202,24 @@
                                       :color="temas.forms_titulo_bg"
                                       required
                                       :counter="14"
-                                      maxlength="14">
+                                      maxlength="14"
+                                      class="pt-0 pb-0">
                                     </v-text-field>
-                                    <v-btn
-                                      class="ma-2 white--text"
-                                      :color="temas.forms_titulo_bg"
-                                      @click="codbarpropio()">
-                                      Crear código propio
-                                    </v-btn>
+                                  </v-col>
+                                  <v-col cols="6" sm="6" class="pt-0 pb-0">
+                                    <barcode
+                                      :tag="tag" width=1 height=38 fontSize=14
+                                      :value="editado.codbar">
+                                    </barcode>
                                   </v-col>
                                 </v-row>
+
                               </v-card>
                             </v-col>
-                            <v-col cols="3">
+                            <v-col cols="12" sm="3">
                               <v-card class="pa-2" outlined tile>
                                 <v-row>
-                                  <v-col cols="6" sm="6" md="6">
+                                  <v-col cols="12" sm="6">
                                     <v-text-field
                                       type="number"
                                       disabled
@@ -1192,21 +1230,9 @@
                                       @mouseover="ayuda(1)">
                                     </v-text-field>
                                   </v-col>
-                                  <!--
-                                  <v-col cols="6" sm="6" md="6">
-                                    <v-text-field
-                                      type="number"
-                                      disabled
-                                      v-model="costoPadre"
-                                      label="Costo del Padre s/IVA"
-                                      :color="temas.forms_titulo_bg"
-                                      @mouseover="ayuda(1)">
-                                    </v-text-field>
-                                  </v-col>
-                                  -->
                                 </v-row>
                                 <v-row>
-                                  <v-col cols="8" sx="8" mx="8">
+                                  <v-col cols="12" sm="8">
                                     <v-autocomplete
                                       v-model="editado.unidad_id"
                                       :items="itemsUmCompras"
@@ -1222,7 +1248,7 @@
                                       @mouseover="ayuda(1)">
                                     </v-autocomplete>
                                   </v-col>
-                                  <v-col cols="4" sm="4" md="4">
+                                  <v-col cols="12" sm="4">
                                     <v-text-field
                                       type="number"
                                       :disabled="!elArticuloEsMio"
@@ -1235,11 +1261,10 @@
                                       @change="calpre()"
                                       @mouseover="ayuda(1)">
                                     </v-text-field>
-
                                   </v-col>
                                 </v-row>
                                 <v-row>
-                                  <v-col cols="6" sm="6" md="6">
+                                  <v-col cols="12" sm="6">
                                     <v-text-field
                                       disabled
                                       v-model="precio.coef"
@@ -1250,7 +1275,7 @@
                                 </v-row>
                               </v-card>
                             </v-col>
-                            <v-col cols="3">
+                            <v-col cols="12" sm="3">
                               <v-card class="pa-2" outlined tile>
                                 <v-row>
                                   <v-col cols="12" sm="12" md="12">
@@ -1262,12 +1287,11 @@
                                   </v-col>
                                 </v-row>
                                 <v-row>
-                                  <v-col cols="4" sm="4" md="4">
+                                  <v-col cols="12" sm="4">
                                     <v-text-field
-                                      :disabled="!elArticuloEsMio"
                                       type="number"
                                       class="caption"
-                                      label="%Remarcación"
+                                      label="%Remarcación2"
                                       min="1"
                                       v-model="precio.porrem"
                                       @click="calpre()"
@@ -1303,74 +1327,12 @@
                 </v-form>
               </v-card>
             </v-dialog>
-
-            <!-- EDICION CODIGO PROPIO -->
-            <v-dialog v-model="dialogCodigoPropio" max-width="800px" max-height="300px"
-              :transition="transition==null?'false':transition">
-              <template v-slot:activator="{ on }"></template>
-              <v-card>
-                <v-toolbar text
-                  :color="temas.forms_titulo_bg"
-                  :dark="temas.forms_titulo_dark==true">
-                  <v-btn
-                    :color="temas.forms_close"
-                    :dark="temas.forms_close_dark==true"
-                    icon @click="cancelarCodigoPropio">
-                    <v-icon>mdi-arrow-left-circle</v-icon>
-                  </v-btn>
-                  <span class="fg">
-                    Código
-                    {{ itemActual != undefined ? itemActual.codigo : '' }} -
-                    {{ itemActual != undefined ? itemActual.nombre : '' }}
-                  </span>
-                  <v-spacer></v-spacer>
-                  <div>
-                    <v-btn
-                      :color="temas.cen_btns_bg"
-                      :dark="temas.cen_btns_dark==true"
-                      class="ma-2 white--text" @click="guardarCodigoPropioHTTP(true)">
-                      Guardar
-                    </v-btn>
-                  </div>
-                </v-toolbar>
-                <v-form ref="form">
-                  <v-card-text>
-                    <v-container>
-
-                      <v-row>
-                        <v-col cols="6" sm="6" md="6">
-                          <v-text-field
-                            v-model="editado.codigo"
-                            label="Mi Código"
-                            required
-                            autofocus
-                            :color="temas.forms_titulo_bg"
-                            v-on:keydown.tab="buscoCodigo">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="6" sm="6" md="6">
-                          <v-text-field
-                            v-model="editado.codigoprov"
-                            label="Código Proveedor"
-                            disabled
-                            :color="temas.forms_titulo_bg">
-                          </v-text-field>
-                        </v-col>
-                      </v-row>
-
-                    </v-container>
-                  </v-card-text>
-                </v-form>
-              </v-card>
-            </v-dialog>
-            <!-- FINALIZA LA EDICION DE PRESENTACIONES-->
-
           </v-toolbar>
 
           <!-- Barra de búsqueda  -->
           <v-container>
             <v-row class="pt-4">
-              <v-col cols="4" sm="4">
+              <v-col cols="12" sm="4">
                 <v-select
                   class="fg pt-2"
                   label="Dónde Buscar..."
@@ -1383,7 +1345,7 @@
                   @change="seleccionoCreador()">
                 </v-select>
               </v-col>
-              <v-col cols="6" sm="6">
+              <v-col cols="12" sm="6">
                 <v-text-field
                   class="fg pt-2"
                   v-model="search"
@@ -1395,7 +1357,7 @@
                   @click:clear="limpiarTextoBuscar">
                 </v-text-field>
               </v-col>
-              <v-col class="pt-5" cols="2" sm="2">
+              <v-col class="pt-5" cols="12" sm="2">
                 <v-btn
                   :color="temas.forms_titulo_bg"
                   class="fg85" dark
@@ -1459,7 +1421,8 @@
         </template>
 
         <template v-slot:item.stock="{ item }">
-          <span class="fg">{{ formatoImporte(item.stock) }}</span>
+          {{ sayStock(item) }}
+          <!--<span class="fg">{{ formatoImporte(item.stock) }}</span>-->
         </template>
 
         <template v-slot:item.creador="{ item }">
@@ -1587,7 +1550,6 @@
             <span class="fg">
               FOTOS DE:
               {{ itemActual != undefined ? itemActual.nombre + ' - ('+itemActual.codigo+')' : '' }}
-              {{ nuevaFoto.length==0 }}
             </span>
           </v-toolbar>
           <v-form ref="form">
@@ -1682,7 +1644,10 @@
                     :color="temas.forms_titulo_bg"
                     :dark="temas.forms_titulo_dark==true"
                     label="Ingrese el grupo a buscar"
-                    flat solo-inverted hide-details clearable
+                    flat
+                    solo-inverted
+                    hide-details
+                    clearable
                     clear-icon="mdi-close-circle-outline">
                   </v-text-field>
                 </v-col>
@@ -1717,6 +1682,7 @@
                   <v-card-text>
                   -->
                     <v-treeview
+                      class="fg"
                       reurn-object
                       item-key="id"
                       :active="active"
@@ -1794,7 +1760,6 @@ export default {
   data: () => ({
     modelo: 'articulos',
     fechaPrecio: null,
-    soloArtComprados: true,
     sayInactivos: 1,
     tasaiva: 0,
     costo: 0,
@@ -1804,7 +1769,7 @@ export default {
     ofeEstados: [
       {estado:'A',nombre:'Sí', sel: false},
       {estado:'I',nombre:'No', sel: true},
-      {estado:'P',nombre:'Pausada', sel: false}
+//    {estado:'P',nombre:'Pausada', sel: false}
     ],
     rubItems: [],
     itemsTreeGrupos: [],
@@ -1813,6 +1778,10 @@ export default {
     tabObj: [],
     stocks: [],
     acciones: [],
+    accionesUnds: [
+      {nombre: 'Editar', icon: 'mdi-pencil'},
+      {nombre: 'Borrar', icon: 'mdi-delete'}
+    ],
     itemActual: {
       user_id: null}
     ,
@@ -1833,10 +1802,7 @@ export default {
       (v) => !!v || 'El nombre es requerido',
     ],
     decimalRule: [
-      (v) => (v >= 0 && v <= 4) || 'El valor debe estar entre 0 y 4'
-    ],
-    decimalRule2: [
-      (v) => (v >= 0 && v <= 2) || 'El valor debe estar entre 0 y 2'
+      (v) => (v >= 0 && v <= 5) || 'El valor debe estar entre 0 y 5'
     ],
     tag: 'svg',
     busArt: '',
@@ -1853,7 +1819,11 @@ export default {
     arrSinStock: [ 'Avisar y Bloquear', 'Avisar y Continuar', 'Ignorar' ],
     active: [],
     fotos: [],
-    //presentaciones: [],
+    unds: [
+      {des:50,has:100,desc:3},
+      {des:101,has:200,desc:5},
+      {des:201,has:500,desc:7},
+    ],
     nuevaFoto: [],
     ivaTasas: [],
     verCargarFoto: false,
@@ -1869,7 +1839,6 @@ export default {
     dialogStk: false,
     dialogPresentacion: false,
     dialogFotos: false,
-    dialogCodigoPropio: false,
     dialogGrupos: false,
     
     ////////////////////////////////////
@@ -1885,8 +1854,6 @@ export default {
     //precioPorcion: 0,
     loading: false,
     pagination: { page: 1 },
-    footerProps: {'items-per-page-options': [6]},
-    footerProps10: {'items-per-page-options': [10]},
     headers: [
       { text: 'CODIGO', value:'codigo', sortable: false, width: 160},
       { text: 'NOMBRE', value:'nombre', sortable: false, width: 620},
@@ -1905,16 +1872,6 @@ export default {
       { text: 'DEPOSITO', value:'deposito'},
       { text: 'EXISTENCIA', value:'existencia'},
     ],
-    /*
-    headersPresentaciones: [
-      { text: 'Código', value:'codigo'},
-      { text: 'Nombre', value:'nombre'},
-      { text: 'Und.A Stock', value:'undstock', sortable: false, align: 'end', width: 120},
-      { text: 'Costo', value:'precios[0].costo', sortable: false, align: 'end', width: 120},
-      { text: '%Rem', value:'precios[0].porrem', sortable: false, align: 'end', width: 120},
-      { text: 'Precio', value:'precios[0].precio', sortable: false, align: 'end', width: 120},
-    ],
-    */
     /*
     headersComponentes: [
       { text: 'Código',   value:'componente.codigo', align: 'left', width: 150},
@@ -1941,6 +1898,12 @@ export default {
       { text: 'CODIGO', value:'codigo'},
       { text: 'NOMBRE', value:'nombre'},
       { text: 'PRECIO', value:'precio', align: 'end', width: 100},
+    ],
+    headersUnds: [
+      { text: 'Des', value:'des', align: 'end', width: 60},
+      { text: 'Has', value:'has', align: 'end', width: 60},
+      { text: '%Desc', value:'desc', align: 'end', width: 60},
+      { text: 'Ops', value:'accion', align: 'left', sortable: false, width: 50 },
     ],
     selArt: [],
     editedIndex: -1,
@@ -1970,9 +1933,7 @@ export default {
       componentes: [],
       fotos: [],
       updated_at: null,
-
       stock: null,
-
     },
     defaultItem: {
       id: null,
@@ -2000,7 +1961,6 @@ export default {
       fotos: [],
       updated_at: null,
       stock: null,
-
     },
     edComp: {
       id: null,
@@ -2037,6 +1997,7 @@ export default {
     precioPadre: null,
     precio: {
       id: 0,
+      padre_id: null,
       decimales: 0,
       decimalesViejo: 0,
       coef: 0,
@@ -2047,12 +2008,11 @@ export default {
       costo: 0,
       costoViejo: 0,
       porrem: 0,
+      porremmi: 0,
       porremViejo: 0,
-      porrev1: 0,
-      porrev2: 0,
-      porrev3: 0,
       precio: 0,
       publico: 0,
+      publicomi: 0,
       secompra: true,
       sevende: true,
       usd: 0,
@@ -2071,7 +2031,6 @@ export default {
       ofeunidades: 0,
       ofevendidas: 0,
       ofevencimiento: 0,
-      ofedetalles: 0,
       ofeestado: 0,
 
     },
@@ -2094,6 +2053,8 @@ export default {
     origArticulos: [],
     scrollInvoked: 0,
 
+    soloArtComprados: false,
+
   }),
   /*
   components: {
@@ -2106,7 +2067,8 @@ export default {
     ...mapMutations(['alert','closeAlert','setTerceros']),
     ...mapState([
       'vinculosPadres', 'vinculosHijos', 'vinculosPadresLic', 'vinculosPadresAll', 'temas', 'sucursalDemo', 'externo',
-      'tipo', 'porrev', 'dolar', 'anclarCostos', 'desanclarAutomaticamente', 'codigooid', 'cttLoadReg', 'descuentos','transition'
+      'tipo', 'porrev', 'dolar', 'anclarCostos', 'desanclarAutomaticamente', 'codigooid', 'cttLoadReg', 'descuentos',
+      'transition', 'distribuidor', 'verSoloArtComprados', 'exclusivoDe'
     ]),
 
     filter () {
@@ -2260,7 +2222,9 @@ export default {
   mounted () {
     if (!this.isLoggedIn) {
       return router.push('/login');
+
     } else {
+
       return HTTP().get('/afipiva').then(({ data }) => {
         this.ivaTasas = []
         for (let i=0; i<=data.length-1; i++) {
@@ -2302,13 +2266,24 @@ export default {
                 })
               }
             }
-            if (this.articulosPorUser.length>1) {
-              this.userArticulosId = 0
+
+            // gilgamesh021201
+            debugger
+            if (this.exclusivoDe.id) {
+              this.userArticulosId = this.exclusivoDe.id
             } else {
-              this.userArticulosId = this.userId
+              if (this.articulosPorUser.length>1) {
+                this.userArticulosId = 0
+              } else {
+                this.userArticulosId = this.userId
+              }
             }
             this.headers[0].text = this.$store.state.codigooid == 'C'?'Código':'ID'
             this.headers[0].value = this.$store.state.codigooid == 'C'?'codigo':'id'
+
+            debugger
+            this.soloArtComprados = this.$store.state.verSoloArtComprados;
+
             this.listarHTTP()
           })
         })
@@ -2327,7 +2302,7 @@ export default {
     },
 
     elAnclaEsMenor(item) {
-      let ret = (this.roundTo(this.dolar*item.usd,4) < item.costo)
+      let ret = (this.roundTo(this.dolar*item.usd,5) < item.costo)
       ret
     },
 
@@ -2336,15 +2311,15 @@ export default {
     },
 
     setOferta(item) {
-      for (let i=0; i<=2; i++) {
+      for (let i=0; i<=1; i++) {
         this.ofeEstados[i].sel = i==item?true:false
       }
       if (item==0) {
         this.precio.ofeestado = 'A'
       } else if (item==1) {
         this.precio.ofeestado = 'I'
-      } else if (item==2) {
-        this.precio.ofeestado = 'P'
+//    } else if (item==2) {
+//      this.precio.ofeestado = 'P'
       }
     },
 
@@ -2398,11 +2373,17 @@ export default {
         this.presentacion(this.itemActual)
       } else if (item.nombre=='Stock') {
         this.verStock(this.itemActual)
-//    } else if (item.nombre=='Asignar/Editar Código Propio') {
-//      this.editarCodigoPropio()
       }
     },
 
+    selAccionUnds(item) {
+      if (item.nombre=='Editar') {
+
+      } else if (item.nombre=='Borrar') {
+
+      }
+    },
+  
     habDel(item) {
 //    if (item.userid == this.userId) {
       if (item.creador_id == this.userId) {
@@ -2486,7 +2467,7 @@ export default {
         this.precio.usd = this.roundTo(this.precio.costo / this.dolar,6)
 //      let dec = (this.precio.costo+"").split(".")[1];
 //      this.costoAnclado = this.precio.usd==0 ? 0 : this.roundTo(this.precio.usd * this.dolar,dec.length)
-        this.costoAnclado = this.roundTo(this.precio.costo,this.precio.decimales)
+        this.costoAnclado = this.roundTo(this.precio.costo, this.precio.decimales)
       } else {
         this.precio.usd = 0
         this.costoAnclado = 0
@@ -2494,8 +2475,6 @@ export default {
     },
 
     calpre() {
-
-      debugger
       if (this.editado.escombo==1 && this.elArticuloEsMio) { return }
       if (this.entriesAfipIVA.length>0) { // es porque entro desde ALTA DE UN NUEVO ARTICULO
         let pos = this.entriesAfipIVA.map(function(e) { return e.id; }).indexOf(this.editado.iva_id);
@@ -2504,37 +2483,30 @@ export default {
         this.tasaiva = this.editado.tasa
       }
       this.precio.decimales = Number(this.precio.decimales)
-
-      debugger
       this.precio.coef = this.roundTo(Number(this.editado.undenvase)/Number(this.unidadesPadre),6)
       if (this.dialogPresentacion) {
-        this.precio.costo = this.roundTo((this.precioPadre*this.precio.coef), 4)
-        this.precio.precio  = this.roundTo(this.precio.costo*(1+(this.precio.porrem/100)), 4)
+        this.precio.costo = this.roundTo((this.precioPadre*this.precio.coef), 5)
+        this.precio.precio  = this.roundTo(this.precio.costo*(1+(this.precio.porrem/100)), 5)
         this.precio.publico = this.roundTo(this.precio.precio*(1+(this.tasaiva/100)),this.precio.decimales)
       } else {
         //this.precio.costo = this.roundTo((this.costoPadre/this.unidadesPadre)*this.editado.undenvase, 4)
-        this.precio.precio  = this.roundTo(this.precio.costo*(1+(this.precio.porrem/100)), 4)
+        this.precio.precio  = this.roundTo(this.precio.costo*(1+(this.precio.porrem/100)), 5)
         this.precio.publico = this.roundTo(this.precio.precio*(1+(this.tasaiva/100)),this.precio.decimales)
       }
-      
       if (this.precio.ofetasadescuento) {
         this.precio.ofeimportedescuento = this.roundTo(this.precio.precio*(Number(this.precio.ofetasadescuento)/100),this.precio.decimales)
         this.precio.ofeprecio = this.roundTo(this.precio.precio-this.precio.ofeimportedescuento,this.precio.decimales)
-        debugger
         this.precio.ofepreciofinal = this.roundTo(this.precio.ofeprecio*(1+(this.tasaiva/100)),this.precio.decimales)
-        debugger
       } else {
         this.precio.ofeimportedescuento = 0
         this.precio.ofeprecio = 0
         this.precio.ofepreciofinal = 0
       }
-
-//      alert (this.precio.ofetasadescuento)
-//      alert (this.precio.ofeimportedescuento)
-//      alert (this.precio.ofeprecio)
-
-      //this.editado.ofeprecio = this.precio.precio - (this.editado.ofeimportedescuento)
-
+      this.precio.publicomi = 0
+      if (this.precio.porremmi!=0) {
+        this.precio.publicomi = this.precio.precio*(1+(this.precio.porremmi/100))
+        this.precio.publicomi = this.roundTo(this.precio.publicomi * (1+(this.tasaiva/100)),this.precio.decimales)
+      }
     },
 
     seleccionoCreador() {
@@ -2542,11 +2514,7 @@ export default {
     },
     
     pausarActivarOfertas(activar) {
-
-      debugger
       return HTTP().post('/activarpausarofertas',  { activar: activar, accion: 'revisar' }).then(({ data }) => { 
-
-        debugger
         this.msg.msgTitle = 'OFERTAS'
         let ctt = data.ctt[0].ctt
         let avi = activar?'Activar':'Desactivar'
@@ -2592,9 +2560,6 @@ export default {
       this.costoPadre = 0;
       this.editado.componentes = [];
       this.precio.coef = 1;
-      this.precio.porrev1 = this.porrev[0];
-      this.precio.porrev2 = this.porrev[1];
-      this.precio.porrev3 = this.porrev[2];
     },
 
     cantidadItem() {
@@ -2607,6 +2572,8 @@ export default {
     },
 
     presentacion( item ) {
+
+      debugger
       return HTTP().post('/articuloz', {
         search: this.itemActual.codigo,
         vinculosPadresLic: this.$store.state.vinculosPadresLic,
@@ -2614,6 +2581,7 @@ export default {
         proveedor: 0, stockProv: false, grupo: '', marca: '', userex: null, soloArtComprados: true, descuentos: this.descuentos,
         dolar: this.$store.state.dolar, activos: true, limit: this.cttLoadReg }).then(({ data })=>{
 
+        debugger
         this.editedIndex = -1
         this.elArticuloEsMio = true //item.userid == this.userId
         this.editado = Object.assign({}, data[0]);
@@ -2643,6 +2611,9 @@ export default {
     },
     
     agregarFoto() {
+
+      debugger
+
       this.fotos.push({articulo_id: this.editado.id, foto: this.nuevaFoto.name})
       this.verCargarFoto = false
     },
@@ -2670,7 +2641,14 @@ export default {
     },
 
     borrarFotoHTTP(itemActual, foto) {
-      return HTTP().post('/borrarfoto',  { articulofoto_id: foto.id, file: foto.foto }).then(({ data }) => { 
+
+      debugger
+      if (foto.foto==undefined) {
+        alert('hay un problema')
+        return
+      }
+
+      return HTTP().post('/borrarfoto', { articulofoto_id: foto.id, file: foto.foto }).then(({ data }) => { 
         this.progress = false
         if (data=='error') {
           this.msg.msgTitle = 'Error'
@@ -2724,8 +2702,6 @@ export default {
     */
 
     msgRespuesta(op) {
-
-      debugger
       if (op==='Aceptar') {
         if (this.msg.msgAccion=='borrar item') {
           this.borrar(this.itemActual)
@@ -2734,11 +2710,8 @@ export default {
         } else if (this.msg.msgAccion=='exportar a XLS') {
           alert('exportando a XLS...')
         } else if (this.msg.msgAccion=='Activar Ofertas'||this.msg.msgAccion=='Desactivar Ofertas') {
-
-          debugger
           let activar = this.msg.msgAccion=='Activar Ofertas'?true:false
           return HTTP().post('/activarpausarofertas',  { activar: activar, accion: 'post' }).then(({ data }) => {
-            debugger
             let m = ''
             if (data=='error') {
               m = 'Se ha producido un error en Activar Ofertas.<br>'
@@ -2785,6 +2758,8 @@ export default {
 
     buscarArt(estricto) {
       if (this.busArt == '') return
+
+      debugger
       return HTTP().post('/articuloz', {
         search: this.busArt,
         vinculosPadresLic: this.$store.state.vinculosPadresLic,
@@ -2792,6 +2767,7 @@ export default {
         proveedor: 0, stockProv: false, grupo: '', marca: '', userex: null, soloArtComprados: true, descuentos: this.descuentos,
         dolar: this.$store.state.dolar, activos: false, limit: this.cttLoadReg }).then(({ data })=>{
 
+        debugger
         if (data.length==1) {
           this.edComp.id = data[0].id;
           this.edComp.articulo_id = this.editado.id;
@@ -2910,8 +2886,8 @@ export default {
 //      tasaiva = this.editado.componentes[i].componente.iva.tasa
         
         item = (precio-desc)*ctt
-        this.precio.costo   += this.roundTo(((precio-desc)*ctt),dec);
-        this.precio.precio  += this.roundTo(((precio-desc)*ctt),dec);
+        this.precio.costo   += this.roundTo(((precio-desc)*ctt),5);
+        this.precio.precio  += this.roundTo(((precio-desc)*ctt),5);
         this.precio.publico += 0; //this.roundTo(((precio-desc)*ctt)*(1+(tasaiva/100)),dec);
         this.totalItems     += this.roundTo(item,dec);
         this.totalCostos    += costo*ctt;
@@ -2920,8 +2896,8 @@ export default {
         this.totalDesc      += desc*ctt;
       }
       dec = this.editado.precios!=undefined?this.editado.precios[0].decimales:2
-      this.precio.costo =  this.roundTo(this.precio.costo,  dec);
-      this.precio.precio = this.roundTo(this.precio.precio, dec);
+      this.precio.costo =  this.roundTo(this.precio.costo, 5);
+      this.precio.precio = this.roundTo(this.precio.precio, 5);
       let pos = this.ivaTasas.findIndex(x=>x.id==this.editado.iva_id)
       this.precio.publico = this.roundTo(this.precio.precio*(1+(this.ivaTasas[pos].tasa/100)), dec);
 
@@ -3028,11 +3004,13 @@ export default {
       */
 
       /* HUGUITO */
-      let x = this.userArticulosId!=0?this.userArticulosId:0
+      debugger
+      let x = this.userArticulosId!=0&&this.userArticulosId!=this.userId?this.userArticulosId:0
       let z = this.$store.state.cttLoadReg
       let s = this.search!=null&&this.search.length>0 ? this.search : '';
       let v = this.cargoV()
 
+      debugger
       return HTTP().post('/articuloz', {
         search: s, //[21,61283]
         vinculosPadresLic: this.$store.state.vinculosPadresLic,
@@ -3135,6 +3113,8 @@ export default {
     editar (item) {
 
       if (!item.loTengo) return
+
+      debugger
       return HTTP().post('/articuloz', {
         search: this.itemActual.codigo,
         vinculosPadresLic: this.$store.state.vinculosPadresLic,
@@ -3142,6 +3122,7 @@ export default {
         proveedor: 0, stockProv: false, grupo: '', marca: '', userex: null, soloArtComprados: true, descuentos: this.descuentos,
         dolar: this.$store.state.dolar, activos: true, limit: this.cttLoadReg }).then(({ data })=>{
 
+        debugger
         this.editedIndex = this.items.indexOf(item);
         this.elArticuloEsMio = item.creador_id == this.userId
         data[0].precios = Object.assign({}, data[0].precios)
@@ -3151,7 +3132,7 @@ export default {
         
         this.editado.stock = data[0].stock
 
-        this.precio.ofedetalles = data[0].precios[0].ofedetalles
+        this.precio.padre_id    = data[0].precios[0].padre_id
         this.precio.ofeunidades = data[0].precios[0].ofeunidades
         this.precio.ofevendidas = data[0].precios[0].ofevendidas
         this.precio.ofetasadescuento = data[0].precios[0].ofetasadescuento
@@ -3159,14 +3140,14 @@ export default {
 
         this.ofeEstados[0].sel = false
         this.ofeEstados[1].sel = false
-        this.ofeEstados[2].sel = false
+        //this.ofeEstados[2].sel = false
 
         if (data[0].precios[0].ofeestado=='A') {
           this.ofeEstados[0].sel = true
-        } else if (data[0].precios[0].ofeestado=='P') {
-          this.ofeEstados[2].sel = true
-        } else {
+        } else if (data[0].precios[0].ofeestado=='I') {
           this.ofeEstados[1].sel = true
+      //} else {
+      //  this.ofeEstados[1].sel = true
         }
 
         this.precio.ofeestado = data[0].precios[0].ofeestado==null?'I':data[0].precios[0].ofeestado
@@ -3276,15 +3257,14 @@ export default {
       this.editedIndexComp = -1;
     },
 
-    cancelarCodigoPropio() {
-      this.dialogCodigoPropio = false;
-    },
-    
     guardar(presentacion) {
       if (!this.$refs.form.validate()) {
         this.mensaje('¡Debe completar todos los datos!', this.temas.forms_titulo_bg, 1500) 
         return this.dialog = true;
       }
+
+      debugger
+
       this.editado.precios = this.precio
       this.fotos = this.editado.fotos;
       if (this.precio.sinstock=='Avisar y Bloquear') {
@@ -3315,22 +3295,6 @@ export default {
       this.cancelar();
     },
 
-    guardarCodigoPropioHTTP() {
-      this.dialogCodigoPropio = false
-      return HTTP().patch('asignarcodigopropio', {
-        id: this.editado.id,
-        codigo: this.editado.codigo,
-        codigoprov: this.editado.codigoprov
-        }).then(({data}) => {
-          if (data=='error') {
-            this.mensaje('¡Opps, se ha producido un error!', this.temas.snack_error_bg, 2500) 
-          } else {
-            this.mensaje('¡Actualización Exitosa!', this.temas.forms_titulo_bg, 1500) 
-          }
-          this.listarHTTP()
-        });
-    },
-    
     altaHTTP:function(presentacion) {
       let padre = presentacion ? this.itemActual.id : null
       this.editado.codigo = this.editado.codigo+'@'+this.userId
@@ -3389,7 +3353,7 @@ export default {
     calculoPrecio (item) {
       let ret = 0
       if (item.usd>0) {
-        if (this.roundTo(this.dolar*item.usd,4) > item.costo) {
+        if (this.roundTo(this.dolar*item.usd,5) > item.costo) {
           if (this.sucursalDemo) {
             ret = (this.roundTo(this.dolar*item.usd,item.decimales))*(1+((item.porrem/100)))
           } else {
@@ -3414,42 +3378,33 @@ export default {
       this.precio.decimales = data != null ? Number(data[0].precios[0].decimales) || 0 : 0
       this.precio.decimalesViejo = data != null ? Number(data[0].precios[0].decimales) || 0 : 0
 
+      debugger
       if (data[0].padre) {
-
         this.precio.costo  = this.editedIndex != -1 ? data[0].precios[0].costo  : data[0].padre.precios[0].costo
         this.precio.precio = this.editedIndex != -1 ? data[0].precios[0].precio : data[0].padre.precios[0].precio
         this.costoPadre    = this.editedIndex === -1 ? data[0].precios[0].costo  : data[0].padre.precios[0].costo
         this.precioPadre   = this.editedIndex === -1 ? data[0].precios[0].precio : data[0].padre.precios[0].precio
-
         let desc1 = data[0].precios[0].desc1
         let desc2 = data[0].precios[0].desc2
-
-        // hev021
         this.precioPadre = this.precioPadre-(this.precioPadre*(desc1/100))
         this.precioPadre = this.precioPadre-(this.precioPadre*(desc2/100))
-
       } else {
-
-        this.precio.costo  = this.roundTo(data[0].precios[0].costo,4)
-        this.precio.precio = this.roundTo(data[0].precios[0].precio,4)
-        this.costoPadre    = this.roundTo(data[0].precios[0].costo,4)
-        this.precioPadre   = this.roundTo(data[0].precios[0].precio,4)
-
+        this.precio.costo  = this.roundTo(data[0].precios[0].costo,5)
+        this.precio.precio = this.roundTo(data[0].precios[0].precio,5)
+        this.costoPadre    = this.roundTo(data[0].precios[0].costo,5)
+        this.precioPadre   = this.roundTo(data[0].precios[0].precio,5)
       }
+
       if (data[0].precios[0].usd>0) {
-        if (this.roundTo(this.dolar*data[0].precios[0].usd,4) > data[0].precios[0].costo) {
+        if (this.roundTo(this.dolar*data[0].precios[0].usd,5) > data[0].precios[0].costo) {
           this.costoAnclado = this.precio.costo
 //        this.precio.costo = this.roundTo(this.dolar*data[0].precios[0].usd,data[0].precios[0].decimales)
-          this.precio.costo = this.roundTo(this.dolar*data[0].precios[0].usd,4)
+          this.precio.costo = this.roundTo(this.dolar*data[0].precios[0].usd,6)
         }
       }
 
-//      if (this.editedIndex!=-1) {
-        this.precio.porrem = data != null ? data[0].precios[0].porrem || 0 : 0
-//      } else {
-//        this.precio.porrem = 0
-//      }
-
+      this.precio.porrem = data != null ? data[0].precios[0].porrem || 0 : 0
+      this.precio.porremmi = data != null ? data[0].precios[0].porremmi || 0 : 0
       this.precio.precioPadre = data[0].precios[0].precioPadre
       this.precio.costooriginal = data[0].precios[0].precio||0
       this.precio.desc1 = data[0].precios[0].desc1||0
@@ -3460,7 +3415,6 @@ export default {
       aux = (aux/(1-(this.precio.desc1/100)))
       this.precio.costooriginal = aux
 
-      debugger
       this.precio.ofepreciofinal = 0
       let a = this.precio.precio
       let b = this.precio.ofeprecio
@@ -3471,18 +3425,11 @@ export default {
         this.precio.ofeimportedescuento = this.roundTo(this.precio.precio*(Number(this.precio.ofetasadescuento)/100),this.precio.decimales)
         this.precio.ofeprecio = this.roundTo(this.precio.precio-this.precio.ofeimportedescuento,this.precio.decimales)
         this.precio.ofepreciofinal = this.roundTo(this.precio.ofeprecio*(1+(data[0].precios[0].tasaiva/100)),this.precio.decimales)
-        debugger
       } else {
         this.precio.ofeimportedescuento = 0
         this.precio.ofeprecio = 0
         this.precio.ofepreciofinal = 0
       }
-
-      let e = this.precio.ofepreciofinal
-
-      this.precio.porrev1 = data[0].precios[0].porrev1||this.porrev[0]
-      this.precio.porrev2 = data[0].precios[0].porrev2||this.porrev[1]
-      this.precio.porrev3 = data[0].precios[0].porrev3||this.porrev[2]
 
       // LOS COMBOS NO TIENEN % DE REMARCACION PARA LOS CREADORES, PARA EL RESTO SI.
       if (this.editado.escombo && this.elArticuloEsMio) { 
@@ -3503,15 +3450,11 @@ export default {
       this.precio.exmin = data[0].precios[0].exmin
       this.precio.sinstock = data[0].precios[0].sinstock
       this.precio.activo = data[0].precios[0].activo
-
       this.nombreDelGrupo = ''
       if (data[0].precios[0].grupo_id) {
         this.nombreDelGrupo = data[0].precios[0].nomgru
       }
       this.precio.updatedAt = data[0].precios[0].updatedAt
-      this.precio.ofedetalles = data[0].precios[0].ofedetalles
-
-      debugger
       if (this.precio.ofetasadescuento) {
         this.precio.ofeimportedescuento = this.roundTo(this.precio.precio*(Number(this.precio.ofetasadescuento)/100),this.precio.decimales)
         this.precio.ofeprecio = this.roundTo(this.precio.precio-this.precio.ofeimportedescuento, this.precio.decimales)
@@ -3519,11 +3462,11 @@ export default {
         this.precio.ofeimportedescuento = 0
         this.precio.ofeprecio = 0
       }
-
-//    alert (this.editado.ofetasadescuento)
-//    alert (this.editado.ofeimportedescuento)
-//    alert (this.editado.ofeprecio)
-
+      this.precio.publicomi = 0
+      if (this.precio.porremmi!=0) {
+        this.precio.publicomi = this.precio.precio*(1+(this.precio.porremmi/100))
+        this.precio.publicomi = this.roundTo(this.precio.publicomi * (1+(this.editado.tasa/100)),this.precio.decimales)
+      }
     },
 
     clickEnGrupo() {
@@ -3578,10 +3521,6 @@ export default {
       }
     },
 
-    codbarpropio() {
-      this.editado.codbar = '123456789012'
-    },
-
     comboImporteDescuento(item) {
       return (this.formatoImporte(item.cantidad*(item.componente.precios[0].precio*(item.tasadescuento/100))))
     },
@@ -3631,6 +3570,15 @@ export default {
         v.push(this.userArticulosId);
       }
       return v
+    },
+
+    sayStock(item) {
+      let stk = item.stock||0
+      if (typeof stk == "number") {
+        return this.formatoImporte(stk)
+      } else {
+        return stk
+      }
     },
 
     ayuda(cual) {

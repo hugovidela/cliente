@@ -8,7 +8,13 @@
         sort-by="id"
         dense
         class="elevation-3"
-        :footer-props="footerProps">
+        :footer-props="{
+          itemsPerPageOptions: [9],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }">
         <template v-slot:top>
           <v-toolbar
             :color="temas.forms_titulo_bg"
@@ -226,22 +232,16 @@ export default {
       (v) => v.length <= 40 || 'Ingrese hasta 80 caracteres'
     ],
     searchPaises: '',     // para el cuadro de búsqueda de datatables
-    footerProps: {'items-per-page-options': [9, 12, 15, 100]},
     search: '', // para el cuadro de búsqueda de datatables  
     dialog: false, // para que la ventana de dialogo o modal no aparezca automáticamente      
     // definimos los headers de la datatables
     items: [],
     headers: [
-      {
-        text: 'NID',
-        align: 'left',
-        sortable: false,
-        value: 'id',
-      },
-      { text: 'CODIGO', value:'codigo'},
-      { text: 'NOMBRE', value:'nombre'},
-      { text: 'PAIS', value:'pais.nombre'},
-      { text: 'ACTIVO', value:'activo'},
+      { text: 'ID', value: 'id', width: "60" },
+      { text: 'CODIGO', value:'codigo', width: "100"},
+      { text: 'NOMBRE', value:'nombre', width: "250"},
+      { text: 'PAIS', value:'pais.nombre', width: "130"},
+      { text: 'ACTIVO', value:'activo', width: "60"},
       { text: 'ACCIONES', value: 'accion', sortable: false },
     ],
     editedIndex: -1,

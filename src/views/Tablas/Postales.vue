@@ -7,7 +7,13 @@
         sort-by="id"
         dense
         class="elevation-3"
-        :footer-props="footerProps">
+        :footer-props="{
+          itemsPerPageOptions: [9],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }">
         <template v-slot:top>
           <v-toolbar
             :color="temas.forms_titulo_bg"
@@ -250,7 +256,7 @@ export default {
     headers: [
       { text: 'ID', value: 'id', width: "100", align: 'end' },
       { text: 'CODIGO', value:'codigo', width: "100", align: 'end'},
-      { text: 'NOMBRE', value:'nombre', width: "300", align: 'left'},
+      { text: 'NOMBRE', value:'nombre', width: "500", align: 'left'},
       { text: 'PROVINCIA', value:'provincia.nombre', width: "300", align: 'left'},
       { text: 'ACTIVO', value:'activo'},
       { text: 'ACCIONES', value: 'accion', sortable: false },

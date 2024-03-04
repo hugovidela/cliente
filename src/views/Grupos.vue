@@ -487,9 +487,7 @@
       },
 
       generarPlantilla() {
-        debugger
         return HTTP().post('generarplantillagrupos', {rubro_id: this.rubro.id }).then((res)=>{
-          debugger
           this.dialogPlantilla = false
           if (res=='error') {
             this.mensaje('¡Opps!, hubo un problema al generar la plantilla seleccionada!, consulte con la mesa de ayuda Gohu.', this.temas.cen_card_activo_bg, 3000) 

@@ -156,7 +156,6 @@ export default {
       let operario = ''       // OPERARIO
       let operarioUserId = '' // OPERARIO ID
       let tema = ''           // TEMA
-     
       commit('setLoginError', null );
       commit('setRegisterError', null );
       return HTTP().post('/auth/login', {email: state.loginEmail,password: state.loginPassword,uid: null}).then(({ data }) => {
@@ -352,27 +351,22 @@ export default {
         // NO HAGO RETURN ACA, VER SI DA PROBLEMAS
 
         let vinItems = []
-        //vinItems.push(data.id)
-
         commit('setExterno', data.externo==1 ? true : false, { root: true })
         commit('setAnclarCostos', data.anclarcostos==1 ? true : false, { root: true })
         commit('setInicial', data.inicial==1 ? true : false, { root: true })
         commit('setTipo', data.tipo, { root: true })
-
-        let tipo   = data.tipo
-        let uid    = data.id
-
+        let tipo = data.tipo
+        let uid = data.id
         if (!data.activo) {
-
           commit('setTipo', data.tipo , { root: true })
           router.push('/');
-
         } else {
 
           debugger
           return HTTP().post('/inicio', {tipo: tipo, uid: uid}, {timeout: 20000}).then(({ data }) => {    // vinculospadres
 
             debugger
+            commit('setDistribuidor', data.setDistribuidor, { root: true })
             commit('setTurnos', data.setTurnos, { root: true});
             commit('setTurnoslv', data.setTurnoslv, { root: true});
             commit('setTurnossd', data.setTurnossd, { root: true});
@@ -383,6 +377,7 @@ export default {
             commit('setExclusivoDe', data.setExclusivoDe, { root: true});
             commit('setCodigoOID', data.setCodigoOID, { root: true});
             commit('setSoloArtComprados', data.setSoloArtComprados, { root: true});
+            commit('setVerSoloArtComprados', data.setVerSoloArtComprados, { root: true});
             commit('setComprobantesM', data.setComprobantesM, { root: true});
             commit('setPedTransfAVend', data.setPedTransfAVend, { root: true });
             commit('setDescuentos', data.setDescuentos, { root: true });
@@ -391,7 +386,7 @@ export default {
             commit('setUsaMaletines', data.setUsaMaletines, { root: true })
             commit('setAdministraGOHU', data.setAdministraGOHU, {root: true })
             commit('setTransition', data.setTransition, {root: true})
-            debugger
+            commit('setDark', data.setDark, {root: true})
             commit('setTopeOperaciones', data.setTopeOperaciones, {root: true})
             commit('setTopeArticulos', data.setTopeVinculaciones, {root: true})
             commit('setTopeVinculaciones', data.setTopeVinculaciones, {root: true})
@@ -416,7 +411,6 @@ export default {
             commit('setProveedor'             , losProv[0] , { root: true})
             commit('setProveedores'           , losProv , { root: true})
             commit('setRubros'                , data.setRubros, { root: true })
-            commit('setPorRev'                , data.setPorRev, { root: true })
 
             // si viene null es porque todavia no se termino de configurar ( es UG o UE )
             if (data.setTipo!=null) {
@@ -447,6 +441,9 @@ export default {
             commit('setTemas'                 , data.setTemas, { root: true })
             commit('setCaja'                  , data.setCaja, { root: true } );
             commit('setRoles'                 , data.setRoles, { root: true })
+
+            //this.$vuetify.theme.dark = true;
+
             router.push('/');
           })
         }

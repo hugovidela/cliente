@@ -1,5 +1,7 @@
 <template>
   <v-app>
+
+    <!-- MENU LATERAL -->
     <v-navigation-drawer
       class="fg"
       v-model="drawer"
@@ -104,7 +106,7 @@
                   Viajes
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="(ophab(108) && userId!=1)"
+              <v-list-item v-show="(ophab(108)&&userId!=1)"
                 link :to="{name: 'maletines'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
@@ -120,16 +122,6 @@
                   Comisiones
                 </v-list-item-title>
               </v-list-item>
-
-              <v-list-item v-show="(ophab(101) && userId!=1)"
-                link :to="{name: 'clientestags'}"
-                :color="temas.barra_lateral_font">
-                <v-list-item-title>
-                  <v-icon>verified_user</v-icon>
-                  Tags
-                </v-list-item-title>
-              </v-list-item>
-
               <v-list-item v-show="ophab(15)"
                 link :to="{name: 'informesdeventas'}"
                 :color="temas.barra_lateral_font">
@@ -147,6 +139,7 @@
                 Compras
               </v-list-item-title>
             </v-list-item>
+          <!--
             <v-list-item v-show="tipo=='PP'"
               link :to="{name:'ventas'}"
               :color="temas.barra_lateral_font">
@@ -155,7 +148,7 @@
                 Ventas
               </v-list-item-title>
             </v-list-item>
-
+          -->
             <v-list-item v-show="tipo=='PP'"
               link :to="{name: 'usersclientes', key: 'C'}"
               @click="setTercero('C')"
@@ -165,7 +158,6 @@
                 Mis Clientes
               </v-list-item-title>
             </v-list-item>
-
             <v-list-item v-show="tipo=='PP'"
               link :to="{name: 'usersproveedores', key: 'P'}"
               @click="setTercero('P')"
@@ -175,7 +167,14 @@
                 Mis Proveedores
               </v-list-item-title>
             </v-list-item>
-
+            <v-list-item v-show="tipo=='PP'"
+              link :to="{name: 'articulos'}"
+              :color="temas.barra_lateral_font">
+              <v-list-item-title>
+                <v-icon>mdi-barcode</v-icon>
+                Articulos
+              </v-list-item-title>
+            </v-list-item>
             <v-list-group  v-show="ophab(26)"
               no-action prepend-icon="mdi-airplane-landing"
               :color="temas.barra_lateral_font">
@@ -233,8 +232,8 @@
                 </v-list-item-title>
               </v-list-item>
             </v-list-group>
-            <!--<v-list-group v-show="ophab(45) || (tipo=='PP'&&exclusivoDe.id==null)"-->
-            <v-list-group v-show="ophab(45)"
+            <!--<v-list-group v-show="ophab(45)"-->
+            <v-list-group v-show="ophab(45) || (tipo=='PP'&&exclusivoDe.id==null)"
               no-action prepend-icon="mdi-barcode"
               :color="temas.barra_lateral_font">
               <template v-slot:activator>
@@ -247,7 +246,7 @@
                   Articulos
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="(ophab(102) || (tipo=='PP')) && userId!=1"
+              <v-list-item v-show="(ophab(102) || (tipo=='PP' ))&&userId!=1"
                 link :to="{name: 'codigosdebarra'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
@@ -255,7 +254,7 @@
                   Códigos de Barra
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="(ophab(47) || (tipo=='PP')) && userId!=1"
+              <v-list-item v-show="(ophab(47) || (tipo=='PP'))&&userId!=1"
                 link :to="{name: 'precioscambios'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
@@ -263,7 +262,7 @@
                   Cambios de Precios
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="(ophab(48) || (tipo=='PP')) && userId!=1"
+              <v-list-item v-show="(ophab(48) || (tipo=='PP'))&&userId!=1"
                 link :to="{name: 'cambiosmasivosdearticulos'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
@@ -271,7 +270,7 @@
                   Cambios Masivos
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="(ophab(49) || tipo=='PP') && userId!=1"
+              <v-list-item v-show="(ophab(49) || tipo=='PP')&&userId!=1"
                 link :to="{name: 'preciosconsultas'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
@@ -287,7 +286,7 @@
                   Actualización de Precios
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="(ophab(94) || tipo=='PP') && userId!=1"
+              <v-list-item v-show="(ophab(94)||tipo=='PP')&&userId!=1"
                 link :to="{name: 'listas'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
@@ -295,7 +294,7 @@
                   Listas de Precios
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="(ophab(52) && tipo!='PP') && userId!=1"
+              <v-list-item v-show="(ophab(52)&&tipo!='PP')&&userId!=1"
                 link :to="{name: 'unidades'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
@@ -303,15 +302,7 @@
                   Unidades de Medida
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="(ophab(53) && tipo!='PP') && userId!=1"
-                link :to="{name: 'caracteristicas'}"
-                :color="temas.barra_lateral_font">
-                <v-list-item-title>
-                  <v-icon>mdi-shape-outline</v-icon>
-                  Caracteristicas
-                </v-list-item-title>
-              </v-list-item>
-              <v-list-item v-show="(ophab(54) || tipo=='PP')"
+              <v-list-item v-show="(ophab(54)||tipo=='PP')"
                 link :to="{name: 'marcas'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
@@ -319,7 +310,7 @@
                   Marcas
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="(ophab(55) || tipo=='PP')"
+              <v-list-item v-show="(ophab(55)||tipo=='PP')"
                 link :to="{name: 'grupos'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
@@ -327,17 +318,7 @@
                   Grupos
                 </v-list-item-title>
               </v-list-item>
-              <!--
-              <v-list-item v-show="(ophab(56) || tipo=='PP') && userId!=1"
-                link :to="{name: 'preciostags'}"
-                :color="temas.barra_lateral_font">
-                <v-list-item-title>
-                  <v-icon>verified_user</v-icon>
-                  Tags
-                </v-list-item-title>
-              </v-list-item>
-              -->
-              <v-list-item v-show="(ophab(57) || tipo=='PP') && userId!=1"
+              <v-list-item v-show="(ophab(57)||tipo=='PP')&& userId!=1"
                 link :to="{name: 'informesdearticulos'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
@@ -346,13 +327,14 @@
                 </v-list-item-title>
               </v-list-item>
             </v-list-group>
-            <v-list-group v-show="(ophab(59) && tipo!='PP') && userId!=1"
+            <v-list-group v-show="(ophab(59) && tipo!='PP')&&userId!=1"
               no-action prepend-icon="mdi-stocking"
               :color="temas.barra_lateral_font">
               <template v-slot:activator>
                 <v-list-item-title>Stocks</v-list-item-title>
               </template>
-              <v-list-item v-show="ophab(60)" link :to="{name: 'stocks'}"
+              <v-list-item v-show="ophab(60)"
+                link :to="{name: 'stocks'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
                   <v-icon>mdi-table-column</v-icon>
@@ -367,7 +349,8 @@
                 </v-list-item-title>
               </v-list-item>
             </v-list-group>
-            <v-list-group v-show="ophab(67) && tipo!='PP'" no-action prepend-icon="mdi-currency-usd"
+            <v-list-group v-show="ophab(67)&&tipo!='PP'"
+              no-action prepend-icon="mdi-currency-usd"
               :color="temas.barra_lateral_font">
               <template v-slot:activator>
                 <v-list-item-title>Tesoreria</v-list-item-title>
@@ -403,12 +386,12 @@
               </v-list-item>
             </v-list-group>
             <v-list-group
-              v-show="ophab(73) && tipo!='PP' && !sucursalDemo" no-action prepend-icon="mdi-bank"
+              v-show="ophab(73) && tipo!='PP'&&!sucursalDemo"
+              no-action prepend-icon="mdi-bank"
               :color="temas.barra_lateral_font">
               <template v-slot:activator>
                 <v-list-item-title>Bancos</v-list-item-title>
               </template>
-
               <v-list-item  v-show="ophab(74) && activo" link :to="{name: 'bancosmovimientos'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
@@ -424,8 +407,8 @@
                 </v-list-item-title>
               </v-list-item>
             </v-list-group>
-
-            <v-list-group v-show="ophab(75) && tipo!='PP'" no-action prepend-icon="mdi-home-account"
+            <v-list-group v-show="ophab(75)&&tipo!='PP'"
+              no-action prepend-icon="mdi-home-account"
               :color="temas.barra_lateral_font">
               <template v-slot:activator>
                 <v-list-item-title>AFIP</v-list-item-title>
@@ -442,13 +425,6 @@
                 <v-list-item-title>
                   <v-icon>mdi-percent</v-icon>
                   Tasas de IVA
-                </v-list-item-title>
-              </v-list-item>
-              <v-list-item v-show="ophab(77)" link :to="{name:'afipoperaciones'}"
-                :color="temas.barra_lateral_font">
-                <v-list-item-title>
-                  <v-icon>mdi-credit-card-scan</v-icon>
-                  Operaciones
                 </v-list-item-title>
               </v-list-item>
               <v-list-item v-show="ophab(78)" link :to="{name:'afipcomprobantes'}"
@@ -495,49 +471,49 @@
                   Migración de Datos
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="ophab(83) && tipo!='PP'" link :to="{name:'contactostipos'}"
+              <v-list-item v-show="ophab(83)&&tipo!='PP'" link :to="{name:'contactostipos'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
                   <v-icon>mdi-contacts</v-icon>
                   Contactos
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="ophab(84) && tipo!='PP'" link :to="{name:'mediosdepagos'}"
+              <v-list-item v-show="ophab(84)&&tipo!='PP'" link :to="{name:'mediosdepagos'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
                   <v-icon>mdi-credit-card</v-icon>
                   Medios de Pagos
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="ophab(85) && tipo!='PP'" link :to="{name:'paises'}"
+              <v-list-item v-show="ophab(85)&&tipo!='PP'" link :to="{name:'paises'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
                   <v-icon>mdi-earth</v-icon>
                   Paises
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="ophab(86) && tipo!='PP'" link :to="{name:'provincias'}"
+              <v-list-item v-show="ophab(86)&&tipo!='PP'" link :to="{name:'provincias'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
                   <v-icon>mdi-church</v-icon>
                   Provincias
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="ophab(87) && tipo!='PP'" link :to="{name:'postales'}"
+              <v-list-item v-show="ophab(87)&&tipo!='PP'" link :to="{name:'postales'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
                   <v-icon>mdi-city</v-icon>
                   Códigos Postales
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="ophab(88) && tipo!='PP'" link :to="{name:'bancos'}"
+              <v-list-item v-show="ophab(88)&&tipo!='PP'" link :to="{name:'bancos'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
                   <v-icon>mdi-bank</v-icon>
                   Bancos
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-show="ophab(89) && tipo!='PP'" link :to="{name:'tarjetas'}"
+              <v-list-item v-show="ophab(89)&&tipo!='PP'" link :to="{name:'tarjetas'}"
                 :color="temas.barra_lateral_font">
                 <v-list-item-title>
                   <v-icon>mdi-credit-card-plus</v-icon>
@@ -576,6 +552,38 @@
                 Cambiar de Licencia
               </v-list-item-title>
             </v-list-item>
+            <v-list-item v-if="exclusivoDe.id==null&&operarioArea==null"
+              @click="showUsuariosNuevos"
+              :color="temas.barra_lateral_font">
+              <v-list-item-title>
+                <v-icon>mdi-share-variant</v-icon>
+                Vinculaciones
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item
+              @click="showNuevoMensaje"
+              :color="temas.barra_lateral_font">
+              <v-list-item-title>
+                <v-icon>mdi-format-float-left</v-icon>
+                Mensajes
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item
+              @click="verCotizaciones(true)"
+              :color="temas.barra_lateral_font">
+              <v-list-item-title>
+                <v-icon>mdi-currency-usd</v-icon>
+                Dolar
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item
+              link to="/profile"
+              :color="temas.barra_lateral_font">
+              <v-list-item-title>
+                <v-icon>mdi-account-settings</v-icon>
+                Perfil
+              </v-list-item-title>
+            </v-list-item>
             <v-list-item v-if="!operarioEsVendedor"
               link :to="{name:'ayuda', params: { id: 0}}"
               :color="temas.barra_lateral_font">
@@ -605,27 +613,35 @@
         v-bind:style="{'background-color': temas.barra_principal_bg
         ? temas.barra_principal_bg : temas.barra_principal_bg}">
       </v-app-bar-nav-icon>
-      <v-toolbar-title style="width: 700px" class="ml-0 pl-0" v-show="isLoggedIn">
-        <span class="fg70 hidden-sm-and-down">
 
+      <v-toolbar-title style="width: 700px" class="ml-0 pl-0" v-show="isLoggedIn">
+        <span class="fg70">
           <v-list-item-avatar color="grey">
             <v-img height="40" width="40" :src="`/images/${avatar}`"></v-img>
           </v-list-item-avatar>
-          <v-chip
-            class="fg ml-0 ma-1" :color="temas.barra_lateral_bg">
-            {{ empresa }} / {{ operario }}
-            {{ operarioUserId?` / ${sayOperarioArea}`:`/ ${tipo}` }}
+          <v-chip v-if="!externo"
+            class="fg ml-0 ma-1 hidden-sm-and-down"
+            :color="temas.barra_lateral_bg">
+            {{ empresa }} / {{ operario }} / {{ sayOperarioArea }} / {{ tipo }} /  {{ level }}
+          </v-chip>
+          <v-chip v-else
+            class="fg ml-0 ma-1 hidden-sm-and-down"
+            :color="temas.barra_lateral_bg">
+            {{ empresa }}
           </v-chip>
           <v-chip v-if="exclusivoDe.username"
-            class="fg ml-0 ma-1" :color="temas.barra_lateral_bg">
+            class="fg ml-0 ma-1 hidden-sm-and-down"
+            :color="temas.barra_lateral_bg">
             Exclusivo de {{ exclusivoDe.username }}
           </v-chip>
           <v-chip v-if="tipo=='BA'||tipo=='ME'"
-            class="fg ml-0 ma-1" :color="temas.barra_lateral_bg">
-            operaciones restantes {{ $store.state.topeOperaciones-$store.state.operaciones }}
+            class="fg ml-0 ma-1 hidden-sm-and-down"
+            :color="temas.barra_lateral_bg">
+            opres {{ $store.state.topeOperaciones-$store.state.operaciones }}
           </v-chip>
           <v-chip v-if="administraGOHU"
-            class="fg ml-0 ma-1" :color="temas.barra_lateral_bg">
+            class="fg ml-0 ma-1 hidden-sm-and-down"
+            :color="temas.barra_lateral_bg">
             Precios Administrados por GOHU
           </v-chip>
 <!--
@@ -635,16 +651,17 @@
           {{empresa}}/{{operario}}/{{tipo}}/{{activo ? 'si' : 'no'}}/{{operarioUserId}}
           /{{externo}}/{{$store.state.proveedores.length}}
 -->
+
         </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
       <!-- VENTAS -->
-      <v-tooltip bottom>
+      <v-tooltip bottom
+        v-if="isLoggedIn && activo && !enCarrito && tipo!='PP' && !externo && level!=3">
         <template v-slot:activator="{ on }">
           <v-btn
-            fab small outlined class="mr-2"
-            v-show="isLoggedIn && activo && !enCarrito && tipo!='PP'" dense
+            fab small outlined class="ml-1 mr-1 hidden-sm-and-down"
             link :to="{name: 'ventas'}"
             v-on="on">
             <v-icon medium  :color="temas.barra_principal_bell_bg">
@@ -656,12 +673,42 @@
       </v-tooltip>
       <!-- FINAL VENTAS -->
 
+      <!-- VIAJES -->
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn
+            v-show="isLoggedIn && activo && !enCarrito && !externo && level==3"
+            fab small outlined class="ml-1 mr-1 hidden-sm-and-down"
+            link :to="{name: 'viajes'}"
+            v-on="on">
+            <v-icon>mdi-road</v-icon>
+          </v-btn>
+        </template>
+        <span class="fg">Viajes</span>
+      </v-tooltip>
+      <!-- FINAL VIAJES -->
+
+      <!-- MALETINES -->
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn
+            v-show="isLoggedIn && activo && !enCarrito && !externo && level==3"
+            fab small outlined class="ml-1 mr-1 hidden-sm-and-down"
+            link :to="{name: 'maletines'}"
+            v-on="on">
+            <v-icon>mdi-wallet-travel</v-icon>
+          </v-btn>
+        </template>
+        <span class="fg">Maletines</span>
+      </v-tooltip>
+      <!-- FINAL MALETINES -->
+
       <!-- TURNOS -->
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn
-            fab small outlined class="mr-2"
-            v-show="isLoggedIn&&activo&&!enCarrito&&turnos" dense
+            fab small outlined class="ml-1 mr-1 hidden-sm-and-down"
+            v-show="isLoggedIn&&activo&&!enCarrito&&turnos&&!externo" dense
             link :to="{name: 'turnos'}"
             v-on="on">
             <v-icon medium  :color="temas.barra_principal_bell_bg">
@@ -674,7 +721,23 @@
       <!-- FINAL TURNOS -->
 
       <!-- OFERTAS -->
-      <v-tooltip bottom v-if="userId!=1&&$store.state.operario=='CEO'&&vinculosPadres.length>0">
+      <v-tooltip bottom
+        v-if="userId!=1&&isLoggedIn&&activo&&!enCarrito">
+        <template v-slot:activator="{ on }">
+          <v-btn
+            fab small outlined class="ml-1 mr-1"
+            @click="ofertasOnOff()" v-on="on">
+            <v-icon medium :color="temas.barra_principal_bell_bg">
+              {{!$store.state.ofertas ? 'mdi-cart-outline' : 'mdi-cart-off'}}
+            </v-icon>
+          </v-btn>
+        </template>
+        <span class="fg">{{$store.state.ofertas?'Ocultar Ofertas':'Ver Ofertas'}}</span>
+      </v-tooltip>
+
+      <!--  ESTE NO VA
+      <v-tooltip bottom
+        v-if="userId!=1&&$store.state.operario=='CEO'&&vinculosPadres.length>0&&!externo">
         <template v-slot:activator="{ on }">
           <v-btn
             fab small outlined class="mr-2"
@@ -688,14 +751,17 @@
         </template>
         <span class="fg">{{$store.state.ofertas?'Ocultar Ofertas':'Ver Ofertas'}}</span>
       </v-tooltip>
+      -->
+
       <!-- FINAL OFERTAS -->
 
       <!-- CONSULTA DE PRECIOS -->
-      <v-tooltip bottom v-if="userId!=1">
+      <v-tooltip bottom
+        v-if="userId!=1&&!externo">
         <template v-slot:activator="{ on }">
           <v-btn
-            fab small outlined class="mr-2"
-            v-show="(ophab(49) || tipo=='PP') && isLoggedIn && activo && !enCarrito" dense
+            fab small outlined class="ml-1 mr-1"
+            v-show="(ophab(49) || tipo=='PP') && isLoggedIn && activo && !enCarrito"
             link to="/preciosconsultas" v-on="on">
             <v-icon medium :color="temas.barra_principal_bell_bg">mdi-barcode</v-icon>
           </v-btn>
@@ -705,18 +771,19 @@
       <!-- FINAL CONSULTA DE PRECIOS -->
 
       <!-- VINCULOS -->
-      <v-tooltip bottom v-if="userId!=1 && operario=='CEO' && exclusivoDe.id==null">
+      <v-tooltip bottom
+        v-if="userId!=1&&operario=='CEO'&&exclusivoDe.id==null&&!externo">
         <template v-slot:activator="{ on }">
           <v-btn
-            fab small outlined class="text-capitalize mr-2"
-            v-show="isLoggedIn && usuariosBkp && activo && !enCarrito && !operarioEsVendedor" dense
+            fab small outlined class="ml-1 mr-1 hidden-sm-and-down"
+            v-show="isLoggedIn && usuariosBkp && activo && !enCarrito && !operarioEsVendedor"
             @click="showUsuariosNuevos" v-on="on">
             <v-badge
               :content="vinculosPanel[3].ctt+vinculosPanel[0].ctt"
               :value="vinculosPanel[3].ctt+vinculosPanel[0].ctt"
               :color="temas.forms_btn_add_bg"
               :dark="temas.forms_btn_add_bg==true" overlap>
-              <v-icon medium class="mr-1" :color="temas.barra_principal_bell_bg">
+              <v-icon medium :color="temas.barra_principal_bell_bg">
                 mdi-share-variant
               </v-icon>
             </v-badge>
@@ -727,12 +794,12 @@
       <!-- FINAL DE VINCULOS -->
 
       <!-- MENSAJES ENTRE USUARIOS -->
-      <v-tooltip bottom v-if="(vinculosPadres.length+vinculosHijos.length>0)&&exclusivoDe.id==null">
+      <v-tooltip bottom
+        v-if="(vinculosPadres.length+vinculosHijos.length>0)&&exclusivoDe.id==null&&!externo">
         <template v-slot:activator="{ on }">
           <v-btn
-            fab small outlined class="text-capitalize mr-2"
+            fab small outlined class="ml-1 mr-1 hidden-sm-and-down"
             v-show="isLoggedIn&&usuariosBkp&&activo&&!enCarrito&&!operarioEsVendedor"
-            dense
             @click="showNuevoMensaje" v-on="on">
             <v-icon medium class="mr-0" :color="temas.barra_principal_bell_bg">
               mdi-format-float-left
@@ -744,11 +811,12 @@
       <!-- MENSAJES ENTRE USUARIOS -->
 
       <!-- VINCULOS ACEPTADOS -->
-      <v-tooltip bottom v-if="userId!=1 && operario=='CEO'&&notVinOk.length>0">
+      <v-tooltip bottom
+        v-if="userId!=1 && operario=='CEO'&&notVinOk.length>0&&!externo">
         <template v-slot:activator="{ on }">
           <v-btn
-            fab small outlined class="text-capitalize mr-2"
-            v-show="isLoggedIn&&activo&&!enCarrito&&!operarioEsVendedor" dense
+            fab small outlined class="ml-1 mr-1 hidden-sm-and-down"
+            v-show="isLoggedIn&&activo&&!enCarrito&&!operarioEsVendedor"
             @click="showNueVinOk" v-on="on">
             <v-badge
               :content="notVinOk.length"
@@ -766,18 +834,19 @@
       <!-- FINAL DE VINCULOS ACEPTADOS -->
 
       <!-- VINCULOS RECHAZADOS -->
-      <v-tooltip bottom v-if="userId!=1 && operario=='CEO'&&notVinRech.length>0">
+      <v-tooltip bottom
+        v-if="userId!=1&&operario=='CEO'&&notVinRech.length>0&&!externo">
         <template v-slot:activator="{ on }">
           <v-btn
-            fab small outlined class="text-capitalize mr-2"
-            v-show="isLoggedIn&&activo&&!enCarrito&&!operarioEsVendedor" dense
+            fab small outlined class="ml-1 mr-1 hidden-sm-and-down"
+            v-show="isLoggedIn&&activo&&!enCarrito&&!operarioEsVendedor"
             @click="showNueVinRechazados" v-on="on">
             <v-badge
               :content="notVinRech.length"
               :value="notVinRech.length"
               :color="temas.forms_btn_add_bg"
               :dark="temas.forms_btn_add_bg==true" overlap>
-              <v-icon medium class="mr-1" :color="temas.barra_principal_bell_bg">
+              <v-icon medium :color="temas.barra_principal_bell_bg">
                 mdi-account-minus
               </v-icon>
             </v-badge>
@@ -788,13 +857,13 @@
       <!-- FINAL DE VINCULOS RECHAZADOS -->
 
       <!-- BOTON COTIZACIONES -->
-      <v-tooltip bottom>
+      <v-tooltip bottom v-if="!externo">
         <template v-slot:activator="{ on }">
-          <v-btn class="text-capitalize mr-2" fab small outlined
+          <v-btn class="ml-1 mr-1 hidden-sm-and-down"
+            fab small outlined
             v-show="isLoggedIn&&activo&&!enCarrito"
-            dense
             @click="verCotizaciones(true)" v-on="on">
-            <v-icon medium class="mr-0" :color="temas.barra_principal_bell_bg">
+            <v-icon medium :color="temas.barra_principal_bell_bg">
               mdi-currency-usd
             </v-icon>
           </v-btn>
@@ -803,7 +872,7 @@
       </v-tooltip>
       <!-- FINAL BOTON COTIZACIONES -->
 
-      <!-- BOTON GRAFICOS -->
+      <!-- BOTON GRAFICOS ESTE NO VA -->
       <!--
       <v-tooltip bottom v-if="tipo!='PP'&&operario=='CEO'">
         <template v-slot:activator="{ on }">
@@ -821,13 +890,12 @@
       -->
       <!-- FINAL BOTON GRAFICOS -->
 
-      <!-- BOTON ESTADO FINANCIERO -->
-<!--
+      <!-- BOTON ESTADO FINANCIERO ESTE NO VA -->
+      <!--
       <v-tooltip bottom v-if="tipo!='PP'&&operario=='CEO'">
         <template v-slot:activator="{ on }">
-          <v-btn class="text-capitalize mr-2" fab small outlined
+          <v-btn class="mr-2 ml-2" fab small outlined
             v-show="isLoggedIn && activo && !enCarrito && !operarioEsVendedor"
-            dense
             @click="setEstadoFinanciero" v-on="on">
             <v-icon medium class="mr-0" :color="temas.barra_principal_bell_bg">
               mdi-newspaper
@@ -836,17 +904,17 @@
         </template>
         <span class="fg">Estado Financiero</span>
       </v-tooltip>
--->
+      -->
       <!-- FINAL BOTON ESTADO FINANCIERO -->
 
-      <!-- BOTON REFRESH && !operarioEsVendedor -->
-      <v-tooltip bottom>
+      <!-- BOTON REFRESH -->
+      <v-tooltip bottom v-if="!externo">
         <template v-slot:activator="{ on }">
-          <v-btn class="text-capitalize mr-2" fab small outlined
+          <v-btn class="ml-1 mr-1"
+            fab small outlined
             v-show="isLoggedIn&&activo&&!enCarrito"
-            dense
             @click="setContadores" v-on="on">
-            <v-icon medium class="mr-0" :color="temas.barra_principal_bell_bg">
+            <v-icon medium :color="temas.barra_principal_bell_bg">
               mdi-refresh
             </v-icon>
           </v-btn>
@@ -858,8 +926,10 @@
       <!-- BOTON DE GOHU -->
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn class="text-capitalize mr-2" fab small outlined
-            v-show="isLoggedIn && $store.state.novedadesGohu>0&&activo&&!enCarrito" dense
+          <v-btn class="ml-1 mr-1 hidden-sm-and-down"
+            fab small outlined
+            v-show="isLoggedIn&&$store.state.novedadesGohu>0&&
+            activo&&!enCarrito&&!externo&&userId==1"
             @click="showNotGohu" v-on="on">
             <v-badge
               :content="novedadesGohu"
@@ -876,16 +946,21 @@
       </v-tooltip>
       <!-- FINAL BOTON DE GOHU -->
 
-      <!-- BOTON DE NOTIFICACIONES DE CPRS  en el v-show "&& !operarioEsVendedor" -->
+      <!-- BOTON DE NOTIFICACIONES DE CPRS -->
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn class="text-capitalize mr-2" fab small outlined
-            v-show="isLoggedIn&&$store.state.novedadesCprs>0&&activo&&!enCarrito"
-            dense @click="showNotCprs" v-on="on">
+          <v-btn class="ml-1 mr-1 hidden-sm-and-down"
+            fab
+            small
+            :outlined="novedadesCprs==0"
+            :color="novedadesCprs>0?'green':temas.forms_btn_add_bg"
+            v-show="isLoggedIn&&$store.state.novedadesCprs>0&&activo&&!enCarrito&&!externo"
+            dense
+            @click="showNotCprs" v-on="on">
             <v-badge
               :content="novedadesCprs"
               :value="novedadesCprs"
-              :color="temas.forms_btn_add_bg"
+              color="red"
               :dark="temas.forms_btn_add_bg==true" overlap>
               <v-icon medium class="mr-0" :color="temas.barra_principal_bell_bg">
                 mdi-bell-ring
@@ -900,9 +975,10 @@
       <!-- BOTON DE NOTIFICACIONES DE USUARIOS -->
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn class="text-capitalize mr-2" fab small outlined
+          <v-btn class="ml-1 mr-1 hidden-sm-and-down"
+            fab small outlined
             v-show="isLoggedIn&&
-            $store.state.novedadesUsrs>0&&activo&&!enCarrito&&!operarioEsVendedor"
+            $store.state.novedadesUsrs>0&&activo&&!enCarrito&&!operarioEsVendedor&&!externo"
             dense @click="showNotUsrs" v-on="on">
             <v-badge
               :content="novedadesUsrs"
@@ -920,8 +996,8 @@
       <!-- FINAL BOTON DE NOTIFICACIONES DE USUARIOS -->
 
       <!-- SELECCION DE LA SUCURSAL -->
-      <v-toolbar-items class="overflow-hidden">
-        <v-select v-if="isLoggedIn&&activo&&userId!==1&&!enCarrito"
+      <v-toolbar-items class="overflow-hidden hidden-sm-and-down">
+        <v-select v-if="isLoggedIn&&activo&&userId!==1&&!enCarrito&&!externo"
           class="mt-3 fg70"
           :color="temas.barra_principal_sucursal_bg"
           :dark="temas.barra_principal_sucursal_dark==true"
@@ -932,45 +1008,14 @@
           :items="sucursales" item-value="id" item-text="nombre" return-object>
         </v-select>
       </v-toolbar-items>
-
-      <!--
-      <v-toolbar-items class="overflow-hidden">
-        <v-select v-if="
-          isLoggedIn&&(tipo!='PP'||exclusivoDe.id!=null)&&activo&&userId!==1&&!enCarrito"
-          class="mt-3 fg70"
-          :color="temas.barra_principal_sucursal_bg"
-          :dark="temas.barra_principal_sucursal_dark==true"
-          :item-color="temas.barra_principal_sucursal_bg"
-          :value="$store.state.sucursal"
-          dense label="Sucursal" outlined
-          @change="cambioSucursal"
-          :items="sucursales" item-value="id" item-text="nombre" return-object>
-        </v-select>
-      </v-toolbar-items>
-      -->
-
-      <!-- BOTON CAMBIAR DE LICENCIA $store.state.operario=='CEO' NO ES OPERARIO-->
-      <!--
-      <v-tooltip  v-if="$store.state.operario=='CEO'" bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn class="text-capitalize ml-2 mr-2" fab small outlined
-            v-show="isLoggedIn && activo && !enCarrito"
-            dense @click="cambiarLicencia" v-on="on">
-            <v-icon medium class="mr-0" :color="temas.barra_principal_bell_bg">
-              mdi-account-star
-            </v-icon>
-          </v-btn>
-        </template>
-        <span class="fg">Cambiar Licencia</span>
-      </v-tooltip>
-      -->
-      <!-- FINAL CAMBIAR LICENCIA -->
 
       <!-- BOTON PERFIL -->
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn class="text-capitalize mr-2 ml-2" fab small outlined
-            v-show="isLoggedIn&&!enCarrito" link to="/profile" v-on="on">
+          <v-btn class="ml-1 mr-1"
+            fab small outlined
+            v-show="isLoggedIn&&!enCarrito"
+            link to="/profile" v-on="on">
             <v-icon :color="temas.barra_principal_profile_bg">
               mdi-account-settings
             </v-icon>
@@ -983,8 +1028,11 @@
       <!-- BOTON SALIR -->
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn class="text-capitalize mr-2" fab small outlined
-            v-show="isLoggedIn" @click="logout" v-on="on">
+          <v-btn class="ml-1 mr-1"
+            fab small
+            color="black"
+            v-show="isLoggedIn"
+            @click="logout" v-on="on">
             <v-icon :color="temas.barra_principal_salir_bg">
               exit_to_app
             </v-icon>
@@ -994,33 +1042,42 @@
       </v-tooltip>
       <!-- FIN BOTON SALIR -->
 
-      <!-- BOTON AYUDA -->
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn class="text-capitalize mr-2" fab small outlined
-            link :to="{name:'ayuda', params: { id: 0}}" v-on="on">
-            <v-icon :color="temas.barra_principal_salir_bg">help</v-icon>
-          </v-btn>
-        </template>
-        <span class="fg">Ayuda</span>
-      </v-tooltip>
-      <!-- FIN BOTON AYUDA -->
+      <!--
+        //////////////////////////
+        /// BOTONES DE INGRESO ///
+        //////////////////////////
+      -->
+
+      <!-- BOTON HOME -->
+      <v-btn class="text-capitalize mr-2"
+        @click="estoyEnLogin=false"
+        to="/"
+        color="red"
+        v-if="!isLoggedIn">
+        <v-icon :color="temas.barra_principal_salir_bg">
+          home
+        </v-icon>
+        Home
+      </v-btn>
+      <!-- FIN BOTON HOME -->
 
       <!-- BOTON REGISTRARSE -->
-      <v-btn class="text-capitalize mr-2" text
+      <v-btn class="text-capitalize mr-2"
         to="/register"
+        color="blue"
         v-if="!isLoggedIn"
         @click="estoyEnLogin=true">
         <v-icon :color="temas.barra_principal_salir_bg">
           account_box
         </v-icon>
-        Registrarse
+        Ser parte
       </v-btn>
       <!-- FIN BOTON REGISTRARSE -->
 
       <!-- BOTON INGRESAR -->
-      <v-btn class="text-capitalize mr-2" text
+      <v-btn class="text-capitalize mr-2"
         to="/login"
+        color="green"
         v-if="!isLoggedIn"
         @click="estoyEnLogin=true">
         <v-icon :color="temas.barra_principal_salir_bg">
@@ -1029,6 +1086,19 @@
         Ingresar
       </v-btn>
       <!-- FIN BOTON INGRESAR -->
+
+      <!-- BOTON AYUDA -->
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn class="ml-1 mr-1 hidden-sm-and-down"
+            fab small outlined
+            link :to="{name:'ayuda', params: { id: 0}}" v-on="on">
+            <v-icon :color="temas.barra_principal_salir_bg">help</v-icon>
+          </v-btn>
+        </template>
+        <span class="fg">Ayuda</span>
+      </v-tooltip>
+      <!-- FIN BOTON AYUDA -->
 
     </v-app-bar>
 
@@ -1063,6 +1133,15 @@
 
         <v-container fluid>
           <v-row v-if="cttPedidosGlobales>1">
+          <!--
+            <v-col>
+              <v-btn outlined class="fg mr-1 ml-4 text-capitalize"
+                @click="impPedAll()">
+                Descargar los {{ cttPedidosGlobales }} Pedidos pendientes
+                <v-icon class="ml-2">mdi-arrow-down-bold-circle-outline</v-icon>
+              </v-btn>
+            </v-col>
+          -->
             <v-col>
               <v-btn outlined class="fg mr-1 ml-4 text-capitalize"
                 @click="impPedAll()">
@@ -1075,14 +1154,13 @@
             <v-col v-for="(nota, idx) in notCprs" v-bind:key="idx">
               <v-card outlined class="mx-auto my-0 ml-2 pl-3 pt-3" max-width="1240"
                 color="transparent"
-                open-delay="200">
+                open-delay="500">
                 <v-img height="90" width="90" v-if="nota.novedades[0].userdesde!=undefined"
                   :src="nota.novedades[0].userdesde.logotipo!=null?
                   `/images/${nota.novedades[0].userdesde.logotipo}`
-                  :`/images/sin avatar.jpg`"
-                  >
+                  :`/images/sin avatar.jpg`">
                 </v-img>
-                <v-card-title class="pt-1 pb-0 pl-0 fg135">
+                <v-card-title class="pt-1 pb-0 pl-0 fg100b">
                   {{ nota.usuario.substring(0,18) }}
                   <v-badge v-if="nota.novedades.length&&nota.novedades[0].userdesde.tipo=='PP'"
                     content="pp"
@@ -1160,13 +1238,6 @@
                             </v-card-title>
                             <v-card-text class="fg85 pt-0 pb-2 pl-4 text--primary"
                               v-if="nov.comprobante!=null">
-<!--
-                              <div class="pt-2 pl-0"
-                                v-if="nov.comprobante.vinculoHijo.length>0
-                                && nov.comprobante.cpr.substr(0,3)=='FAC'">
-                                Origen: {{nov.comprobante.vinculoHijo[0].padre.cpr}}
-                              </div>
--->
                               <div class="pt-2 pl-0"
                                 v-if="nov.comprobante.vinculoHijo.length>0">
                                 Origen: {{nov.comprobante.vinculoHijo[0].padre.cpr}}
@@ -1174,8 +1245,7 @@
                               <div>
                                 <v-chip class="mb-0"
                                   x-small>
-                                    {{ nov.comprobante.quienpidio=='V' ?
-                                      'vendedor' : 'cliente' }}
+                                    {{ nov.comprobante.quienpidio=='V' ? 'vendedor' : 'cliente' }}
                                 </v-chip>
                               </div>
                               <div class="pt-2 pl-0" v-if="nov.tipo=='R'" color="red">
@@ -1188,6 +1258,7 @@
                                 Total:$
                                 <b>{{formatoImporte(nov.comprobante.total)}}<br></b>
                               </div>
+                              <!--
                               <div class="pt-0 pl-0" v-if="nov.tipo=='M'">
                                 Pendiente:
                                 ${{formatoImporte(nov.comprobante.pendientes[0].pendiente)}}
@@ -1196,6 +1267,7 @@
                                 días Vencido (
                                 {{formatoFecha(nov.comprobante.pendientes[0].vencimiento)}} )
                               </div>
+                              -->
                               <v-row v-for="(not, idx3) in nov.notas" v-bind:key="idx3"
                                 v-show="not.borrada==false">
                                 <div class="pt-2 pl-3 pb-1"
@@ -1311,6 +1383,8 @@
                                 <span class="fg">Artículos</span>
                               </v-tooltip>
 
+                              <!-- CANCELACIONES Y VALORES -->
+                              <!--
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on }">
                                   <v-btn
@@ -1323,13 +1397,29 @@
                                     class="mr-0 ml-0"
                                     @click="verPend(nov)" v-on="on">
                                     <v-icon>mdi-playlist-minus</v-icon>
-                                    <!--<v-icon>mdi-message-text-outline</v-icon>-->
                                   </v-btn>
                                 </template>
                                 <span class="fg">
                                   {{nov.comprobante.cancelaciones ?
                                   'Cancelaciones y Valores' : 'Pendientes'}}
                                 </span>
+                              </v-tooltip>
+                              -->
+                              <!-- FIN CANCELACIONES Y VALORES -->
+
+                              <v-tooltip bottom>
+                                <template v-slot:activator="{ on }">
+                                  <v-btn
+                                    v-show="(nov.comprobante.valoresEgresos)
+                                    && nov.comprobante.cpr.substr(0,3)=='PAG'
+                                    && tipo!='PP'"
+                                    fab x-small outlined
+                                    class="mr-0 ml-0"
+                                    @click="verValores(nov)" v-on="on">
+                                    <v-icon>mdi-playlist-minus</v-icon>
+                                  </v-btn>
+                                </template>
+                                <span class="fg">Valores</span>
                               </v-tooltip>
 
                               <v-tooltip bottom>
@@ -1372,10 +1462,26 @@
                                 <span class="fg">Enviar a Excel</span>
                               </v-tooltip>
 
+                              <!--
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on }">
                                   <v-btn
                                     v-show="nov.comprobante.items[0].valor_id!=null"
+                                    fab x-small outlined
+                                    color="red"
+                                    class="mr-0 ml-0"
+                                    @click="verChequeRechazado(nov)" v-on="on">
+                                    <v-icon>mdi-file</v-icon>
+                                  </v-btn>
+                                </template>
+                                <span class="fg">Ver Cheque Rechazado</span>
+                              </v-tooltip>
+                              -->
+
+                              <v-tooltip bottom>
+                                <template v-slot:activator="{ on }">
+                                  <v-btn
+                                    v-show="showChequeRechazado(nov)"
                                     fab x-small outlined
                                     color="red"
                                     class="mr-0 ml-0"
@@ -1580,7 +1686,14 @@
             <v-data-table
               :headers="headersArt"
               :items="articulos"
-              :class="temas.forms_titulo_bg" dense>
+              :class="temas.forms_titulo_bg" dense
+              :footer-props="{
+                itemsPerPageOptions: [6],
+                showFirstLastPage: true,
+                showCurrentPage: true,
+                nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                prevIcon: 'mdi-arrow-left-drop-circle-outline',
+              }">
               <template v-slot:item.precio="{ item }">
                 $ {{ formatoImporte(item.precio) }}
               </template>
@@ -1702,7 +1815,14 @@
             <v-data-table
               :headers="headersMed"
               :items="valoresEgresos"
-              dense>
+              dense
+              :footer-props="{
+                itemsPerPageOptions: [6],
+                showFirstLastPage: true,
+                showCurrentPage: true,
+                nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                prevIcon: 'mdi-arrow-left-drop-circle-outline',
+              }">
               <template v-slot:item.cancelado.comprobante.fecha="{ item }">
                 {{ formatoFecha(item.cancelado.comprobante.fecha) }}
               </template>
@@ -1718,6 +1838,51 @@
       </v-card>
     </v-dialog>
     <!-- FIN DIALOGO VER CANCELACIONES -->
+
+    <!-- DIALOGO VER VALORES -->
+    <v-dialog v-model="dialogVerValores" max-width="1100px" persistent
+      :transition="transition==null?'false':transition">
+      <template v-slot:activator="{}"></template>
+      <v-toolbar flat dark :color="$store.state.temas.forms_titulo_bg">
+        <v-btn icon
+          @click="verValores()"
+          :color="$store.state.temas.forms_close_bg"
+          :dark="$store.state.temas.forms_close_dark==true">
+          <v-icon>mdi-arrow-left-circle</v-icon>
+        </v-btn>
+        <span class="fg text--right">Valores</span>
+        <v-spacer></v-spacer>
+      </v-toolbar>
+      <v-card tile>
+        <v-card-text>
+          <v-container>
+            <span class="fg ml-4"><b>Valores</b></span>
+            <v-data-table
+              :headers="headersMed"
+              :items="valoresEgresos"
+              dense
+              :footer-props="{
+                itemsPerPageOptions: [6],
+                showFirstLastPage: true,
+                showCurrentPage: true,
+                nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                prevIcon: 'mdi-arrow-left-drop-circle-outline',
+              }">
+              <template v-slot:item.cancelado.comprobante.fecha="{ item }">
+                {{ formatoFecha(item.cancelado.comprobante.fecha) }}
+              </template>
+              <template v-slot:item.fecha="{ item }">
+                {{ formatoFecha(item.fecha) }}
+              </template>
+              <template v-slot:item.importe="{ item }">
+                $ {{ formatoImporte(item.importe) }}
+              </template>
+            </v-data-table>
+          </v-container>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+    <!-- FIN DIALOGO VER VALORES -->
 
     <!-- DIALOGO RECHAZAR CPR -->
     <v-dialog v-model="dialogRechazarCpr" max-width="400px" persistent
@@ -1787,18 +1952,23 @@
       <v-card tile class="fg">
         <v-card-text>
           <v-container>
-
             <v-data-table
               v-model="mensajeUsersSel"
               :headers="headersUsers"
               :search="searchUsersMensaje"
               :items="mensajeUsers"
               :single-select="false"
-              :footer-props="footerPropsMensajes"
               item-key="nombre"
               show-select dense
               class="elevation-1"
-              @toggle-select-all="selectAll">
+              @toggle-select-all="selectAll"
+              :footer-props="{
+                itemsPerPageOptions: [6],
+                showFirstLastPage: true,
+                showCurrentPage: true,
+                nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                prevIcon: 'mdi-arrow-left-drop-circle-outline',
+              }">
               <template v-slot:top>
                 <v-text-field class="pl-5 pt-5 pb-5"
                   v-model="searchUsersMensaje"
@@ -2302,16 +2472,12 @@
                           </div>
 
                           <div class="pt-0 pb-0">
-                            <span class="pl-0" v-show="us.vinculado">
-                              <b>{{ us.reventa?'p/Reventa':'p/Consumo' }} </b><br>
-                            </span>
-                          </div>
-
-                          <div>
-                            <span class="pl-0">
-                              <b>Lic:{{ us.tipo=='PP' ? 'Precios y Pedidos' : 'gohu ERP' }}</b>
-                              <b>{{ us.administragohu ? '(g)' : '' }}</b>
-                            </span>
+                            <b>
+                              {{ us.distribuidor==1?'Mayorista':'Minorista' }} -
+                              {{ us.tipo }}
+                              {{ us.administragohu ? '(g)' : '' }}
+                            </b>
+                            <br>
                           </div>
 
                           <div class="pt-0 pb-0" v-if="us.exclusivo">
@@ -2524,9 +2690,11 @@
                       <v-radio
                         label="Proveedor" value="P" :color="temas.forms_titulo_bg">
                       </v-radio>
+                      <!--
                       <v-radio
                         label="Ambos" value="A" :color="temas.forms_titulo_bg">
                       </v-radio>
+                      -->
                     </v-radio-group>
                     <span v-if="vincularComo=='C'">
                       <b>{{nuevoVinculo.username}}</b> podrá acceder a tus Artículos,
@@ -2538,13 +2706,15 @@
                       Pedidos.<br><br>
                     </span>
                     <span v-if="nuevoVinculo.tipo!='PP'&&tipo!='PP'">
-                      Además se activará la característica <b>interpyme</b> dónde
-                      todas las operaciones de Ventas, Compras, Pagos y Cobranzas
-                      irán por sistema.<br><br>
+                      Además se activará <b>intrapyme</b>, dónde
+                      todas las operaciones de Ventas, Compras, Pagos, Cobranzas,
+                      etc, irán por sistema.<br><br>
                     </span>
-                    <span v-if="vincularComo=='A'">
-                      Incluye a las dos opciones anteriores.
-                    </span>
+                    <!--
+                      <span v-if="vincularComo=='A'">
+                        Incluye a las dos opciones anteriores.
+                      </span>
+                    -->
                   </div>
                 </v-col>
               </v-row>
@@ -2646,8 +2816,7 @@
                     si así lo crees necesario.<br>
                   </p>
                   <p v-else-if="transferirArticulosCtt>0">
-                    Si confirmas, tendrás acceso a los {{transferirArticulosCtt}} artículos
-                    pertenecientes a <b>{{nuevoVinculo.username}}</b>.
+                    Si confirmas, tendrás acceso a sus {{transferirArticulosCtt}} artículos.
                   </p>
                 </v-col>
               </v-row>
@@ -2883,19 +3052,19 @@
             :dark="temas.forms_close_dark==true">
             <v-icon>mdi-arrow-left-circle</v-icon>
           </v-btn>
-          <span class="text--right">Cancelar Vínculo con {{nuevoVinculo.username}}</span>
+          <span class="fg">Cancelar Vínculo con {{nuevoVinculo.username}}</span>
           <v-spacer></v-spacer>
           <v-btn
             :color="temas.cen_btns_bg"
             :dark="temas.cen_btns_dark==true"
-            class="ma-2 white--text" @click="cancelarVinculo">
+            class="ma-2 fg" @click="cancelarVinculo">
             Cancelar Vínculo
           </v-btn>
         </v-toolbar>
         <v-container fluid>
           <template v-slot:activator="{}"></template>
           <v-card outlined>
-            <v-container fluid class="pt-0">
+            <v-container fluid class="pt-0 fg">
               <v-row>
                 <v-col cols="12" sx="2" mx="2" class="pt-0">
                   <p class="pt-3">
@@ -3078,6 +3247,8 @@
                     <br>
                     Pedidos Procesados: <b>{{masInfo.cttPedidos}}</b><br>
                     Calificación: <b>{{roundTo(masInfo.calificacion,1)}}</b><br>
+                    Comercializa mayormente como:
+                    <b>{{ masInfo.distribuidor?'Mayorista':'Minorista' }}</b><br>
                     Observaciones: <b>{{masInfo.observ}}</b><br>
                   </p>
                 </v-col>
@@ -3115,7 +3286,13 @@
               show-expand
               item-key="vencimiento"
               :hide-default-footer="false"
-              :footer-props="footerProps13">
+              :footer-props="{
+                itemsPerPageOptions: [13],
+                showFirstLastPage: true,
+                showCurrentPage: true,
+                nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                prevIcon: 'mdi-arrow-left-drop-circle-outline',
+              }">
               <template v-slot:item.debe="{ item }">
                 $ {{ formatoImporte(item.debe) }}
               </template>
@@ -3172,7 +3349,7 @@
     </v-main>
 
     <!-- USUARIOS GOHU -->
-    <v-card v-if="!isLoggedIn && !estoyEnLogin" flat>
+    <v-card v-if="!isLoggedIn&&!estoyEnLogin" flat>
       <v-container fluid class="pt-0">
         <v-row class="pt-0">
           <v-col cols="4"></v-col>
@@ -3185,12 +3362,35 @@
           </v-col>
           <v-col cols="4"></v-col>
         </v-row>
+
         <v-row>
           <v-col cols="12">
             <p class="bigfont text-md-center">
               <v-icon>mdi-share-variant</v-icon>
-              Comparte, unifica y ahorra tiempo con <b>gohu</b>.<br>
-              Un ERP que te va a permitir agilizar tus procesos de negocios.<br>
+              Comparte, unifica y ahorra tiempo con <b>gohu</b>.<br><br>
+              <b>gohu</b> es un sistema de gestión comercial
+              <i>que trabaja en modo Red Social.</i><br>
+              Te podrás <b><i>vincular</i></b> con tus Clientes y Proveedores.<br>
+              ¡Ver artículos, precios y promociones de tus Proveedores...<br>
+              y tus Clientes ver los tuyos!<br>
+              Las operaciones también se comparten,<br>
+              se sincronizan y quedan espejadas.<br>
+              <b>¡y todo en tiempo real!</b><br><br>
+              <b>¡Vincúlate!</b> y has que comience la magia.<br>
+
+              <!--
+              Share, unify and save time in your business.<br><br>
+              gohu is a business management system that works in Social Network mode.<br>
+              You can connect with your Customers and Suppliers.<br>
+              See articles, prices and promotions from your Suppliers<br>
+              and your Clients see yours!<br>
+              Operations are also shared.<br>
+              Orders, Invoices, Remittances, Payments and Receipts<br>
+              They are synchronized between users, leaving them mirrored.<br>
+              and all in real time!<br>
+              -->
+
+              <!--Un ERP que te va a permitir agilizar tus procesos de negocios.<br>-->
 <!--          <a href="https://www.youtube.com">Revisa nuestros videos aquí,</a>
               quizás <b>gohu</b> pueda ser de tu utilidad.    -->
             </p>
@@ -3279,7 +3479,6 @@
       selectedItem: 0,
       footerProps: {'items-per-page-options': [10]},
       footerProps13: {'items-per-page-options': [13]},
-      footerPropsMensajes: {'items-per-page-options': [6]},
       vinculosPanel: [
         {ctt: 0, toolTip: 'a Vincular',  icono: 'mdi-account-plus' },
         {ctt: 0, toolTip: 'Vinculados',  icono: 'mdi-share-variant' },
@@ -3323,6 +3522,7 @@
       dialogNotUsrs: false,
       dialogNotGohu: false,
       dialogUsuarios: false,
+      dialogVerValores: false,
       dialogVerArticulos: false,
       dialogVerPendientes: false,
       dialogVerCancelaciones: false,
@@ -3395,6 +3595,7 @@
         cttPedidos: '',
         contactos: [],
         mediosdecobro: [],
+        distribuidor: false,
       },
       headersCot: [
         { text: 'Moneda', value: 'nombre', align: 'left', width: 100 },
@@ -3476,10 +3677,15 @@
       this.$store.commit('closeAlert', { root: true })
       this.$store.commit('setEnCarrito', false, { root: true });
 
+      debugger
       this.headersArt[0].text = this.$store.state.codigooid == 'C'?'Código':'ID'
       this.headersArt[0].value = this.$store.state.codigooid == 'C'?'articulo.codigo':'articulo_id'
 
+      debugger
+      this.$vuetify.theme.dark = this.$store.state.dark;
+
       if (this.isLoggedIn) {
+        debugger
         this.cambioSucursal(this.sucursales[this.sucursal])
       }
     },
@@ -3552,6 +3758,7 @@
         'topeOperaciones',
         'topeArticulos',
         'topeVinculaciones',
+        'dark',
       ]),
       visiblePages () {
         return this.usuarios.slice((this.pagina - 1)* this.perPage, this.pagina* this.perPage)
@@ -3576,7 +3783,6 @@
       ...mapMutations
       ([
         'setDolar',
-        'setPorRev',
         'setNovedadesCprs',
         'setNovedadesUsrs',
         'setNovedadesGohu',
@@ -3606,7 +3812,12 @@
         'setContadorBloqueado',
         'setGraficos',
         'setGraficosDatos',
-        'setInicial'
+        'setInicial',
+
+        'setVinculosPadresAll',
+        'setVinculosPadresLic',
+        'setDescuentos',
+
       ]),
 
       sayMessage(nota) {
@@ -3707,10 +3918,7 @@
           let n = []
           if (this.activo) { // && !this.operarioEsVendedor) { // && !this.operarioEsVendedor {
 
-            debugger
             return HTTP().post('/notificaciones', {id: this.userId, sucursal: this.sucursal}, {timeout: 20000} ).then(({ data }) => {
-              debugger
-
               let cttPed = 0
               let mismoTipoDeSucursal = false
               let agrego = false
@@ -3723,6 +3931,16 @@
               this.cttPedidosGlobales = 0
 
               if (data[0]!=undefined) {
+
+                debugger
+                data[0].respuesta.setVinculosPadres = data[0].respuesta.setVinculosPadres.filter(x=>x!=this.userId)
+                data[0].respuesta.setVinculosHijos = data[0].respuesta.setVinculosHijos.filter(x=>x!=this.userId)
+                this.$store.commit('setVinculosHijos', data[0].respuesta.setVinculosHijos, { root: true });
+                this.$store.commit('setVinculosPadres', data[0].respuesta.setVinculosPadres, { root: true });
+                this.$store.commit('setVinculosPadresAll', data[0].respuesta.setVinculosPadresAll, { root: true });
+                this.$store.commit('setVinculosPadresLic', data[0].respuesta.setVinculosPadresLic, { root: true });
+                this.$store.commit('setDescuentos', data[0].respuesta.setDescuentos, { root: true });
+
                 for (let i=0; i<=data[0].not.length-1; i++) {
                   agrego = false    // solo los del mismo tipo de sucursal (fiscal / demo )
                   cprvin = false    // si tiene comprobante vinculado
@@ -3762,7 +3980,7 @@
                       }
                       break
                     case 'C': break // Sin uso
-                    case 'D': // Descargado por el proveedor ( viene con comproante )
+                    case 'D': // Descargado por el proveedor ( viene con comprobante )
                       if (mismoTipoDeSucursal) {
                         novCprs ++
                       }
@@ -3833,6 +4051,7 @@
   
                   if (cprvin && agrego ) {  // Notificacion con comprobante vinculado, agrego en notCprs
   
+                    debugger
                     let u = this.notCprs.findIndex(x=>x.usuario==data[0].not[i].userdesde.username)
                     if (u==-1) {
                       this.notCprs.push({
@@ -4074,6 +4293,7 @@
         this.vinculosPanel[1].ctt = 0  // vinculados
         this.vinculosPanel[2].ctt = 0  // descartados
         this.vinculosPanel[3].ctt = 0  // solicitudes
+
         // armo el array de rubros
         this.rubros = []
         for (let i=0; i<=this.usuarios.length-1; i++) {
@@ -4374,9 +4594,10 @@
       },
 
       setContadores() {
-        this.contador = 1
-        this.contadorGohu = 1
-        this.contadorPub = 1
+        this.contador = 1;
+        this.contadorGohu = 1;
+        this.contadorPub = 1;
+        this.mensaje('¡Datos refrescados!', this.$store.state.temas.forms_titulo_bg, 500);
       },
 
       /*
@@ -4480,7 +4701,6 @@
       },
 
       async verCotizaciones(ver) {
-        debugger
         let x = this.$store.state.transition
         this.dialogCotizaciones = ver
         this.cotDolar = []
@@ -4630,16 +4850,18 @@
 
       verPend(nov) {
         if (nov) {
-          if (nov.comprobante.pendientes.length>0) {
-            nov.verpendientes = !nov.verpendientes
-            this.pendientes = nov.comprobante.pendientes
-            this.dialogVerPendientes = true
-          } else {
+
+          if (nov.comprobante.cancelaciones.length>0) {
             nov.vercancelaciones = !nov.vercancelaciones
             this.cancelaciones = nov.comprobante.cancelaciones
             this.valoresEgresos = nov.comprobante.valoresEgresos
             this.dialogVerCancelaciones = true
+          } else if (nov.comprobante.pendientes.length>0) {
+            nov.verpendientes = !nov.verpendientes
+            this.pendientes = nov.comprobante.pendientes
+            this.dialogVerPendientes = true
           }
+
           this.$store.commit('setContadorBloqueado', false, { root: true })
           for (let i=0; i<=this.notCprs.length-1; i++) {
             for (let j=0; j<=this.notCprs[i].novedades.length-1; j++) {
@@ -4668,6 +4890,19 @@
         }
       },
 
+      verValores(nov) {
+        if (nov) {
+          if (nov.comprobante.valoresEgresos.length>0) {
+            this.dialogVerValores = true
+            this.valoresEgresos = nov.comprobante.valoresEgresos
+            this.$store.commit('setContadorBloqueado', false, { root: true })
+          }
+        } else {
+          this.dialogVerValores = false
+          this.$store.commit('setContadorBloqueado', false, { root: true })
+        }
+      },
+
       formatoFecha(value) {
         return moment(String(value)).format('L')
       },
@@ -4679,6 +4914,7 @@
       },
 
       totalNota(nota) {
+        /*
         if (nota.comprobante.pendientes.length) {
           if (nota.comprobante.pendientes[0].pendiente==0) {
             return this.formatoImporte(nota.comprobante.pendientes[0].importe)
@@ -4686,8 +4922,9 @@
             return this.formatoImporte(nota.comprobante.pendientes[0].pendiente)
           }
         } else {
-          return this.formatoImporte(nota.comprobante.total)
-        }
+        */
+        return this.formatoImporte(nota.comprobante.total)
+        //}
       },
 
       aceptarRechazarPlan(nota, aceptar) {
@@ -4722,10 +4959,8 @@
 */
 
       showNuevoMensaje() {
-        debugger
         return HTTP().get('indexter/false/ALL/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/%%')
           .then(({data})=>{
-          debugger
           this.mensajeUsers = []
           this.mensajeUsersSel = []
           for (let i=0; i<=data.length-1; i++) {
@@ -4773,6 +5008,9 @@
       impPedAll() {
         // descarga todos los pedidos pendientes
         let ped = []
+        let nots = []
+        let vjes = []
+        debugger
         for (let i=0; i<=this.notCprs.length-1; i++) {
           if (this.notCprs[i].novedades.length>0) {
             for (let j=0; j<=this.notCprs[i].novedades.length-1; j++) {
@@ -4781,6 +5019,8 @@
                   ped: this.notCprs[i].novedades[j].comprobante.id,
                   not: this.notCprs[i].novedades[j].id
                 })
+                nots.push( this.notCprs[i].novedades[j].id )
+                vjes.push ( this.notCprs[i].novedades[j].comprobante.viaje_id )
               }
             }
           }
@@ -4789,11 +5029,13 @@
           let suc = this.sucursales.findIndex(x=>x.sucursaldemo==0)
           let dep = this.sucursales[suc].depositos[0].id
           return HTTP().post('/importartodoslospedidos', {
+
             pedidos: ped,
-            sucursal_id: this.sucursales[suc].id,
-            deposito_id: dep,
-            direccion_id: this.datosEmpresa.direccion_id,
-            documento_id: this.datosEmpresa.documento_id
+            sucursales: this.sucursales,
+            depositos: this.depositos,
+            nots: nots,
+            vjes: vjes,
+
             }).then(({data})=>{
             if (data.estado=='error') {
               this.msg.msgTitle = '¡Error!'
@@ -4815,6 +5057,7 @@
       },
 
       impCprAll(nota) {
+        debugger
         let pos = this.notCprs.findIndex(x=>x.user_id===nota.user_id)
         for (let i=0; i<=this.notCprs[pos].novedades.length-1; i++) {
           if (this.notCprs[pos].novedades[i].tipo=='P' || this.notCprs[pos].novedades[i].tipo=='F') {
@@ -4824,8 +5067,16 @@
       },
 
       impCpr(not, it) {
+
+        /*
+          se descargan:
+            a) Facturas emitidas por Proveedores, que pasan a ser compras -> it.comprobante.tipo=='VE' 'nuevacompra'
+            b) Pedidos emitidos por clientes                              -> it.comprobante.tipo=='CO' 'descargarpedido'
+            c) Pagos emitidos por clientes                                -> it.comprobante.tipo=='PG' 'descargarpago'
+        */
+
+        debugger
         let articulos = []
-        let pendientes = []
         let valores = []
         for (let i=0; i<=it.comprobante.items.length-1; i++) {
           articulos.push({
@@ -4853,6 +5104,8 @@
             unidad_id: it.comprobante.items[i].unidad_id,
             updated_at: it.comprobante.items[i].updated_at,
             vencimiento: it.comprobante.items[i].vencimiento,
+            desc1: it.comprobante.items[i].desc1,
+            desc2: it.comprobante.items[i].desc2,
           })
         }
 
@@ -4860,7 +5113,8 @@
         let idTercero = it.userdesde.tercero_id
         this.$store.commit('actNotificacion', it.id, { root: true });
 
-        if (it.comprobante.tipo=='CO') {
+        debugger
+        if (it.comprobante.tipo=='CO') {    // descarga un pedido
 
           let novedad = {
             cpr_id: it.comprobante.id,
@@ -4870,60 +5124,28 @@
             accion: 'ACTUALIZA',
           }
 
-          return HTTP().post('/nuevaventa', {
-
-            fecha: moment().format('YYYY-MM-DD'),    // it.comprobante.fecha.substring(0,10),
-            perfiscal: moment().format('YYYYMM'),    // it.comprobante.perfiscal,
-            tipo: 'VE',
-            cpr: it.comprobante.cpr,
-            user_id: this.userId,
-            sucursal_id: this.$store.state.sucursal,
-//          tercero_id: data[0].tercero_id,
-            tercero_id: idTercero,
-            comprobante_id: it.comprobante.comprobante_id,
-            direccion_id: it.userdesde.tercero.direcciones[0].id,
-            documento_id: it.comprobante.documento_id,
-            mediodepago_id: it.comprobante.mediodepago_id,
-            deposito_id: null,
-            vendedor: {
-              id: it.comprobante.vendedor_id!=null?it.comprobante.vendedor_id:null,
-              nombre: 'MOSTRADOR'
-            },
-            moneda_id: it.comprobante.moneda_id,
-            tasadescuento: it.comprobante.tasadescuento,
-            importedescuento: it.comprobante.importedescuento,
-            observaciones: it.comprobante.observaciones,
-            quienpidio: it.comprobante.quienpidio,
-            retiva: 0,
-            retgan: 0,
-            retib: 0,
-            gravado: it.comprobante.gravado,
-            exento: it.comprobante.exento,
-            iva: it.comprobante.iva,
-            total: it.comprobante.total,
-            regstk: false,
-            estado: 'R',
-            activo: true,
-            articulos: articulos,
-            valores: [],
-            pendientes: [],
+          return HTTP().post('/descargarpedido', { 
+            comprobante: it.comprobante,
+            sucursales: this.sucursales,
+            depositos: this.depositos,
             notificacion: it.id,
-            anotadorId: null,
-            espejo: [],
-            novedad: novedad,
-            viaje_id: it.comprobante.viaje_id
+            viaje_id: it.comprobante.viaje_id,
             }).then(({ data }) => {
 
-            this.borroNotificacion(it,1)
-            if (data=='ya descargado') {
-              this.mensaje('¡Este comprobante ya fue descargado por otro usuario!', this.temas.snack_error_bg, 2500) 
+            if (data=='error') {
+              this.mensaje('¡Se ha producido un error al intentar descargar este pedido!', this.temas.snack_error_bg, 2500) 
             } else {
-              this.mensaje('¡Comprobante descargado correctamente!', this.$store.state.temas.forms_titulo_bg, 1500) 
+              this.borroNotificacion(it,1)
+              if (data=='ya descargado') {
+                this.mensaje('¡Este comprobante ya fue descargado por otro usuario!', this.temas.snack_error_bg, 2500) 
+              } else {
+                this.mensaje('¡Comprobante descargado correctamente!', this.$store.state.temas.forms_titulo_bg, 1500) 
+              }
             }
 
           });
 
-        } else if (it.comprobante.tipo=='VE') {
+        } else if (it.comprobante.tipo=='VE') {   // descarga una fac de un proveedor
 
           if (it.comprobante.observaciones=='VENTA DE CHEQUES') {
 
@@ -4938,11 +5160,12 @@
             return HTTP().post('/nuevacompra', {
               fecha: it.comprobante.fecha.substring(0,10),
               perfiscal: it.comprobante.perfiscal.substr(0,4)+'-'+it.comprobante.perfiscal.substr(4,2),
+              ctacte: it.comprobante.ctacte,
+              vencimiento: moment(it.comprobante.vencimiento).format('YYYY-MM-DD'),
               tipo: 'CO',
               cpr: 'CIN-X '+this.$store.state.sucursalFiscal+'-00000000',
               user_id: this.userId,
               sucursal_id: this.$store.state.sucursal,
-//            tercero_id: data[0].tercero.id,
               tercero_id: idTercero,
               comprobante_id: it.comprobante.comprobante_id,
               direccion_id: it.comprobante.direccion_id,
@@ -4951,50 +5174,44 @@
               deposito_id: null,   // mando como null, luego la api vera a que deposito de la sucursal imputa.
               vendedor_id: null,
               moneda_id: it.comprobante.moneda_id,
-              tasadescuento: 0, importedescuento: 0, retiva: 0, retgan: 0, retib: 0, gravado: 0, exento: 0, iva: 0,
+              tasadescuento: 0,
+              importedescuento: 0,
+              retiva: 0,
+              retgan: 0,
+              retib: 0,
+              gravado: 0,
+              exento: 0,
+              iva: 0,
+              impint: 0,
+              nogravado: 0,
+              flete: 0,
+              poradcosto: 0,
               total: it.comprobante.total,
-              observaciones: 'COMPRA DE CHEQUES',
               regstk: false,
               estado: 'F',
               activo: true,
               articulos: [],
+              observaciones: 'COMPRA DE CHEQUES',
               valores: it.comprobante.valoresEgresos,                 // ESTO ESTA MAL, PUEDE VENIR EN EFECTIVO U OTROS VALORES
-              pendientes:  [],
-              notificaEnBaseAOtro: [],
               notificacion: it.id,
               gasto: null,
-              quienpidio: '',
+              tasasIVA: it.comprobante.afipiva,
+              idProv: idProv,
             }).then(({ data }) => {
               this.mensaje('¡Comprobante descargado correctamente!', this.$store.state.temas.forms_titulo_bg, 2000)
               this.borroNotificacion(it,1)
             });
 
-          } else {
-
-            // REGLA, CUANDO SE RECIBE UN COMPROBANTE DE VENTA DE UN PROVEEDOR, ( FAC PED )
-            // SIEMPRE SE AGREGARA EN LA CUENTA CORRIENTE PARA QUE LUEGO SE REALICE EL PAGO.
-            // SALVO QUE EL CREDITO NO SEA SUFICIENTE, EN ESE CASO SE AGREGA TAMBIEN EFECTIVO EN VALORES.
+          } else {    // NO ES VENTA DE CHEQUES
 
             // CHEQUES RECHAZADOS
             // CUANDO ES UNA FACTURA X CHEQUE RECHAZADO, EL USUARIO DEBERA GENERAR EL RECHAZO DESDE TESORERIA.
 
-            let venc = moment().format('YYYY-MM-DD')
             let obsv = ''
-            if (it.comprobante.pendientes.length>0) {
-              venc = moment(it.comprobante.pendientes[0].vencimiento).format('YYYY-MM-DD')
-            }
             // ACA TENGO QUE AGREGAR PENDIENTES SI HAY Y/O VALORES SI TAMBIEN HAY
             // ESTAN EL IT.COMPROBANTE.PENDIENTES Y IT.COMPROBANTE.VALORESINGRESOS
             if (it.comprobante.cpr.substr(0,3)!='PED') {
-              obsv = 'COMPRA IMPORTADA'
-              if (it.comprobante.pendientes.length>0) {
-                pendientes.push({ 
-                  vencimiento: venc,
-                  importe: it.comprobante.pendientes[0].importe,
-                  pendiente: it.comprobante.pendientes[0].pendiente,
-                  concepto: 'EN CUENTA CORRIENTE'
-                })
-              }
+              obsv = 'COMPRA DESCARGADA'
               if (it.comprobante.valoresIngresos.length>0) {
                 valores.push(it.comprobante.valoresIngresos)
               }
@@ -5026,12 +5243,13 @@
             return HTTP().post('/nuevacompra', {
               fecha: it.comprobante.fecha.substring(0,10),
               perfiscal: it.comprobante.perfiscal.substr(0,4)+'-'+it.comprobante.perfiscal.substr(4,2),
+              ctacte: it.comprobante.ctacte,
+              vencimiento: moment(it.comprobante.vencimiento).format('YYYY-MM-DD'),
               tipo: cogs,
               cpr: it.comprobante.cpr,
               user_id: this.userId,
               sucursal_id: this.$store.state.sucursal,
               tercero_id: idTercero,
-//            tercero_id: data[0].tercero.id,
               comprobante_id: it.comprobante.comprobante_id,
               direccion_id: it.comprobante.direccion_id,
               documento_id: it.comprobante.tercero.documento_id,
@@ -5041,24 +5259,30 @@
               moneda_id: it.comprobante.moneda_id,
               tasadescuento: it.comprobante.tasadescuento,
               importedescuento: it.comprobante.importedescuento,
-              retiva: 0,
-              retgan: 0,
-              retib: 0,
+              retiva: it.comprobante.retiva,
+              retgan: it.comprobante.retgan,
+              retib: it.comprobante.retib,
               gravado: it.comprobante.gravado,
               exento: it.comprobante.exento,
               iva: it.comprobante.iva,
+              impint: it.comprobante.impint,
+              nogravado: it.comprobante.nogravado,
+              flete: it.comprobante.flete,         
+              poradcosto: it.comprobante.poradcosto,
               total: it.comprobante.total,
-              observaciones: obsv,
               regstk: regstk,
               estado: 'F',
               activo: true,
               articulos: articulos,
+              observaciones: obsv,
               valores: valores,                 // ESTO ESTA MAL, PUEDE VENIR EN EFECTIVO U OTROS VALORES
-              pendientes: pendientes,
               notificacion: it.id,
+              gasto: cogs=='GS'?true:false,
               tasasIVA: it.comprobante.afipiva,
               idProv: idProv,
-              quienpidio: '' }).then(({ data }) => {
+              }).then(({ data }) => {
+  
+              debugger
               if (data.estado=='error') {
                 this.msg.msgTitle = '¡Error!'
                 let m = 'Se ha producido un error en la descarga de este comprobante.</b><br>'
@@ -5088,25 +5312,21 @@
               }
               this.borroNotificacion(it,1)
             });
-
           }
 
-        } else if (it.comprobante.tipo=='PG') {
+        } else if (it.comprobante.tipo=='PG') {   // descarga un pago
 
           it.sucursalFiscal = this.$store.state.sucursalFiscal
           it.sucursal       = this.$store.state.sucursal
           it.caja           = this.$store.state.caja
           let notificacion  = 0
           if (this.$store.state.notificaciones.length>0) {
-
-//          notificacion = this.$store.state.notificaciones.findIndex(x=>x.id==it.id)
             let pos = this.$store.state.notificaciones.findIndex(x=>x.id==it.id)
             notificacion = this.$store.state.notificaciones[pos].id
-
-//          notificacion = this.$store.state.notificaciones[0].id
           }
 
-          return HTTP().post('/importarrecibo', { it, notificacion }).then(({ data }) => {
+          debugger
+          return HTTP().post('/descargarpago', { it, notificacion }).then(({ data }) => {
             if (data.errno!=undefined) {
               this.mensaje('¡Se ha producido un error en la descarga de este comprobante! '+data.sqlMessage, this.$store.state.temas.snack_error_bg, 5000, true) 
             } else if (data=='notificacion inexsistente') {
@@ -5114,7 +5334,7 @@
             } else if (data=='notificacion ya descargada') {
               this.mensaje('¡Otro usuario ya descargo este comprobante! VERIFIQUE ', this.$store.state.temas.snack_error_bg, 3000, true) 
             } else {
-              this.msg.msgTitle = '¡Importación Correcta!'
+              this.msg.msgTitle = '¡Descarga Correcta!'
               let m = '<br>¡El Pago ha sido descargado correctamente!.<br>'
               m += '<br>Los valores incluidos en el mismo ya están disponibles en tu sistema!<br>'
               m += '<br>Se generó el Recibo '+data.cpr+' cancelando la Cuenta Corriente!<br>'
@@ -5165,6 +5385,16 @@
 
       verCpr(it) {
         this.$refs.impresion.ventasPrint(it, 'el');
+      },
+
+      showChequeRechazado(nov) {
+        let show = false
+        if (nov.comprobante!=undefined) {
+          if (nov.comprobante.items!=undefined && nov.comprobante.items.length>0) {
+            show = nov.comprobante.items[0].valor_id!=null
+          }
+        }
+        return show
       },
 
       verChequeRechazado(nov) {
@@ -5258,6 +5488,7 @@
             this.$store.commit('setSucursalFiscal',this.sucursales[i].fiscal, { root: true })
             this.$store.commit('setTemas',this.sucursales[i].tema, { root: true })
             this.$store.commit('setSucursalDemo',this.sucursales[i].sucursaldemo, { root: true })
+            this.$store.commit('setSucursalManual',this.sucursales[i].manual, { root: true })
             break
           }
         }
@@ -5364,6 +5595,10 @@
           return us.esElQue == 'Envía' ? 'Esperando aprobación 1' : 'Esperando aprobación 2'
         } else if (us.ver==0) {
           return 'Descartado'
+        } else if (us.activo) {
+          return 'Activo'
+        } else {
+          return 'No vinculado'
         }
       },
 
@@ -5612,17 +5847,23 @@
           this.masInfo.cttArticulos = data[0].meta.precios_count
           this.masInfo.cttPedidos = data[0].meta.comprobantes_count
           this.masInfo.mediosdecobro = data[0].medios
+          this.masInfo.distribuidor = data[0].distribuidor
         })
       },
 
       usuarioCancelarVinculo(usuario) {
         // tengo que ver si entre estos dos usuarios hay deuda, 
         // si es asi no se puede cancelar el vínculo
-        return HTTP().post('/deudaentreusuarios', { vinculo: usuario.vinculo_id }).then(({ data }) => {
+
+        // gilgamesh
+        debugger
+        return HTTP().post('/deudaentreusuarios', { vinculo: usuario }).then(({ data }) => {
+
+          debugger
           if (data!=0) {
             this.msg.msgTitle = '¡Error!'
-            let m = '¡No se puede cancelar este vínculo!, <br><b>Hay Cuentas Corrientes '
-            m += 'pendientes.</b><br>'
+            let m = '¡No se puede cancelar este vínculo!, <br>Tienes saldos pendientes en Cuentas Corrientes '
+            m += 'por $'+this.formatoImporte(data)+'<br>'
             this.msg.msgBody = m
             this.msg.msgVisible = true
             this.msg.msgAccion = 'No se puede cancelar el vínculo.'
@@ -5812,6 +6053,7 @@
           }
         }
 
+        debugger
         this.$store.commit('setVinculosPadres', padres, { root: true });
         this.$store.commit('setVinculosHijos', hijos, { root: true });
         let losProv = []
@@ -6045,6 +6287,7 @@
             ciudad: ciudad,
             exclusivo: vinculo.userDesde.userexclusivo_id,
             ctt: vinculo.ctt,
+            distribuidor: vinculo.userDesde.distribuidor,
           })
         } else {
           aux.push({
@@ -6070,6 +6313,7 @@
             rol: rol,
             ciudad: vinculo.user.tercero.direcciones[0].postal.nombre,
             exclusivo: vinculo.user.userexclusivo_id,
+            distribuidor: vinculo.userDesde.distribuidor,
           })
         }
       },
@@ -6200,11 +6444,7 @@
             this.dialogMensajes = false
             return HTTP().post('/enviarmensaje', {mensaje: this.mensajeTexto, usuarios:this.mensajeUsersSel}).then(({ data }) => {
               if (data==='ok') {
-                this.msg.msgTitle = '¡Mensaje OK!'
-                this.msg.msgBody = 'Mensaje enviado.<br>'
-                this.msg.msgVisible = true
-                this.msg.msgAccion = 'mensaje enviado'
-                this.msg.msgButtons = ['Aceptar']
+                this.mensaje('¡Mensaje enviado con éxito!', this.$store.state.temas.forms_titulo_bg, 2000)
               } else {
                 this.msg.msgTitle = '¡Error!'
                 let m = 'Se ha producido un error al enviar este mensaje.</b><br>'

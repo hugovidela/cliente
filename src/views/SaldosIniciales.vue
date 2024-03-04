@@ -8,7 +8,13 @@
         sort-by="id"
         dense
         class="elevation-3"
-        :footer-props="footerProps">
+        :footer-props="{
+          itemsPerPageOptions: [9],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }">
         <template v-slot:top>
           <v-toolbar flat
             :color="temas.forms_titulo_bg"
@@ -54,6 +60,12 @@
                   {{ formTitle }}
                 </span>
                 <v-spacer></v-spacer>
+                <v-btn
+                  v-show="inicializable && total>0"
+                  :color="temas.cen_btns_bg"
+                  @click="guardar">
+                  Confirmar
+                </v-btn>
               </v-toolbar>
               <v-card>
                 <v-form ref="art3">
@@ -74,7 +86,7 @@
                             label="Cliente"
                             placeholder="Escriba para buscar"
                             prepend-icon="mdi-database-search"
-                            v-on:keydown.tab="buscoSiElTerceroTieneSaldoInicial(item)">
+                            v-on:keydown.tab="buscoSiElTerceroTieneSaldoInicial()">
                           </v-autocomplete>
                         </v-col>
                         <v-col cols="3" sm="3" md="3">
@@ -84,24 +96,12 @@
                           </v-text-field>
                         </v-col>
                       </v-row>
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          v-show="inicializable && total>0"
-                          :color="temas.cen_btns_bg"
-                          text
-                          @click="guardar">
-                          Confirmar
-                        </v-btn>
-                      </v-card-actions>
-
                     </v-container>
                   </v-card-text>
                 </v-form>
               </v-card>
             </v-dialog>
             <!-- FIN -->
-
 
           </v-toolbar>
           <v-col cols="12" sm="12">  <!-- Barra de búsqueda  -->
@@ -116,17 +116,6 @@
         <template v-slot:item.total="{ item }">
           $ {{ formatoImporte(item.total,2) }}
         </template>
-        <!--
-        <template v-slot:item.accion="{ item }">
-          <v-btn
-            class="mr-2" fab x-small
-            :color="temas.forms_btn_print_bg"
-            :dark="temas.forms_btn_print_dark==true"
-            @click="print(item)">
-            <v-icon dark>mdi-printer</v-icon>
-          </v-btn>
-        </template>
-        -->
 
         <!-- BOTONES DE LA GRID PRINCIPAL-->
         <template v-slot:item.accion="{ item }">
@@ -210,7 +199,6 @@ export default {
       (v) => !!v || 'El nombre es requerido',
       (v) => v.length <= 50 || 'Ingrese hasta 50 caracteres'
     ],
-    footerProps: {'items-per-page-options': [9, 12, 15, 100]},
     search: '', // para el cuadro de búsqueda de datatables  
     dialog: false, // para que la ventana de dialogo o modal no aparezca automáticamente      
     // definimos los headers de la datatables
@@ -264,11 +252,9 @@ export default {
       if (this.isLoadingTerceros) return
       this.isLoadingTerceros = true
       // Lazily load input items
-      debugger
       this.isLoadingTerceros = true
-      return HTTP().get('/indexter/false/2/false/null/null/%'+val+'%')
+      return HTTP().get('/indexter/false/2/false/null/null/'+val)
         .then(({ data }) => {
-        debugger
         this.entriesTerceros = []
         for (let i=0; i<= data.length-1; i++) {
           this.entriesTerceros.push(data[i].tercero)
@@ -320,8 +306,13 @@ export default {
     },
 
     nuevo(cual) {
-      this.dialog = true
+      this.tercero_id = null;
+      this.total = 0;
+      this.dialog = true;
     },
+
+    // usr: soportesys
+    // pass: SoporteChiaretta2020%
 
     exportExcel: function () {
       let data = XLSX.utils.json_to_sheet(this.items)
@@ -351,11 +342,9 @@ export default {
     },
 
     listarHTTP:function() {
-      debugger
       let a1 = this.cual
       let a2 = this.sucursal
       return HTTP().post('/saldosiniciales', { cual: this.cual,sucursal: this.sucursal }).then(({ data }) => {
-        debugger
         this.items = data;
       });
     },
@@ -387,14 +376,6 @@ export default {
       let cpr = 'CIN-X'+' '+this.sucursalFiscal+'-'+'00000000'
       let cpr_id = 128
             
-      pendientes.push({ 
-        comprobante_id: null,
-        vencimiento:    moment().format('YYYY-MM-DD'),
-        importe:        this.total,
-        pendiente:      this.total,
-        concepto:       'SALDO INICIAL CUENTA CORRIENTE'
-      })
-       
       return HTTP().post('/creosaldoinicial', {
         fecha:               moment().format('YYYY-MM-DD'),
         perfiscal:           moment().format('YYYYMM'),
@@ -424,7 +405,6 @@ export default {
         activo:              true,
         observaciones:       'SALDO INICIAL CUENTA CORRINTE',
         carga:               'S',
-        pendientes:          pendientes,
       }).then(({ data }) => {
         this.dialog = false
         this.listarHTTP();

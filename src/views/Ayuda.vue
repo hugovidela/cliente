@@ -6,7 +6,7 @@
         <v-icon>mdi-arrow-left-circle</v-icon>
       </v-btn>
       <v-row class="fg pb-3">
-        <v-col cols="2">
+        <v-col cols="12" sm="2">
           <template>
             <v-treeview
               return-object
@@ -26,12 +26,11 @@
         </v-col>
         <v-col cols="10" class="fg">
 
-          <div v-if="idSel==1"><b>ASPECTOS GENERALES</b><br><br>
+          <div v-if="idSel==1"><b><h2>ASPECTOS GENERALES</h2></b><br><br>
             <b>gohu</b> es un sistema de Administración Comercial o también llamado <i>ERP</i>
             , que corre en WEB.<br>
-            Es decir que para poder ser utilizado, es necesaria una computadora, una tablet o un
-            celular conectados a internet y que tengan un navegador web instalado,<br>
-            preferentemente <i>google chrome</i><br><br>
+            Es decir que para poder ser utilizado es necesaria una computadora una tablet o un
+            celular conectados a internet y que tengan un navegador web instalado<br><br>
             El sistema permite realizar todas las operaciones que una pyme requiere para lograr
             una óptima administración y operación.<br>
             Los módulos disponibles son:<br>
@@ -46,34 +45,32 @@
             Pusimos énfasis en intentar lograr un sistema que sea ágil, fiable y fácil de
             utilizar.<br>
             <b>gohu</b> es simple, intentamos construir un sistema que no requiera demasiada
-            curva de aprendizaje, que cualquier persona lo pueda utilizar sin problemas,<br>
-            y que al mismo tiempo, cubra las alternativas más importantes con las que tenga
+            curva de aprendizaje y que cualquier persona lo pueda utilizar sin problemas,<br>
+            pero que al mismo tiempo cubra las alternativas más importantes con las que tenga
             que lidiar una empresa.<br><br>
-            <b>gohu</b> no posee restricciones de ningún tipo, salvo las detalladas en
-            <i>Licencia Básica</i>. (ver Licencias)
-            <br>También tiene un fuerte enfoque en el <i>e-commerce</i>, donde cualquier
+            <b>gohu</b> tiene un fuerte enfoque en el <i>e-commerce</i>, donde cualquier
             persona puede realizar compras sobre tus artículos publicados.<br>
             EL sistema está integrado con AFIP, lo que permite realizar comprobantes electrónicos
             e importar datos de contribuyentes desde ese organismo al momento de cargar
             Clientes, Proveedores, etc.
             <br><br>
-            Otro aspecto importante son los precios de nuestras licencias y la política que
-            implementamos sobre el uso de <b>gohu</b>.<br><br>
+            <b>NUESTRA POLITICA SOBRE EL USO DE gohu</b>.<br>
             Afrontamos importantes costos de nuestros proveedores de Hosting, no
-            obstante, nos volcamos por la opción de licencias económicas.<br>El objetivo
-            de llegar a la mayor cantidad de usuarios posibles, porque justamente es este aspecto
-            el más importante en <b>gohu</b>,<br>maximizar la cantidad de usuarios para aprovechar
-            nuestro diseño de <i><b>vinculaciones</b></i>. (ver Vinculaciones)
+            obstante, nos volcamos por la opción de licencias económicas.<br>
+            El objetivo es llegar a la mayor cantidad de usuarios posibles, porque justamente
+            este es el aspecto más importante en <b>gohu</b>,<br>maximizar la cantidad de usuarios
+            para aprovechar nuestro diseño de <i><b>vinculaciones</b></i>. (ver Vinculaciones)
             <br><br>
-            <b>RECOMIENDA gohu A TUS CONTACTOS COMERCIALES Y SE PARTNER</b><br>
+            <b>RECOMIENDA gohu A TUS CONTACTOS COMERCIALES Y SE PARTE DE NUESTRO ECOSISTEMA</b><br>
             Por cada usuario que se registre en el sistema y especifique tu casilla de correo en
             <i>¿Quién te recomendo? </i>, se te aplicará un descuento en tu cuota mensual
             correspondiente al 10% del costo de la licencia del nuevo usuario.<br>
             Es decir, que si recomiendas a 10 usuarios con el mismo tipo de licencia
             que utilizas, no solo tu costo mensual será cero, sino que si superas ese
-            cantidad, te depositaremos el 10% por cada usuario excedente.<br>
+            cantidad te depositaremos el 10% por cada usuario excedente.<br><br>
+
             Esta politica no solo apunta a que <b>gohu</b> sea masivo, sino que también busca
-            que sus usuarios se sientan parte de <b>gohu</b>.
+            que sus usuarios se sientan parte de nuestro ecosistema.
             <br><br>
             <b>gohu</b> está en constante desarrollo, arreglos e innovaciones.<br>
             Tomamos notas de las sugerencias de nuestros usuarios para intentar
@@ -86,32 +83,33 @@
             perder, por los standares que siguen y por la seriedad con la que trabajan.<br>
 
           </div>
-          <div v-else-if="idSel==2"><b>LICENCIAS</b><br><br>
+          <div v-else-if="idSel==2"><b><h2>LICENCIAS</h2></b><br><br>
             Hay dos formas de usar <b>gohu</b><br><br>
             <li>Modo ERP</li>
 
             ERP (<i>Planificacion de Recursos Empresariales</i>), es lo que se denomina
             comunmente a aquellos sistemas destinados a la Gestión Comercial.<br>
-            Este modo se divide as su vez en tres, esto para poder adecuarse a cuanta información
+            Este modo se divide as su vez en cuatro, esto para poder adecuarse a cuanta información
             necesitas gestionar por mes.<br><br>
 
             <li>Modo PP</li>
-            Este modo habilita solo consultar precios y realizar pedidos.<br>
-            A su vez se divide en dos, <i>Usuarios Exlusivos</i> y
-            <i>Usuarios No Exclusivos</i>.
+            Este modo te habilita consultar precios y realizar pedidos.<br>
+            A su vez se divide en dos, <i>exlusivos <b>PPx</b></i> y
+            <i>no exclusivos <b>PP</b></i>.
             <br><br>
 
             <b>Detalles de Licencias</b><br>
-            <v-simple-table dense style="width:65%">
+            <v-simple-table dense style="width:85%">
               <template v-slot:default>
                 <thead class="fg">
                   <tr class="fg">
                     <th style="width:15px" class="text-left">Licencia</th>
                     <th style="width:25px" class="text-left">Observaciones</th>
-                    <th style="width:15px" class="text-left">Operaciones</th>
-                    <th style="width:15px" class="text-left">Artículos</th>
-                    <th style="width:15px" class="text-left">Vinculaciones</th>
-                    <th style="width:15px" class="text-left">Precio</th>
+                    <th style="width:15px" class="text-end">Operaciones/u12m</th>
+                    <th style="width:15px" class="text-end">Artículos</th>
+                    <th style="width:15px" class="text-end">Fotos por Artículo</th>
+                    <th style="width:15px" class="text-end">Vinculaciones</th>
+                    <th style="width:15px" class="text-end">Precio</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -119,9 +117,18 @@
                     v-for="item in licencias" :key="item.id">
                       <td style="width:15px">{{ item.id }}</td>
                       <td style="width:25px">{{ item.obsv }}</td>
-                      <td style="width:15px">{{ item.oper }}</td>
-                      <td style="width:15px">{{ item.arts }}</td>
-                      <td style="width:15px">{{ item.vin }}</td>
+                      <td style="text-align:right; width:15px">
+                        {{ item.oper }}
+                      </td>
+                      <td style="text-align:right; width:15px">
+                        {{ item.arts }}
+                      </td>
+                      <td style="text-align:right; width:15px">
+                        {{ item.fotos }}
+                      </td>
+                      <td style="text-align:right; width:15px">
+                        {{ item.vin }}
+                      </td>
                       <td style="text-align:right; width:15px">
                         ${{ formatoImporte(item.precio) }}
                       </td>
@@ -131,8 +138,18 @@
             </v-simple-table>
             <br><br>
 
+            <li><b>gohu Profesionales (PR)</b></li>
+            Pensada para todos aquellos profesionales que necesitan realizar comprobantes
+            por sus servicios.<br>
+            Estas cuentas no se podrán vincular y se les presentará una versión
+            reducida del ERP.<br>
+            Podrán cargar sus servicios, sus proveedores, emitir los comprobantes correspondientes
+            y llevar una administración de los mismos.
+            <br><br>
+
             <li><b>gohu ERP Completo (CO)</b><br>
-            Esta licencia permite utilizar el sistema en forma completa.</li>
+            Esta licencia permite utilizar el sistema en forma completa y sin limites en cuanto a la
+            cantidad de operaciones y vinculaciones.</li>
             Los módulos que contiene son Ventas, Compras, Cuentas Corrientes, Stocks, Tesorería
             , Bancos e Impuestos.<br><br>
 
@@ -143,20 +160,20 @@
             Igual a la anterior pero con la restricción especificadas en la tabla.<br><br>
 
             El motivo por el cual implementamos estas restricciónes son los costos de
-            internet que son en Dólares y se miden por volúmen y tráfico de información.<br>
+            internet que se miden por volúmen y tráfico de información.<br>
             Revisa cuantas operaciones generas por mes para saber cual de las versiones
             se adecúa más a tus necesidades.<br><br>
             <li><b>gohu Precios y Pedidos (PP)</b></li>
             En esta versión podrás realizar todas las tareas referentes a Precios y Pedidos.<br>
             Podrás vincularte con otros usuarios y exponer tus Artículos y Precios a tus Clientes
-            , y/o leer los de tus Proveedores.<br>
+            , como también leer los de tus Proveedores.<br>
             También podrás emitir y recibir Pedidos.<br>
             <br>
             <li><b>gohu Precios y Pedidos *Exclusivo (PPx)</b></li>
             Los usuarios con licencias <b>ERP</b> podrán generar cuentas
             <i>gratuitas</i> para sus Clientes.<br>
-            Una de las restricciones para estas licencias es que solo podrán ser Clientes del
-            usuario que las generó, <br>
+            Una de las restricciones para estas licencias es que<i> solo podrán ser Clientes del
+            usuario que las generó</i>, <br>
             es decir, serán <i>Clientes Exclusivos</i> del usuario que los creó y
             <i>no se podrán vincular con otros usuarios.</i><br>
             Esto rompe con el objetivo esencial de <b>gohu</b>, que es que los usuarios
@@ -195,9 +212,9 @@
             y te los enviaremos dónde nos informes.<br>Nunca perderás tu valiosa información.
             <br>
           </div>
-          <div v-else-if="idSel==3"><b>VINCULACIONES</b><br><br>
+          <div v-else-if="idSel==3"><b><h2>VINCULACIONES</h2></b><br><br>
             La principal característica de <b>gohu</b> es que permite generar vínculos entre
-            sus usuarios.<br>
+            sus usuarios.<br><br>
             ¿Que significa esto?.
             <br>
             <b>La vinculación genera una conexión entre los usuarios del sistema
@@ -210,12 +227,12 @@
               precios, sin realizar consultas por teléfono, sin hacer nada, solo saber que sus
               precios están siempre ahí, en un solo lugar y siempre actualizados.<br>
               También imaginamos a una empresa obteniendo en forma automática y por sistema una
-              factura de compra, que son siempre tediosas de cargar, o un pago, y que todos los
+              factura de compra, siempre tediosas de cargar, o un pago, y que todos los
               datos de su sistema se actualicen al momento de descargar el comprobante, al dar un
               click.<br>
               Incluso hay operaciones, como las NDC y NDD que cuando se emiten, imputan
               tanto en tu sistema como el en sistema del usuario vinculado, quedando los
-              datos de estos comprobantes y todo lo que involucran, espejados entre
+              datos de estos comprobantes y todo lo que involucran espejados entre
               ambos usuarios.
               <br><br>
               Veamos un ejemplo típico:<br><br>
@@ -228,23 +245,117 @@
               <b>5)</b> Vas a notificaciones, la descargas, y en ese instante se actualiza toda
               la información que involucra a dicha factura, en este caso IVA, Stock y Cuentas
               Corrientes o Caja según corresponda.<br>
-              <b>6)</b> Luego realizas el pago, y cuando lo confirmas pasa lo mismo, la operación
+              <b>6)</b> Luego realizas el pago y pasa lo mismo, la operación
               es enviada a tu Proveedor, este es notificado y cuando lo descarga toda la
               información entre ambos sistemas queda espejada.
               <br><br>
               Todas las operaciones entre usuarios vinculados en <b>gohu</b> van por sistema,
               esto permite ahorrar mucho tiempo de carga, evitar errores y también dar la seguridad
               de lo que generó un usuario, lo tiene el otro, exactamente igual.<br><br>
-              <i>Anulación de Operaciones Vinculadas</i><br>
-              Podrás anular un comprobante vinculado siempre y cuando los valores del comprobante
-              en ambos usuarios esten en condiciones de ser anulados.<br>
-              El sistema verifica esto. Si todo esta ok podrás anular el comprobante y una
-              notificación será enviada al otro usuario para que también anule su operación espejo.
+
+              <b><i>Operaciones que se Vinculan</i></b><br><br>
+              <v-simple-table dense style="width:85%">
+                <template v-slot:default>
+                  <thead class="fg">
+                    <tr class="fg">
+                      <th style="width:25px" class="text-left">Operación</th>
+                      <th style="width:25px" class="text-left">Usuario Emisor</th>
+                      <th style="width:25px" class="text-left">Usuario Receptor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="width:25px">Facturas de Venta</td>
+                      <td style="width:25px">
+                        El usuario vendedor emite una Factura de Venta, en ese momento una
+                        notificación es enviada al usuario Cliente para que realice la
+                        descarga.
+                      </td>
+                      <td style="width:25px">
+                        El usuario cliente recibe la notificación, la descarga y
+                        el comprobante es enviado a su módulo de Compras,
+                        impactando en Cuentas Corrientes, Stock e IVA Compras.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="width:25px">Notas de Crédito</td>
+                      <td style="width:25px">
+                        El usuario vendedor emite una NDC sobre una Factura,
+                        en ese momento impacta en su sistema y en el sistema del
+                        cliente, y una notificación es enviada al usuario Cliente
+                        para avisar de este impacto.
+                      </td>
+                      <td style="width:25px">
+                        El usuario cliente recibe la notificación avisando
+                        que una NDC ya ha impactado en su sistema.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="width:25px">Notas de Débito</td>
+                      <td style="width:25px">
+                        Lo mismo que en NDC's.
+                      </td>
+                      <td style="width:25px">
+                        Lo mismo que en NDC's.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="width:25px">Pedidos</td>
+                      <td style="width:25px">
+                        El cliente emite un Pedido al usuario Proveedor
+                      </td>
+                      <td style="width:25px">
+                        El Proveedor recibe el Pedido, lo baja y quedando
+                        el mismo disponible para ser Facturado.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="width:25px">Pagos</td>
+                      <td style="width:25px">
+                        El cliente emite un Pago al usuario Proveedor.
+                        En proceso se cancelan facturas adeudadas
+                        y se incluyen valores para compensar las mismas.
+                        En ese momento se envia una notificacion al Proveedor.
+                      </td>
+                      <td style="width:25px">
+                        El Proveedor es notificado. Cuando descarga el pago
+                        todos los datos involucrados en el mismo
+                        son actualizados.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="width:25px">Recibos</td>
+                      <td style="width:25px">
+                        Lo mismo que en Pagos.
+                      </td>
+                      <td style="width:25px">
+                        Lo mismo que en Pagos.
+                      </td>
+                    </tr>
+                  </tbody>
+                </template>
+              </v-simple-table>
+              <br><br>
+
+              <b><i>Anulación de Operaciones Vinculadas</i></b><br>
+              Podrás anular un comprobante vinculado sin problemas.<br>
+              La transferencia de comprobantes entre usuarios vinculados permite
+              que datos del comprobante del usuario emisor sean transferidos al usuario receptor.
+              <br>
+              En el caso de Facturas, Notas de Débito y Notas de Crédito la transferencia
+              es en espejo, es decir, exactamente igual. En el caso de Pagos cambia, un pago
+              de un usuario es representado por un recibo en el otro usuario, no obstante sus
+              valores sí se espejan.<br>
+              Ahora, cuando alguno de estos usuarios anule un comprobante espejado
+              el sistema enviará una notificación al otro usuario informando que determianda
+              operación ha sido anulada. El usuario receptor deberá realizar las acciones
+              que crea necesaria, seguramente anulará la operación espejo o generará otra
+              para que los datos queden consolidados entre ambas cuentas.
               <br><br>
 
               <i>IMPORTANTE</i><br>
               <i>Cada usuario en el sistema solo podrá ver sus datos y sus operaciones.<br>
-              Nunca podrá acceder a los datos de otros usuarios, por más que este vinculado.<br>
+              Nunca podrá acceder a los datos de otros usuarios, por más que estén vinculados.<br>
               Lo que si tendrá un usuario, es la certeza de que todas las operaciones propias
               y que fueron transferidas, las tiene el otro usuario exactamente igual.</i><br>
               <br>
@@ -335,7 +446,7 @@
                 Podrás confirmarlas o rechazarlas.
             </li><br>
           </div>
-          <div v-else-if="idSel==4"><b>LOS PRECIOS EN GOHU</b><br><br>
+          <div v-else-if="idSel==4"><b><h2>LOS PRECIOS EN GOHU</h2></b><br><br>
             Las formas de comercializar un bien de cambio o un servicio son practicamente infinitas.
             <br>
             Como dijimos en vinculaciones, los <b>Usuarios Proveedores</b> brindan sus precios a
@@ -406,11 +517,27 @@
             por Grupos e inclusive por cada Articulo.<br><br>
 
             <b>Listas de Precios</b><br>
-            Los Usuarios podrán definir distintas listas de precios para sus Clientes.<br>
+            Los Usuarios podrán definir tantas listas de precios como lo requiera su planificación
+            comercial.<br>
+            En ellas podrás definir dos descuentos que se acumulan y el Medio de Pago
+            que debera utilizar el Cliente al momento de recibir la mercadería y realizar el pago.
+            <br><br>
+
+            Cuando defines una lista y la asignas a un Cliente, el trabajara con los
+            descuentos que le has asignado en la misma.<br>
+            Cuando tu cliente consulte un precio, cuando venda un artículo y cuando te realice
+            pedidos, siempre trabajará con estos descuentos.<br>
+            Pero cuando te realice un pedido y luego lo factures,<b> los precios en tu factura no
+            incluirán estos descuentos, estos solo se cristalizarán<br>al momento del pago de dicha
+            factura.</b><br><br>
+
+            Entonces, cuando recibas un pago, el mismo vendrá por el total de la factura
+            junto con una orden de NDC para que imputes el descuento corespondiente.<br>
+            <br>
+
             Podrás administrar estas listas desde le menú <b>Artículos</b> y sub menú
             <b>Listas de Precios</b>.<br>
-            El sistema prevee definir listas por Grupos de Articulos, por Marcas y por Artículos<br>
-            Una vez que hayas definido todas tus listas deberas asignar una a cada Cliente.
+            Luego desde la <i>Ficha de Clientes</i> podrás asignarlas a tus Clientes.<br>
 
             <!--
             Al igual que los precios sugeridos, estas también se definen en el
@@ -429,7 +556,7 @@
             -->
             <br>
           </div>
-          <div v-else-if="idSel==5"><b>ARTICULOS</b><br><br>
+          <div v-else-if="idSel==5"><h2><b>ARTICULOS</b></h2><br>
             <b>¿Que tipos de Artículos soporta el sistema?</b><br><br>
             En gohu se pueden configurar los siguientes tipos de Artículos:<br><br>
             <li><i>Comúnes</i></li>
@@ -452,9 +579,9 @@
             Este se encuentra en el menú lateal ingresando a las opciones
             <i>Artículos</i>/<i>Artículos</i>.<br><br>
 
-            <b>El formulario de Artículos</b><br><br>
+            <h2><b>El formulario de Artículos</b></h2>
             El sistema presenta un formulario standar que permite trabajar con Artículos
-            fácilmente.<br>En su parte superior, cuatro botones con las opciones
+            fácilmente.<br>Cuatro botones en la parte superior:
             <i>Nuevo</i>, <i>Nuevo Combo</i>,<i>Enviar a Excel</i> y <i>Enviar a PDF</i>.
             <br>Luego abajo la sección de selección de Proveedor y búsqueda.<br>
             Y finalmente la grilla con los datos de los Artículos.<br><br>
@@ -473,7 +600,7 @@
             <b><i>Buscar parecidos con el comodín %</i></b><br>
             El comodin <b>%</b> es muy útil, permite buscar más de una combinación
             de palabras o partes de ella.<br>
-            Por ejemplo si quiereo buscar latas de pinturas marca Alba de color Rojo
+            Por ejemplo si quiero buscar latas de pinturas marca Alba de color Rojo
             puedes escribir: ALBA%ROJO.<br>
             El sistema buscará todos los Artículos cuyo nombre encuentre
             el texto ALBA y luego el texto ROJO.<br>
@@ -486,21 +613,8 @@
             Código, Nombre, Pr.Públio, Stock, Activo y Acciones
             <br><br>
 
-            <b><i>Código Equivalente (para Artículos de tus Proveedores)</i></b><br>
-            Aunque no se recomienda cambiar los códigos de tus Proveedores, el
-            sistema te permite hacerlo.<br>
-            Ingresando al menú de opciones de la linea y seleccionando la opción
-            <i>Asignar/Editar Código Propio</i>.<br>
-            Luego de que generes la equivalencia se mostrará el tip
-            <v-badge class="pr-2"
-              :content="'m'"
-              :color="temas.forms_btn_add_bg"
-              :dark="temas.forms_btn_add_bg==true">
-            </v-badge>
-            <span class="pl-6"></span> sobre el código.<br><br>
-
             <b>La columna <i>Pr.Público</i></b><br>
-            Esta columna se compone de varios datos:<br>
+            Esta columna se compone de varios datos:<br><br>
             <b><i>El Prefijo</i></b><br>
             A la izquierda del Precio se muestra el Prefijo del Proveedor del Artículo,
             dato que cada usuario asigna en su Perfil de Usuario.<br>
@@ -550,11 +664,12 @@
             <li>Crear Presentacion</li>
             <li>Stock</li><br>
 
-            <b>Formulario de Edición de Artículos</b><br><br>
+            <h2><b>Formulario de Carga y Modificación de Artículos</b></h2><br>
 
             <b><i>Código</i></b><br>
             Los códigos se componen del código propiamente dicho, más el caracter '<b>@</b>' y
-            un número. Este último número indica quién creó el artículo.<br>
+            un número. Este último número indica el ID que le asigno el sistema al usuario dueño
+            del artículo.<br>
             También se pueden encontrar códigos con el caracter '<b>.</b>' que indica que es una
             presetación de otro artículo. Vea más abajo <i>Presentaciones</i><br>
             <br><br>
@@ -580,12 +695,12 @@
             y lo divide por el precio del Dolar de ese momento.<br>
             Entonces cuando se opera con un Artículo Anclado, <i>el costo va variando según el valor
             de la cotización del Dolar del momento de realizar la consulta u operación.</i>.<br>
-            El sistema toma el valor <i>Blue Comprador</i>, es decir, el valor más alto.<br>
+            El sistema toma el valor <i>Blue Comprador</i>, es decir, el valor más alto.<br><br>
             <b>IMPORTANTE</b><br>
             Puede que el valor del dolar en un determiando momento baje, entonces si el resultado
             de este anclaje da un valor menor al costo del Artículo, el sistema tomará el costo
             original<br>
-            Esto se configura desde tu perfil.<br>
+            Esto lo configuras desde tu perfil.<br>
             <i>Ultima cotización</i>, <i>Precio En Dolares</i> y <i>Costo Anclado</i> son los
             valores que se mostrarán si el Artículo está Anclado.
             <br><br>
@@ -594,11 +709,20 @@
             <br><br>
             <b><i>Decimales</i></b><br>
             Permite especificar con cuantos decimales trabajará el Artículo.
-            Si tiene Artículos de bajo costo, pero manejas cantidades, especificar los decimales
-            te va a resultar muy útil.<br>
             El Sistema permite detallar precios con hasta 4 decimales como máximo.
             <br><br>
+
+            <b><i>Precios a Revendedores y Precios al Público</i></b><br>
+            En tu perfil puedes definir si tu politica de comercialización es mayorista<br>
+            o minorista.<br>
+            Si es minorista defines un costo, un portecentaje de remarcación y listo.<br>
+            Pero si es mayorista, estos datos serán los que leerán tus clientes revendedores,
+            <br>
+            y se agregará una opción para que definas un porcentaje de remarcación<br>
+            adicional, por si quieres vender al público en general.<br><br>
+
             <b><i>Precios Sugeridos para la Reventa</i></b><br>
+            Si tu forma de comercializacion es generalmente mayorista
             Si tienes Clientes Revendedores, aquí puedes especificar que porcentaje de Reventa,
             o precio sugerido, es el más adecuado para el Artículo.<br>
             Luego en la ficha de Clientes puedes ir asignado el correspondiente a cada uno.
@@ -661,7 +785,7 @@
             <b>gohu</b> brinda plantillas tanto de marcas como de grupos. Puedes importarlas
             a tu sistema.
           </div>
-          <div v-else-if="idSel==6"><b>CLIENTES Y PROVEEDORES</b><br><br>
+          <div v-else-if="idSel==6"><b><h2>CLIENTES Y PROVEEDORES</h2></b><br><br>
             Aquí es donde se almacenan tus Clientes y tus Proveedores.
             Los datos en ambos casos son muy parecidos
             Clientes, Proveedores, Equipos de Trabajo y Transportistas se almacenan
@@ -671,7 +795,7 @@
             Se redujeron al máximo los datos para centrarnos solo en lo elemental y necesario.<br>
             <br>
           </div>
-          <div v-else-if="idSel==7"><b>CENTRAL DE VENTAS</b><br><br>
+          <div v-else-if="idSel==7"><b><h2>CENTRAL DE VENTAS</h2></b><br><br>
             Desde <b>Central de Ventas</b> se podrán realizar todas las operaciones referentes a
             Ventas.<br><br>
             El formulario presenta en al parte superior una serie de paneles referentes a cada
@@ -695,7 +819,7 @@
             comprobante. Estas dependen también del tipo de comprobante que se este seleccionado.
             <br>
           </div>
-          <div v-else-if="idSel==8"><b>DETALLES</b><br><br>
+          <div v-else-if="idSel==8"><b><h2>CENTRAL DE VENTAS -> DETALLES</h2></b><br><br>
             Explicaremos en este apartado como esta estructurado el módulo de ventas en
             <b>gohu</b>.<br><br>
             El sistema permite realizar operaciones solo a Clientes cargados, si necesitas
@@ -707,9 +831,10 @@
             puede estar ligada a un Pedido, si es que tienes <i>Clientes Viculados</i> que te
             realizan pedidos.<br>
             <br>
-            Hay dos formas bien diferentes de realizar ventas en <b>gohu</b><br><br>
+            Hay dos formas de realizar facturas en <b>gohu</b><br><br>
             <li><i>A Clientes Vinculados</i></li>
-            Las ventas se realizan exlusivamente vía Pedidos.<br><br>
+            Las ventas se realizan exlusivamente vía Pedidos, es decir que no vas
+            a poder realizar facturas a clientes vinculados, solo vía pedidos.<br><br>
             <li><i>A Clientes NO Vinculados</i></li>
             Aquí las ventas son directas, no necesitan de un Pedido previo.<br>
             <br>
@@ -853,7 +978,7 @@
             en estos Maletines. Para más detalles ve a <i>Recibos</i> para ver como funciona esta
             operatoria.
           </div>
-          <div v-else-if="idSel==9"><b>FACTURAS</b><br><br>
+          <div v-else-if="idSel==9"><b><h2>CENTRAL DE VENTAS -> FACTURAS</h2></b><br><br>
             Permite emitir Facturas de Ventas.<br><br>
             El botón <v-icon>mdi-plus</v-icon> presenta el formulario de Facturación.<br>
             Como primera opción se presenta la posibilidad de que el comprobante sea o no Manual.
@@ -874,14 +999,14 @@
             vinculados deberán realizar pedidos para que luego,<br> en base a estos, se generen las
             facturas correspondientes.<br>
           </div>
-          <div v-else-if="idSel==10"><b>DEBITOS</b><br><br>
+          <div v-else-if="idSel==10"><b><h2>CENTRAL DE VENTAS -> DEBITOS</h2></b><br><br>
             Muestra las Notas de Débito (NDD) emitidas.<br>
             Las NDD no son operaciones <i>iniciadoras</i> de movimientos sino que van siempre
             asociadas a otra operación que sí fue inicial, en este caso una Factura.<br>
             Por lo tanto no se pueden agregar en forma aislada, sino que siempre imputando a
             una Factura.
           </div>
-          <div v-else-if="idSel==11"><b>CREDITOS</b><br><br>
+          <div v-else-if="idSel==11"><b><h2>CENTRAL DE VENTAS -> CREDITOS</h2></b><br><br>
             Muestra las Notas de Crédito (NDC) emitidas.<br>
             Las NDC se comportan exactamente igual que las NDD salvo que se pueden imputar
             a una Factura o a una Nota de Débito,<br>pero solo cuando dispongan de
@@ -892,25 +1017,34 @@
             De ser esto negativo, podrás imputar el Crédito a otro Débito que si tenga saldo
             disponible.
           </div>
-          <div v-else-if="idSel==12"><b>PRESUPUESTOS</b><br><br>
+          <div v-else-if="idSel==12"><b><h2>CENTRAL DE VENTAS -> PRESUPUESTOS</h2></b><br><br>
             Permite realizar Presupuestos a tus Clientes.<br>
             Estos no tienen valor fiscal y tampoco se involucran con otros módulos, Stock, Cuentas
             Corrientes, Tesoreria, etc.<br>
             Una vez confeccionados podrás realizar Facturas basadas en ellos.
           </div>
-          <div v-else-if="idSel==13"><b>REMITOS</b><br><br>
+          <div v-else-if="idSel==13"><b><h2>CENTRAL DE VENTAS -> REMITOS</h2></b><br><br>
             Permite realizar Remitos a tus Clientes.<br>
             Trabajan exactamente igual que los Presupuestos, con la diferencia de que estos
             comprobantes son necesarios para mover tu mercadería geofráficamente.
             Al igual que los Presupuestos, tambián podrás Facturarlos.
           </div>
-          <div v-else-if="idSel==14"><b>PEDIDOS</b><br><br>
+          <div v-else-if="idSel==14"><b><h2>CENTRAL DE VENTAS -> PEDIDOS</h2></b><br><br>
             Los Pedidos necesitan un apartado especial ya que son vitales en el ciclo de vida de
             Ventas, sobretodo si el usuario tiene una estructura Mayorista y posee Vendedores.<br>
           </div>
-          <div v-else-if="idSel==15"><b>RECIBOS</b><br><br>
+          <div v-else-if="idSel==15"><b><h2>CENTRAL DE VENTAS -> RECIBOS</h2></b><br><br>
             Los Recibos permiten registrar el pago que realiza un Cliente.<br>
-
+          </div>
+          <div v-else-if="idSel==16"><b><h2>CENTRAL DE VENTAS -> RETIROS DE MERCADERIA</h2></b>
+            <br><br>
+            Para todos aquellos casos en los que tienes clientes que te retiran mercadería
+            periodicamente<br> y no quieres realizar una factura por cada retiro.<br>
+            Podrás ir registrando estos retiros y facturarlos cuando lo creas conveniente.<br>
+            En los retiros no se ingresan los precios, solo el articulo y la cantidad retirada.<br>
+            Luego en facturación, cuando ingreses un código de cliente que tenga retiros pendientes
+            de facturar,<br>se te abrirá una ventana para los selecciones.
+            Quedando estos cancelados luego del finalizar la factura.<br><br>
           </div>
           <div v-else-if="idSel==26"><b>PERFIL Y CONFIGURACION</b><br><br>
             Aqui podrás configurar tu Perfil.<br>
@@ -949,11 +1083,12 @@ export default {
   },
   data: () => ({
     licencias: [
-      {id: 'CO',     obsv: 'ERP Completo',                oper: 'Infinitas', arts: 'Infinitos', vin: 'Infinitas', precio: 0},
-      {id: 'ME',     obsv: 'ERP Medio',                   oper: '400',       arts: '1000',      vin: '50',        precio: 0},
-      {id: 'BA',     obsv: 'ERP Básico',                  oper: '200',       arts: '500',       vin: '10',        precio: 0},
-      {id: 'PP',     obsv: 'Precios y Pedidos',           oper: '200',       arts: 'Infinitos', vin: 'Infinitas', precio: 0},
-      {id: 'PP exl', obsv: 'Precios y Pedidos Exclusivo', oper: '200',       arts: 'Infinitos', vin: 'Infinitas', precio: 0},
+      {id: 'PR',    obsv: 'ERP Profesionales',           oper: '3600',      arts: 'Infinitos', fotos: 0, vin: '0',         precio: 0},
+      {id: 'CO',    obsv: 'ERP Completo',                oper: 'Infinitas', arts: 'Infinitos', fotos: 7, vin: 'Infinitas', precio: 0},
+      {id: 'ME',    obsv: 'ERP Medio',                   oper: '7200',      arts: '1000',      fotos: 3, vin: '50',        precio: 0},
+      {id: 'BA',    obsv: 'ERP Básico',                  oper: '3600',      arts: '500',       fotos: 1, vin: '10',        precio: 0},
+      {id: 'PP',    obsv: 'Precios y Pedidos',           oper: 'Infinitas', arts: 'Infinitos', fotos: 3, vin: 'Infinitas', precio: 0},
+      {id: 'PPx',   obsv: 'Precios y Pedidos Exclusivo', oper: '3600',      arts: 'No tiene',  fotos: 0, vin: 'Un solo Proveedor', precio: 0},
     ],
     preciosLicencias: [],
     idSel: 1,
@@ -1015,18 +1150,18 @@ export default {
 
   created () {
     this.preciosLicencias = []
-    debugger
     return HTTP().get('/precioslicencias').then(({ data }) => {
-      debugger
       for (let i=0; i<=data.length-1; i++) {
-        if (data[i].id==17) {
-          this.licencias[0].precio = data[i].usd*this.$store.state.dolar
+        if (data[i].id==16) {
+          this.licencias[0].precio = data[i].usd*data[i].cotDolar
+        } else if (data[i].id==17) {
+          this.licencias[1].precio = data[i].usd*data[i].cotDolar
         } else if (data[i].id==18) {
-          this.licencias[1].precio = data[i].usd*this.$store.state.dolar
+          this.licencias[2].precio = data[i].usd*data[i].cotDolar
         } else if (data[i].id==19) {
-          this.licencias[2].precio = data[i].usd*this.$store.state.dolar
+          this.licencias[3].precio = data[i].usd*data[i].cotDolar
         } else if (data[i].id==20) {
-          this.licencias[3].precio = data[i].usd*this.$store.state.dolar
+          this.licencias[4].precio = data[i].usd*data[i].cotDolar
         }
         data[i].precio = data[i].usd*this.$store.state.dolar
       }

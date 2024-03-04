@@ -1,4 +1,4 @@
-<template>
+4<template>
   <v-layout align-start>
     <v-flex>
       <v-dialog v-model="dialog" :fullscreen="true" persistent
@@ -41,7 +41,7 @@
           <form method="POST" action="upload" enctype="multipart/form-data">
             <v-card-text class="pt-1 pb-0">
 <!--          <v-container class="pt-1 pb-0">   -->
-                <v-tabs background-color="white" :color="temas.forms_titulo_bg">
+                <v-tabs :color="temas.forms_titulo_bg">
                   <v-tab href="#manual" @click="setTab('manual')">
                     Precios
                   </v-tab>
@@ -204,7 +204,8 @@
                           <v-radio label="Actualizar en base a Archivo Excel"
                             value="A"
                             :color="temas.forms_titulo_bg"
-                            class="pl-6"></v-radio>
+                            class="pl-6">
+                          </v-radio>
                         </v-radio-group>
                       </v-col>
                       <v-col cols="8">
@@ -280,26 +281,6 @@
                     Precios Modificados por Compras
                   </v-tab>
 
-                  <v-tab-item value="cambios">
-                    <v-row>
-                      <v-col cols="3" sm="3" md="3">
-                        <v-btn v-show="selected.length>0"
-                          :color="temas.cen_btns_bg"
-                          :dark="temas.cen_btns_dark==true"
-                          class="ma-2 white--text" @click="cpBorrar">
-                          Borrar Seleccionados
-                        </v-btn>
-                      </v-col>
-                      <v-col cols="3" sm="3" md="3">
-                        <v-btn v-show="selected.length>0"
-                          :color="temas.forms_titulo_bg"
-                          :dark="temas.cen_btns_dark==true"
-                          class="ma-2 white--text" @click="cpAplicar()">
-                          Aplicar Cambios
-                        </v-btn>
-                      </v-col>
-                    </v-row>
-                  </v-tab-item>
                   <v-tab href="#backups" @click="setTab('backups')">
                     Copias
                   </v-tab>
@@ -316,11 +297,10 @@
             :items="items"
             @toggle-select-all="selectAll"
             :single-select="false"
-            :search="search"
             item-key="codigo"
             show-select dense
             :footer-props="{
-              itemsPerPageOptions: [6],
+              itemsPerPageOptions: [10],
               showFirstLastPage: true,
               showCurrentPage: true,
               nextIcon: 'mdi-arrow-right-drop-circle-outline',
@@ -355,7 +335,7 @@
               <span class="fg85">${{ formatoImporteDec(item.precio, 2) }}</span>
             </template>
             <template v-slot:item.variacion="{ item }">
-              <span class="fg85">% {{ formatoImporte(item.variacion) }}</span>
+              <span class="fg85">% {{ formatoImporteDec(item.variacion, 2) }}</span>
             </template>
           </v-data-table>
 
@@ -365,11 +345,10 @@
             :items="items"
             @toggle-select-all="selectAll"
             :single-select="false"
-            :search="search"
             item-key="codigo"
             show-select dense
             :footer-props="{
-              itemsPerPageOptions: [6],
+              itemsPerPageOptions: [10],
               showFirstLastPage: true,
               showCurrentPage: true,
               nextIcon: 'mdi-arrow-right-drop-circle-outline',
@@ -379,14 +358,41 @@
             <template v-slot:top>
               <v-row>
                 <v-col cols="4" sm="4" class="pt-5 pb-5 ml-3">  <!-- Barra de búsqueda  -->
-                  <v-text-field
-                    v-model="search" dense
+                  <v-text-field dense
+                    v-model="search"
                     :color="temas.forms_titulo_bg"
                     append-icon="search"
-                    label="Buscar"
+                    label="Código, ID, Descripción o Código de Barra"
+                    clearable
+                    @click:clear="limpiarTextoBuscar()"
                     single-line hide-details>
                   </v-text-field>
                 </v-col>
+                <v-col cols="1" sm="1" class="pt-4" >
+                  <v-btn
+                    :color="temas.forms_titulo_bg"
+                    class="fg" dark
+                    @click="filtrar()">
+                    Buscar
+                  </v-btn>
+                </v-col>
+                <v-col cols="12" sm="2" v-if="enCualTabEstoy=='cambios'">
+                  <v-btn v-show="selected.length>0"
+                    :color="temas.cen_btns_bg"
+                    :dark="temas.cen_btns_dark==true"
+                    class="ma-2 mt-1" @click="cpBorrar">
+                    Borrar Seleccionados
+                  </v-btn>
+                </v-col>
+                <v-col cols="12" sm="2" v-if="enCualTabEstoy=='cambios'">
+                  <v-btn v-show="selected.length>0"
+                    :color="temas.cen_btns_bg"
+                    :dark="temas.cen_btns_dark==true"
+                    class="ma-2 mt-1" @click="cpAplicar()">
+                    Aplicar Cambios
+                  </v-btn>
+                </v-col>
+
               </v-row>
             </template>
             <template #item.nombre="{ value }">
@@ -405,6 +411,9 @@
             </template>
             <template v-slot:item.nomgru="{ item }" class="fg85">
               <span class="fg85">{{item.nomgru.substring(0,9)}}</span>
+            </template>
+            <template v-slot:item.cpr="{ item }" class="fg85">
+              <span class="fg85">{{kit.cpr(item.cpr)}}</span>
             </template>
             <template v-slot:item.costo="{ item }" class="fg85">
               <span class="fg85" v-if="enCualTabEstoy!='importacion'">
@@ -428,16 +437,11 @@
               </v-badge>
             </template>
             <template v-slot:item.variacion="{ item }">
-              <span class="fg85">% {{ formatoImporte(item.variacion) }}</span>
+              <span class="fg85">% {{ formatoImporteDec(item.variacion, 2) }}</span>
             </template>
             <template v-slot:item.fechadelprecio="{ item }">
               <span class="fg85">{{ item.fechadelprecio }}</span>
             </template>
-<!--
-            <template v-slot:item.tasaiva="{ item }">
-              <span class="fg85">%{{ formatoImporte(item.tasaiva) }}</span>
-            </template>
--->
             <template v-slot:item.final="{ item }">
               <span class="fg85">
                 $ {{ formatoImporteDec(item.precios[0].final, 3) }}
@@ -451,12 +455,12 @@
             </template>
             <template v-slot:item.costo_anterior="{ item }">
               <span class="fg85">
-                ${{ formatoImporteDec(item.costo_anterior, 3) }}
+                ${{ formatoImporteDec(item.costo_anterior, 5) }}
               </span>
             </template>
             <template v-slot:item.costo_nuevo="{ item }">
               <span class="fg85">
-                ${{ formatoImporteDec(item.costo_nuevo, 3) }}
+                ${{ formatoImporteDec(item.costo_nuevo, 5) }}
               </span>
             </template>
             <template v-slot:item.seleccionado="{ item }">
@@ -500,13 +504,18 @@
           <v-data-table v-if="enCualTabEstoy=='backups'"
             :headers="headersCopias"
             :items="copias"
-            :search="search" dense
-            :footer-props="footerProps"
+            dense
+            :footer-props="{
+              itemsPerPageOptions: [10],
+              showFirstLastPage: true,
+              showCurrentPage: true,
+              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+            }"
             class="pl-1 pr-3 elevation-1 pt-2">
             <template v-slot:item.created_at="{ item }">
               <span class="fg">{{ formatoFechaYHora(item.created_at) }}</span>
             </template>
-
             <template v-slot:item.accion="{item}">
               <v-tooltip bottom>
                 <template v-slot:activator="{ on }">
@@ -596,6 +605,7 @@
                   </v-col>
                   <v-col cols="4" sm="4" md="4" class="pt-0 pb-0">
                     <v-text-field
+                      autofocus
                       v-model="edPre.porrem"
                       :color="temas.forms_titulo_bg"
                       label="% Remarcación"
@@ -812,12 +822,10 @@ export default {
     items: [],
     mios: [],
     itemActual: null,
-    footerProps: {'items-per-page-options': [8]},
     search: '', // para el cuadro de búsqueda de datatables  
     dialog: false, // para que la ventana de dialogo o modal no aparezca automáticamente
     // definimos los headers de la datatables
     descripcion: '',
-    items: [],
     copias: [],
     headers: [],
 
@@ -886,9 +894,9 @@ export default {
       })
       .finally(() => (this.isLoadingMarcasFil = false))
     },
-    search () {
-      this.filtrar()
-    },
+//    search () {
+//      this.filtrar()
+//    },
   },
 
   mounted () {
@@ -917,7 +925,6 @@ export default {
             this.gruItems.push(data[i])
           }
           this.grupo = this.gruItems[0]
-          debugger
           for (let i=0; i<=this.$store.state.proveedores.length-1; i++) {
             if (!(this.$store.state.externo&&i==0)) {
               this.provItems.push(this.$store.state.proveedores[i])
@@ -960,6 +967,7 @@ export default {
   methods: {
     selectAll(event) {
       if (event.value) {
+        debugger
         this.selected = this.items
       } else {
         this.selected = []
@@ -969,6 +977,11 @@ export default {
     closeForm(){
       this.dialog = false;
       router.push('/')
+    },
+
+    limpiarTextoBuscar() {
+      this.search = ''
+      this.filtrar()
     },
 
     generarNuevaCopia() {
@@ -993,12 +1006,8 @@ export default {
      },
 
     msgRespuesta(op) {
-
-      debugger
       if (op==='Aceptar') {
-        
         if (this.msg.msgAccion=='borrar copia') {
-
           return HTTP().post('/borrarcopiadeprecios/', { id: this.idCopia },{ timeout: 20000 }).then(({ data }) => {
             if (data=='error') {
               this.msg.title = '¡ERROR!'
@@ -1057,9 +1066,7 @@ export default {
 
           debugger
           return HTTP().post('/userarticuloscambiosdeprecios/', {
-            rub: this.rubro.id,
-            vin: v,
-            sel: this.selected,
+            rub: this.rubro.id, vin: v, sel: this.selected,
             pje: this.porcentaje,
             aum: this.aumentar,
             tip: this.tipoDeCambio,
@@ -1071,6 +1078,7 @@ export default {
             { timeout: 20000, limit: 50 }).then(({ data }) => {
 
             debugger
+
             if (data=='error') {
               this.progress = false
               this.msg.msgTitle = '¡Opps, se ha producido un error!'
@@ -1081,41 +1089,37 @@ export default {
               this.msg.msgAccion = 'Error'
               this.msg.msgButtons = ['Aceptar']
             } else {
-              this.selected = []
+
               this.items = []
+              this.selected = []
               this.progress = false
-              if (this.tipoDeCambio=='campre') {
-                this.msg.msgTitle = 'El cambio de precios fue realizado!'
-              } else if (this.tipoDeCambio=='camone'||this.tipoDeCambio=='campor') {
-                this.msg.msgTitle = 'El cambio de remarcación fue realizado!'
-              } else {
-                this.msg.msgTitle = 'El cambio de anclas fue realizado!'
-              }
+
               let msg = ''
               if (data>0) {
-                if (data==1) {
-                  msg = data+' precio fue modificado.<br><br>'
+                if (this.tipoDeCambio=='campre') {
+                  msg = data==1?'¡Precio modificado!':'¡Precios modificados!'
+                } else if (this.tipoDeCambio=='camone'||this.tipoDeCambio=='campor') {
+                  msg = data==1?'¡Remarcación modificada!':'¡Remarcaciones modificadas!'
                 } else {
-                  msg = data+' precios fueron modificados.<br><br>'
+                  msg = data==1?'¡Cambio de anclas OK':'¡Cambios de anclas Ok!'
                 }
                 if (this.$store.state.vinculosHijos.length>0) {
                   msg += 'Tambien fueron modificados los precios de '+this.$store.state.vinculosHijos.length+' '
                   msg += 'clientes vinculados.'
                 }
+                this.mensaje(msg, this.temas.forms_titulo_bg, 1500)
               } else {
-                msg = 'No se han modificado precios!.'
+                this.mensaje('¡No se han modificado precios!.', this.temas.forms_titulo_bg, 1500)
               }
-              this.msg.msgBody = msg
-              this.msg.msgVisible = true
-              this.msg.msgAccion = 'Precios Modificados'
-              this.msg.msgButtons = ['Aceptar']
+              this.msg.msgVisible = false
+              this.filtrar()
             }
           })
         
-        } else if (this.msg.msgAccion=='Precios Modificados') {
+//        } else if (this.msg.msgAccion=='Precios Modificados') {
           
-          this.msg.msgVisible = false
-          this.filtrar()
+  //        this.msg.msgVisible = false
+    //      this.filtrar()
         
         } else if (this.msg.msgAccion=='Borrar Cambios de Precios') {
           
@@ -1151,7 +1155,10 @@ export default {
 
         } else if (this.msg.msgAccion=='nueva copia de precios') {
 
+          debugger
           return HTTP().post('/generarcopiadeprecios/', { des: this.descripcion },{ timeout: 20000 }).then(({ data }) => {
+
+            debugger
             if (data=='error') {
               this.msg.title = '¡ERROR!'
               this.msg.msgBody = 'Se ha producido un error al intentar relizar la copia de precios!.'
@@ -1181,8 +1188,6 @@ export default {
       
       }
 
-
-
     },
 
     anclarDesanclar() {
@@ -1194,20 +1199,17 @@ export default {
       if (this.enCualTabEstoy=='importacion') {
         return
       }
-
       this.items = []
       this.copias = []
-      if (this.enCualTabEstoy=='backups') {
 
+      debugger
+      if (this.enCualTabEstoy=='backups') {
         return HTTP().get('/precioscopias').then(({data})=>{
+          debugger
           this.copias = data
         })
-
       } else if (this.enCualTabEstoy=='cambios') {
-        
-        debugger
         return HTTP().get('/precioscambios').then(({data})=>{
-          debugger
           if (data) {
             for (let i=0; i<=data.length-1; i++) {
               this.items.push({ 
@@ -1256,24 +1258,12 @@ export default {
           this.marca = ''
         }
         this.progress = true
-
         return HTTP().post('/articuloz', {
           search: this.search,
           vinculosPadresLic: this.$store.state.vinculosPadresLic,
           vinculosPadresAll: this.$store.state.vinculosPadresAll,
           proveedor: this.prov, stockProv: false, grupo: grusel, marca: this.marca, userex: null, soloArtComprados: true, descuentos: this.descuentos,
           dolar: this.$store.state.dolar, activos: true, limit: this.limit }).then(({ data })=>{
-
-        /*
-        return HTTP().post('/articulosx', {
-          search: s, vinculos: v,
-          vinculosPadresLic: this.$store.state.vinculosPadresLic,
-          vinculosPadresAll: this.$store.state.vinculosPadresAll,
-          estricto: false, codigooid: this.$store.state.codigooid, userex: null, dolar: this.$store.state.dolar, ambiente: 'ventas',
-          tipo: this.tipoDeCambio, rubro: this.rubro.id, marca: this.marca, grupo: grusel, proveedor: this.prov, ancla: this.anclar,
-          saySoloArtsPropios: false, activos: true, limit: this.limit, descuentos: this.descuentos}).then(({ data }) => {
-        */
-
           for (let i=0; i<=data.length-1; i++) {
             this.items.push({
               id: data[i].id,
@@ -1302,24 +1292,38 @@ export default {
     },
 
     cargarXls() {
+      this.encontradosXls = 0;
       if (this.nuevoXls != undefined) {
         try {
-          return HTTP().get('/configarticulosexcel').then(({ data }) => {
-            this.cfgExcel = data
-            if (data) {
-              this.xlsCargado = true;
-              let file = this.nuevoXls;
-              let reader = new FileReader();
-              reader.onload = async function (e) {
-                let data = new Uint8Array(e.target.result);
-                let workbook = XLSX.read(data, { type: "array" });
-                let worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                let sheet = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                let dataset = await this.parseFileContent(sheet);
-              }.bind(this);
-              reader.readAsArrayBuffer(file);
-              this.chequearArt()
+          // Levanto desde la tabla precios los precios actuales
+          return HTTP().post('/articulox', {}).then(({ data })=>{
+            this.mios = [];
+            let p = 0;
+            for (let i=0; i<=data.length-1; i++) {
+              p = i+2
+              this.mios.push([
+                data[i].id,
+                data[i].codigo,
+                data[i].nombre,
+                data[i].costo,
+                data[i].porrem,
+                {t:"n",f:"D"+p.toString()+"*(1+(E"+p.toString()+"/100))"},
+                data[i].tasaiva,
+                {t:"n",f:"F"+p.toString()+"*(1+(G"+p.toString()+"/100))"}
+              ]);
             }
+            this.xlsCargado = true;
+            let file = this.nuevoXls;
+            let reader = new FileReader();
+            reader.onload = async function (e) {
+              let data = new Uint8Array(e.target.result);
+              let workbook = XLSX.read(data, { type: "array" });
+              let worksheet = workbook.Sheets[workbook.SheetNames[0]];
+              let sheet = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+              let dataset = await this.parseFileContent(sheet);
+            }.bind(this);
+            reader.readAsArrayBuffer(file);
+//          this.chequearArt()
           })
         } catch (exception) {
         }
@@ -1329,128 +1333,103 @@ export default {
     },
 
     parseFileContent(sheet) {
+      this.encontradosXls = 0;
+      this.selected = []
       this.items = []
-      let abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-      for (let i=0; i<=this.cfgExcel.length-1; i++) {
 
-        // paso a variables el json
-        let pcod=this.cfgExcel[i].codigo
-        let pnom=this.cfgExcel[i].nombre
-        let pgru=this.cfgExcel[i].grupo
-        let pmar=this.cfgExcel[i].marca
-        let pprecio=this.cfgExcel[i].precio
-        let pconiva=this.cfgExcel[i].coniva
-        let ptasiva=this.cfgExcel[i].tasaiva
-        let pmoneda=this.cfgExcel[i].moneda
+      // apareo los dos arrays de objetos, 
+      let x = 1 // sheet
+      let y = 0 // mios
+      let done = true
+      while (done) {
+        let r = sheet[x]
+        let xl = r[1]
+        let db = this.mios[y][1]
+        if (xl===db) {       // son iguales, controlo el precio
 
-        // paso a variables las posiciones de las columnas, 1='A', 2='B', etc.
-        let ccod = abc.indexOf(pcod)
-        let cnom = abc.indexOf(pnom)
-        let cgru = abc.indexOf(pgru)
-        let cmar = abc.indexOf(pmar)
-        let cpre = abc.indexOf(pprecio)
-        let civa = abc.indexOf(ptasiva)
-        let cmon = abc.indexOf(pmoneda)
-
-        for (let j=1; j<=sheet.length-1; j++) {
-          let r = sheet[j]
-          if (r[0]!=undefined && r[3]!=undefined && !isNaN(r[3])) {
+          if (r[5]!=this.mios[y][3]) {
+            let x = this.roundTo(((r[3]/this.mios[y][3])-1)*100,4)
             this.items.push({
-              id:r[0], codigo:r[1], nombre:r[2], miprecio:0, precio:r[3], variacion: 0, estado: 'N'
-            }
-          )}
+              id:r[0],
+              codigo:r[1],
+              nombre:r[2],
+              miprecio:this.mios[y][3],
+              precio:r[3], //5
+              variacion:x,
+              estado: 'N'
+            })
+            this.encontradosXls ++;
+          }
+          x ++
+          y ++
+        } else if (xl>db) {  // el de excel es mayor que el de la bd
+          y ++
+        } else if (xl<db) {  // el de la bd es mayor
+          x ++
         }
+        if (y>sheet.length-1) {
+          y = sheet.length-1
+          x ++
+        }
+        if (x>this.mios.length-1) {
+          done = false
+        }
+      }
 
-        /*
-        for (let j=Number(this.cfgExcel[i].comienza)-1; j<=sheet.length-1; j++) {
-          let r = sheet[j]
-          let precio = 0
-          if (r[ccod]!=undefined && r[cnom]!=undefined && r[cpre]!=undefined && !isNaN(r[cpre])) {
-            precio = r[cpre]
-            if (pconiva=='S') {
-              if (ptasiva!='') {
-                precio = precio / (1+(ptasiva/100))
-              } else {
-                precio = precio / (1.21)
-              }
+      /*
+      for (let i=1; i<=sheet.length-1; i++) {
+        let r = sheet[i]
+        if (r[0]!=undefined && r[3]!=undefined && !isNaN(r[3])) {
+          for (let j=0; j<=this.mios.length-1; j++) {
+            if (this.mios[j][1]==r[1]&&this.mios[j][3]!=r[3]) { 
+              this.items.push({
+                id:r[0], codigo:r[1], nombre:r[2], miprecio:this.mios[j].precio, precio:r[3], variacion: 0, estado: 'N'
+              })
+              this.encontradosXls ++;
+              break
             }
-            this.items.push(
-              { id: null, codigo: r[ccod]+'@'+this.userId, nombre: r[cnom], miprecio: 0, precio: precio, variacion: 0, estado: 'N' }
-            )
           }
         }
-        */
-
+      }
+      */
+      if (this.encontradosXls == 0) {
+        this.mensaje('No se encontraron precios para actualizar.',this.temas.snack_error_bg, 2500)
       }
       this.registrosXls = sheet.length;
     },
 
     chequearArt() {
-
       this.mios = [];
       this.encontradosXls = 0;
       // ver de poner el rubro, por ahora van todos.
+      return HTTP().post('/articuloz', {
+        search: '',
+        vinculosPadresLic: this.$store.state.vinculosPadresLic,
+        vinculosPadresAll: this.$store.state.vinculosPadresAll,
+        proveedor: 0, stockProv: false, grupo: '', marca: '', userex: null, soloArtComprados: false, descuentos: this.descuentos,
+        dolar: this.$store.state.dolar, activos: true, limit: 100000 }, {timeout: 50000}).then(({ data })=>{
+        this.items = data
+        return HTTP().post('/userarticulosmisprecios/', {id:this.userId}).then(({ data }) => {  // ver esto
+          if (data) {
+            for (let i=0; i<=data.length-1; i++) {
+              this.mios.push({ id: data[i].id, codigo: data[i].codigo, precio: data[i].meta.costo })
+            }
 
-      return HTTP().post('/userarticulosmisprecios/', {id:this.userId}).then(({ data }) => {  // ver esto
+            // ORDENO items POR CODIGO
+            this.items.sort(function (a, b) {
+              if (a.codigo > b.codigo) { return 1 }
+              if (a.codigo < b.codigo) { return -1 }
+            return 0 })
 
-        if (data) {
-          for (let i=0; i<=data.length-1; i++) {
-            this.mios.push({ id: data[i].id, codigo: data[i].codigo, precio: data[i].meta.costo })
+            this.encontradosXls = resultado.length
+            this.aModificarXls = resultado.length
+            this.items = resultado
+
           }
-
-          // ORDENO items POR CODIGO
-          this.items.sort(function (a, b) {
-            if (a.codigo > b.codigo) { return 1 }
-            if (a.codigo < b.codigo) { return -1 }
-          return 0 })
-
-          /*
-          let resultado = this.items.filter((item) => {
-            let ok = false;
-            for (let i = 0; i < this.mios.length && !ok; i++) { // Corta cuando no hay mas following o cuando ya se encontró uno
-              let mio = this.mios[i];
-              if (mio.codigo.trim() == item.codigo.trim()) {
-                if (mio.precio != item.precio) {
-                  item.variacion = this.roundTo(((item.precio/mio.precio)-1)*100,2)
-                  item.miprecio = mio.precio
-                  ok = true;
-                }
-              }
-            }
-            return ok;
-          })
-          */
-          debugger
-          let resultado = this.items.filter((item) => {
-            let ok = false;
-            let pos = this.mios.findIndex(x=>x.codigo.trim()==item.codigo.trim())
-            if (pos!=-1) {
-              item.id = this.mios[pos].id
-              item.variacion = this.roundTo(((item.precio/this.mios[pos].precio)-1)*100,2)
-              item.miprecio = this.mios[pos].precio
-              ok = true;
-            }
-            return ok;
-          })
-
-          debugger
-          resultado = this.items.filter((item) => {
-            let ok = false;
-            if (item.precio!=item.miprecio) {
-              ok = true
-            }
-            return ok;
-          })
-
-          debugger
-          this.encontradosXls = resultado.length
-          this.aModificarXls = resultado.length
-          this.items = resultado
-
-        }
-        if (this.encontradosXls == 0) {
-          this.mensaje('No se encontraron precios para actualizar.',this.temas.snack_error_bg, 2500)
-        }
+          if (this.encontradosXls == 0) {
+            this.mensaje('No se encontraron precios para actualizar.',this.temas.snack_error_bg, 2500)
+          }
+        })
       })
       .catch(err => {
         console.log(err)
@@ -1464,12 +1443,13 @@ export default {
 
     formatoImporteDec(value, dec) {
       let val = (value/1).toFixed(dec).replace('.', ',')
-      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+      return val.toString().replace(/\B(?=(\d{dec})+(?!\d))/g, ".")
     },
 
     aplicarCamPre(val) {
       this.desdeExcel = val
       let msg = ''
+      debugger
       //este viene del form y activa el componente confirmacion, luego este va a msgRespuesta con lo confirmado
       if (this.tipoDeCambio=='campre') {
         this.msg.msgTitle = 'Cambios de Precios'
@@ -1662,9 +1642,11 @@ export default {
     },
 
     cpGenerar() {
-      this.msg.msgTitle = 'Generar Archivo Excel'
-      let m = 'Vas a generar un archivo en formato Excel que te va a permitir '
-      m += 'manipular precios y remarcaciones para luego volcarlas al sistema.'
+      this.msg.msgTitle = 'Generar Archivo de Precios'
+      let m = 'Vas a generar un archivo en formato Excel con todos tus precios. '
+      m += 'En él vas a poder modificarlos y luego volcarlos al sistema.<br>'
+      m += 'IMPORTANTE: Recuerda que solo deberás cambiar la columna <b>COSTO</b> '
+      m += 'de la planilla. Este es el dato que impactará en la actualización.<br>'
       this.msg.msgBody = m
       this.msg.msgAccion  = 'Generar Archivo Excel'
       this.msg.msgButtons = ['Aceptar','Cancelar']
@@ -1672,58 +1654,51 @@ export default {
     },
 
     cpGenerarExcelHTTP() {
-      return HTTP().post('/articuloz', {
-        search: '',
-        vinculosPadresLic: this.$store.state.vinculosPadresLic,
-        vinculosPadresAll: this.$store.state.vinculosPadresAll,
-        proveedor: 0, stockProv: false, grupo: '', marca: '', userex: null, soloArtComprados: true, descuentos: this.descuentos,
-        dolar: this.$store.state.dolar, activos: true, limit: 50300 }, {timeout: 12000}).then(({ data })=>{
+      this.msg.msgVisible = false
+      return HTTP().post('/articulox', {}).then(({ data })=>{
         if (data.length>0) {
-          this.items = []
           let p = 0
+          this.items = []
+          this.items.push(['ID','CODIGO','NOMBRE','COSTO','PORREM','PRECIO','IVA','FINAL']);
           for (let i=0; i<=data.length-1; i++) {
             p = i+2
-            this.items.push({
-              ID: data[i].id,
-              CODIGO: data[i].codigo,
-              NOMBRE: data[i].nombre,
-              COSTO: data[i].precios[0].costo,
-              PORREM: data[i].precios[0].porrem,
-              PRECIO: '=D'+p.toString()+'*(1+(E'+p.toString()+'/100))',
-              IVA: data[i].precios[0].tasaiva,
-              FINAL: '=F'+p.toString()+'*(1+(G'+p.toString()+'/100))',
-            })
-
-            /*
-            this.items.push({
-              ID: data[i].id,
-              CODIGO: data[i].codigo,
-              NOMBRE: data[i].nombre,
-              COSTO: data[i].precios[0].costo,
-              PORREM: data[i].precios[0].porrem,
-              PRECIO: data[i].precios[0].precio,
-              IVA: data[i].precios[0].tasaiva,
-              FINAL: data[i].precios[0].final,
-            })
-            */
-
+            this.items.push([
+              data[i].id,
+              data[i].codigo,
+              data[i].nombre,
+              data[i].costo,
+              data[i].porrem,
+              {t:"n",f:"D"+p.toString()+"*(1+(E"+p.toString()+"/100))"},
+              data[i].tasaiva,
+              {t:"n",f:"F"+p.toString()+"*(1+(G"+p.toString()+"/100))"}
+            ]);
           }
         }
-
         this.msg.msgVisible = false
-
-        let dat = XLSX.utils.json_to_sheet(this.items)
-        const workbook = XLSX.utils.book_new()
         const filename = 'planila de actualizacion'
-        XLSX.utils.book_append_sheet(workbook, dat, filename)
-        XLSX.writeFile(workbook, `${filename}.xlsx`)
+        var ws = XLSX.utils.aoa_to_sheet(this.items);
+        const generate = () => {
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
+          XLSX.writeFile(wb, `${filename}.xlsx`)
+        };
+        let xl = generate();
         this.items = []
 
-      })
+        this.msg.msgTitle = '¡Archivo Generado!'
+        let m = '¡Se ha generado el archivo <b>'+`${filename}.xlsx`+' </b>!.<br>'
+        m += 'Revisa la carpeta <b>Descargas</b> en tu navegador.'
+        this.msg.msgBody = m
+        this.msg.msgVisible = true
+        this.msg.msgAccion = 'archivo generado'
+        this.msg.msgButtons = ['Aceptar']
 
+      })
     },
 
     cpAplicarCambiosHTTP() {
+
+      debugger
       let s = []
       for (let i=0; i<=this.selected.length-1; i++) {
         s.push( {
@@ -1732,21 +1707,24 @@ export default {
           precio: this.selected[i].costo_nuevo
         })
       }
+
       debugger
       return HTTP().post('/aplicarcambiosdepreciosseleccionados/', { s } ).then(({data})=>{
+
+        debugger
+
         this.items = []
         this.selected = []
         this.msg.msgVisible = false
         let m = ''
-        debugger
+        
         if (data=='error') {
-          this.msg.title = '¡ERROR!'
+          this.msg.msgTitle = '¡ERROR!'
           this.msg.msgBody = '¡Se ha producido un error al intentar actualizar estos precios!.'
           this.msg.msgVisible = true
           this.msg.msgAccion = 'error'
           this.msg.msgButtons = ['Aceptar']
-        }
-        if (data) {
+        } else {
           this.msg.msgTitle = 'Cambios de Precios Aplicados'
           m =  (data==1) ? 'Un precio fue modificado<br>' : data + ' precios fueron modificados.<br>'
           this.msg.msgBody = m

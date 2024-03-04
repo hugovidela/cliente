@@ -1,6 +1,52 @@
 <template>
   <v-layout align-start class="fg">
     <v-flex>
+      <v-row>
+        <v-col cols="12" md="4" class="pt-0 pl-4">
+          <v-select
+            label="Cuenta"
+            v-model="cuenta"
+            :color="temas.forms_titulo_bg"
+            :items="cueItems"
+            item-value="id"
+            :item-text="cueItems=>
+              `${cueItems.banco.nombre} (${cueItems.abrev} ) - ${cueItems.cuenta}`"
+            autocomplete
+            @change="cargoPeriodosDeLaCuenta()">
+          </v-select>
+        </v-col>
+        <v-col cols="12" md="8" class="pt-3 pl-2">
+          <v-btn
+            :color="temas.forms_titulo_bg"
+            :dark="temas.forms_titulo_dark==true"
+            class="mr-1 ml-1 mt-0"
+            @click="nuevoMovimiento(cue)">
+            Nuevo Movimiento
+          </v-btn>
+          <v-btn
+            :color="temas.forms_titulo_bg"
+            :dark="temas.forms_titulo_dark==true"
+            class="mr-1 ml-1 mt-0"
+            @click="nuevoSaldoBancario(cue)">
+            Nuevo Saldo Bancario
+          </v-btn>
+          <v-btn
+            :color="temas.forms_titulo_bg"
+            :dark="temas.forms_titulo_dark==true"
+            class="mr-1 ml-1 mt-0"
+            @click="print(cue)">
+            Imprimir
+          </v-btn>
+          <v-btn
+            :color="temas.forms_titulo_bg"
+            :dark="temas.forms_titulo_dark==true"
+            class="mr-1 ml-1 mt-0"
+            @click="exportExcel(cue)">
+            Enviar a Excel
+          </v-btn>
+        </v-col>
+      </v-row>
+      <!--
       <v-row class="pb-2">
         <v-col v-for="(ban, idx) in banItems" v-bind:key="idx">
           <div class="fg">
@@ -125,17 +171,21 @@
           </div>
         </v-col>
       </v-row>
-
+      -->
       <v-data-table
         :headers="headers"
         :items="items"
         :search="search"
-        dense
+        dense show-expand
         class="elevation-3"
-        show-expand
-        :footer-props="footerProps">
+        :footer-props="{
+          itemsPerPageOptions: [5,10,15,20],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }">
         <template v-slot:top>
-
           <v-toolbar flat
             :color="temas.forms_titulo_bg"
             :dark="temas.forms_titulo_dark==true">
@@ -201,9 +251,10 @@
                 </v-btn>
                 <span class="fg">
                   Nuevo Movimiento Bancario {{ bancoSel }} - {{ abrev }}
+                  {{ transition }}
                 </span>
                 <v-spacer></v-spacer>
-                <v-btn class="fg85" v-show="mov.total!=0"
+                <v-btn class="fg85" v-show="mov.total!=0&&mov.numero!=0"
                   :color="temas.cen_btns_bg"
                   :dark="temas.cen_btns_dark==true"
                   @click="guardarMovimiento(item)">
@@ -318,10 +369,10 @@
                               prevIcon: 'mdi-arrow-left-drop-circle-outline',
                             }">
                             <template v-slot:item.librador="{ item }">
-                              <span>{{item.librador.substring(0,20)}}</span>
+                              <span>{{item.librador.substring(0,18)}}</span>
                             </template>
                             <template v-slot:item.banco="{ item }">
-                              <span>{{item.banco.substring(0,20)}}</span>
+                              <span>{{item.banco.substring(0,18)}}</span>
                             </template>
                             <template v-slot:item.importe="{ item }">
                               <span>${{ formatoImporte(item.importe) }}</span>
@@ -609,6 +660,7 @@ export default {
     Confirmacion,
   },
   data: () => ({
+    cuenta: '',
     cual: 1,
     total: 0,
     bancoSel: '',
@@ -735,12 +787,12 @@ export default {
     ],
     headersDep: [
       { text: 'Sel', value: 'accion', sortable: false, width: 70 },
-      { text: 'Librador', value:'librador', width: 210},
-      { text: 'Banco', value:'banco', width: 210},
-      { text: 'Cuenta', value:'cuenta', width: 140},
-      { text: 'Número', value:'nrovalor', width: 100},
+      { text: 'Librador', value:'librador', width: 170},
+      { text: 'Banco', value:'banco', width: 180},
+      { text: 'Cuenta', value:'cuenta', width: 180},
+      { text: 'Número', value:'nrovalor', width: 100, align: 'end'},
       { text: 'Fec.Finan', value:'fechafinanciera', width: 105},
-      { text: 'Importe', value:'importe', width: 100, align: 'end'},
+      { text: 'Importe', value:'importe', width: 150, align: 'end'},
    // { text: 'Selec.', value:'seleccionado', width: 80, align: 'end'},
     ],
 
@@ -757,12 +809,13 @@ export default {
     },
     filtrosEstados: [],
     filtroEstadoSel: 'Todos',
+    yaMonto: false,
   }),
 
   computed: {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId']),
     ...mapMutations(['alert','closeAlert']),
-    ...mapState(['sucursal','sucursalFiscal','empresa', 'tema', 'temas','caja', 'logotipo']),
+    ...mapState(['sucursal','sucursalFiscal','empresa', 'tema', 'temas','caja', 'logotipo','transition']),
     formTitle () {
       return this.editedIndex === -1 ? 'Nuevo' : 'Editar';
     },
@@ -778,6 +831,10 @@ export default {
     '$store.state.sucursal' () {
       this.init_component();
     },
+  },
+
+  beforeMount () {
+    this.yaMonto = false
   },
 
   mounted () {
@@ -799,10 +856,13 @@ export default {
         }
         this.mov.bancodmov_id = this.bancodmovs[0].id
 
+        debugger
         return HTTP().get('/tercerocuentas/'+this.$store.state.tercero).then(({ data }) => {
+
+          debugger
           this.cueItems = []
-          for (let i=0; i<=data[0].cuentas.length-1; i++) {
-            this.cueItems.push(data[0].cuentas[i])
+          for (let i=0; i<=data.tercero[0].cuentas.length-1; i++) {
+            this.cueItems.push(data.tercero[0].cuentas[i])
           }
 
           if (this.cueItems.length==0) {
@@ -815,6 +875,8 @@ export default {
             this.msg.msgBody = m
             this.msg.msgVisible = true
             this.msg.msgButtons = ['Aceptar']
+          } else {
+            this.cuenta = this.cueItems[0]
           }
 
           // CARGO LAS CUENTAS BANCARIAS DEL USUARIO, DESPUES DESMENUSO EN EL PAGO
@@ -855,6 +917,7 @@ export default {
             this.salCuenta()
             this.cargoPeriodosDeLaCuenta()
           }
+          this.yaMonto = true
         })
       })
     })
@@ -874,8 +937,6 @@ export default {
 
     cargoPeriodosDeLaCuenta() {
       return HTTP().get('/bancosperiodos/'+this.cuenta).then(({ data }) => {
-
-        debugger
         this.anios = []
         this.meses = []
         this.periodos = []
@@ -893,16 +954,17 @@ export default {
         } else {
           this.mes = moment().format('MM')
         }
+        let anioActual = moment().format('YYYY') 
+        pos = this.anios.findIndex(x=>x==anioActual)
+        this.anio = this.anios[pos!=-1?pos:0]
 
         for (let i=0; i<=this.periodos.length-1; i++) {
-          if (this.periodos[i].substring(0,4)==this.anios[0]) {
+          if (this.periodos[i].substring(0,4)==this.anio) {
             pos = Number(data[i].periodo.substring(5,7))-1
             this.meses.push(this.losMeses[pos])
           }
         }
 
-        //this.mes = moment().format('MM')
-        this.anio = this.anios[0]
         this.elAnio = this.anio
         let mesActual = moment().format('MMM').substring(0,3)
         pos = this.meses.findIndex(x => x.toUpperCase() === mesActual.toUpperCase())
@@ -928,6 +990,29 @@ export default {
       XLSX.writeFile(workbook, `${filename}.xlsx`)
     },
 
+    setAcciones(item) {
+      this.itemActual = item
+      this.acciones = []
+      this.acciones.push({nombre: 'Borrar', icon: 'mdi-delete'})
+      this.acciones.push({nombre: 'Conciliar', icon: 'mdi-checkbox-marked-outline'})
+    },
+
+    async selAccion(item) {
+      if (item.nombre=='Conciliar') {
+        this.msg.msgTitle = 'Conciliar Movimiento' 
+        this.msg.msgAccion = 'conciliar movimiento'
+        this.msg.msgBody = '¿Confirmas la conciliación del movimiento seleccionado?'
+        this.msg.msgVisible = true
+        this.msg.msgButtons = ['Aceptar','Cancelar']
+      } else if (item.nombre=='Borrar') {
+        this.msg.msgTitle = 'Borrar Movimiento' 
+        this.msg.msgAccion = 'borrar movimiento'
+        this.msg.msgBody = '¿Confirmas borrar este movimiento?'
+        this.msg.msgVisible = true
+        this.msg.msgButtons = ['Aceptar','Cancelar']
+      }
+    },
+
     msgRespuesta(op) {
       if (op==='Aceptar') {
         if (this.msg.msgAccion=='exportar a PDF') {
@@ -940,29 +1025,17 @@ export default {
           this.nuevoMovimientoBancarioHTTP()
         } else if (this.msg.msgAccion=='nuevo saldo bancario') {
           this.nuevoSaldoBancarioHTTP()
+        } else if (this.msg.msgAccion=='borrar movimiento') {
+          this.borrarMovimientoBancarioHTTP()
         }
       }
       this.msg.msgVisible = false;
-    },
-
-    setAcciones(item) {
-      this.itemActual = item
-      this.acciones = []
-      this.acciones.push({nombre: 'Conciliar', icon: 'mdi-checkbox-marked-outline'})
     },
 
     nuevoSaldoBancario() {
       this.dialogSaldoBancario = true
       this.saldoBancario.fecha = moment().format('YYYY-MM-DD')
       this.saldoBancario.saldo = 0
-    },
-
-    async selAccion(item) {
-      this.msg.msgTitle = 'Conciliar Movimiento' 
-      this.msg.msgAccion = 'conciliar movimiento'
-      this.msg.msgBody = 'Confirma la conciliación del movimiento seleccionado?'
-      this.msg.msgVisible = true
-      this.msg.msgButtons = ['Aceptar','Cancelar']
     },
 
     cerrarMovimiento(item) {
@@ -996,8 +1069,28 @@ export default {
       }
     },
 
-    selectBanco(cual) {
-      this.bancoSel = cual
+    setAnio(anio) {
+      if (anio) {
+        this.anio = anio
+      } else {
+        this.anio = this.anio == null ? moment().format('YYYY') : this.anio
+      }
+      this.elAnio = this.anio
+      this.meses = []
+      for (let i=0; i<=this.periodos.length-1; i++) {
+        if (this.periodos[i].substring(0,4)==this.anio) {
+          let pos = Number(this.periodos[i].substring(5))-1
+          this.meses.push(this.losMeses[pos])
+        }
+      }
+      this.elMes = this.meses[0]
+      let pos = this.losMeses.indexOf(this.elMes)+1
+      this.mes = pos.toString().padStart(2,'0')
+      this.elAnio = this.anio
+      this.filtroEstadoSel = 'Todos'
+      if (this.yaMonto) {
+        this.listarHTTP(false)
+      }
     },
 
     setMes(mes) {
@@ -1008,21 +1101,19 @@ export default {
       this.listarHTTP(true)
     },
 
-    cambioCuenta() {
-      this.salCuenta()
-      this.listarHTTP(true);
-    },
-
-    selectCuenta(cue) {
-      for (let i=0; i<=this.banItems.length-1; i++) {
-        for (let j=0; j<=this.banItems[i].cuentas.length-1; j++) {
-          this.banItems[i].cuentas[j].sel = this.banItems[i].cuentas[j].cuenta==cue.cuenta
-        }
-      }
-      this.cuenta = cue.id
-      this.abrev = cue.abrev+' - '+cue.cuenta
+    /*
+    selectCuenta() {
+      //let x = this.cuenta
+      //for (let i=0; i<=this.banItems.length-1; i++) {
+      //  for (let j=0; j<=this.banItems[i].cuentas.length-1; j++) {
+      //    this.banItems[i].cuentas[j].sel = this.banItems[i].cuentas[j].cuenta==cue.cuenta
+      //  }
+      //}
+      //this.cuenta = cue.id
+      //this.abrev = cue.abrev+' - '+cue.cuenta
       this.cargoPeriodosDeLaCuenta()
     },
+    */
 
     nuevoMovimiento() {
       this.cartera = []
@@ -1081,23 +1172,38 @@ export default {
       let bc = []
       let pos = this.bancodmovs.findIndex(x => x.id == this.mov.bancodmov_id)
       return HTTP().post('/bancosnuevomovimiento', {
-        caja:           this.caja,
-        mov:            this.mov,
-        cartera:        this.cartera,
-        cuenta:         this.cuenta,
-        ingreso:        this.bancodmovs[pos].ingreso
+        caja:this.caja, mov:this.mov, cartera:this.cartera, cuenta:this.cuenta, ingreso:this.bancodmovs[pos].ingreso
       }).then(({ data }) => {
+        this.msg.msgTitle = 'Nuevo Movimiento Bancario' 
         if (data) {
-          this.msg.msgTitle = 'Conciliación de Movimientos' 
           this.msg.msgAccion = 'movimientoOk'
           this.msg.msgBody = '¡El movimiento bancario se ha registrado con exito!'
           this.msg.msgVisible = true
           this.msg.msgButtons = ['Aceptar']
           this.salCuenta()
         } else {
-          this.msg.msgTitle = 'Conciliación de Movimientos' 
           this.msg.msgAccion = 'movimientoError'
           this.msg.msgBody = '¡El movimiento bancario NO se ha registrado!'
+          this.msg.msgVisible = true
+          this.msg.msgButtons = ['Aceptar']
+        }
+        this.dialogMovimiento = false
+        this.listarHTTP(true);
+      });
+    },
+
+    borrarMovimientoBancarioHTTP() {
+      return HTTP().delete('/bancosborrarmovimiento/'+this.itemActual.id ).then(({ data }) => {
+        this.msg.msgTitle = 'Borrar Movimiento Bancario' 
+        if (data) {
+          this.msg.msgAccion = 'movimientoOk'
+          this.msg.msgBody = '¡El movimiento bancario se ha eliminado con exito!'
+          this.msg.msgVisible = true
+          this.msg.msgButtons = ['Aceptar']
+          this.salCuenta()
+        } else {
+          this.msg.msgAccion = 'movimientoError'
+          this.msg.msgBody = '¡El movimiento bancario NO se ha podido eliminar!'
           this.msg.msgVisible = true
           this.msg.msgButtons = ['Aceptar']
         }
@@ -1198,11 +1304,7 @@ export default {
     },
 
     listarHTTP(asignoSel) {
-      
-      debugger
       return HTTP().post('/bancosmovimientos',{cuenta: this.cuenta, periodo: this.elAnio+'-'+this.mes}).then(({data})=>{
-
-        debugger
         this.items = [];
         this.saldoEmpresa = 0;
         this.saldoResumen = 0;
@@ -1231,8 +1333,6 @@ export default {
           if (terceroNombre == '') {
            terceroNombre = data.movBan[i].observaciones
           }
-
-          debugger
           this.items.push({
             id: data.movBan[i].id,
             fecha: data.movBan[i].fecha,
@@ -1272,7 +1372,6 @@ export default {
         this.saldoEmpresa = data.saldo[0].saldo
         this.itemsAll = this.items;
         this.filtrosEstados = []
-
         for (let i=0; i<=this.items.length-1; i++) {
           let a = this.items[i].abrev
           let p = this.filtrosEstados.findIndex(x => x.tip === a);

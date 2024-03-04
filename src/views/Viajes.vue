@@ -9,7 +9,13 @@
         dense
         item-key="id"
         class="elevation-1"
-        :footer-props="footerProps"
+        :footer-props="{
+          itemsPerPageOptions: [12],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }"
         @click:row="listarViajeHTTP">
         <template v-slot:top>
           <v-toolbar flat
@@ -77,7 +83,7 @@
             </v-toolbar-title>
 
             <!-- DIALOG PARA NUEVO VIAJE -->
-            <v-dialog v-model="dialog" max-width="500px"
+            <v-dialog v-model="dialog" max-width="750px"
               :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
@@ -98,7 +104,7 @@
                   :color="temas.cen_btns_bg"
                   :dark="temas.cen_btns_dark==true"
                   @click="guardarViajeHTTP">
-                  Guardar Viaje
+                  Generar Viaje
                 </v-btn>
               </v-toolbar>
 
@@ -106,7 +112,7 @@
                 <v-form ref="art3">
                   <v-card-text>
                     <v-row>
-                      <v-col cols="6" offset="3" sm="6" md="6" class="pt-6 pb-0">
+                      <v-col cols="12" offset="4" md="4" class="pt-6 pb-0">
                         <v-text-field
                           ref="fecha"
                           type="date"
@@ -118,7 +124,7 @@
                       </v-col>
                     </v-row>
                     <v-row>
-                      <v-col cols="10" offset="1" sm="10" md="10" class="pt-0 pb-0">
+                      <v-col cols="12" offset="2" md="8" class="pt-0 pb-0">
                         <v-select
                           label="Equipo"
                           v-model="editado.user_id"
@@ -132,7 +138,7 @@
                       </v-col>
                     </v-row>
                     <v-row>
-                      <v-col cols="10" offset="1" sm="10" md="10" class="pt-0 pb-6">
+                      <v-col cols="12" offset="2" md="8" class="pt-0">
                         <v-select
                           label="Zona"
                           v-model="editado.zona_id"
@@ -143,8 +149,46 @@
                         </v-select>
                       </v-col>
                     </v-row>
+                    <v-row>
+                      <v-col cols="12" offset="2" md="8" class="pt-0 pb-6">
+                        <v-switch class="pl-6 pt-0" v-if="usaMaletines"
+                          label="Crear un nuevo Maletín para este Viaje"
+                          :color="temas.cen_btns_bg"
+                          v-model="crearNuevoMaletin">
+                        </v-switch>
+                      </v-col>
+                    </v-row>
                   </v-card-text>
                 </v-form>
+
+                <p class="pl-6" v-if="pedAAgregarAlNuevoViaje.length>0">
+                  Los pedidos informados en la grilla serán inluidos en el viaje.
+                </p>
+
+                <v-container>
+                  <v-data-table v-if="pedAAgregarAlNuevoViaje.length>0"
+                    :headers="headersPedAAgregarAlNuevoViaje"
+                    :items="pedAAgregarAlNuevoViaje"
+                    item-key="tercero_id"
+                    dense
+                    :footer-props="{
+                      itemsPerPageOptions: [7],
+                      showFirstLastPage: true,
+                      showCurrentPage: true,
+                      nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                      prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                    }">
+                    <template v-slot:item.fecha="{ item }">
+                      <span>{{ formatoFechaDiaYMes(item.fecha) }}</span>
+                    </template>
+                    <template v-slot:item.cpr="{ item }">
+                      <span>{{ kit.cpr(item.cpr) }}</span>
+                    </template>
+                    <template v-slot:item.importe="{ item }">
+                      <span>${{ formatoImporte(item.importe) }}</span>
+                    </template>
+                  </v-data-table>
+                </v-container>
               </v-card>
             </v-dialog>
             <!-- FIN DIALOG DEL NUEVO VIAJE -->
@@ -155,6 +199,7 @@
               <template v-slot:activator="{}"></template>
 
               <v-card class="fg" height="700px">
+
                 <v-toolbar flat
                   :color="temas.forms_titulo_bg"
                   :dark="temas.forms_titulo_dark==true">
@@ -292,7 +337,6 @@
                                         color="blue"
                                         :dark="temas.forms_btn_add_bg==true">
                                       </v-badge>
-
                                     </v-col>
                                   </v-row>
 
@@ -420,6 +464,21 @@
                                         </span>
                                       </v-tooltip>
 
+                                      <v-tooltip bottom v-if="item.cpr=='Sin Pedido'">
+                                        <template v-slot:activator="{ on }">
+                                          <v-btn
+                                            v-if="((viajeEstado('I')&&(operarioArea=='V'||operarioArea=='X'))||
+                                            (viajeEstado('R')&&(operarioArea=='R'||operarioArea=='X')))"
+                                            class="mr-0 ml-1"
+                                            outlined fab x-small
+                                            :color="temas.barra_lateral_bg"
+                                            @click="borrarRecorrido(item)" v-on="on">
+                                            <v-icon>mdi-delete</v-icon>
+                                          </v-btn>
+                                        </template>
+                                        <span>Borrar</span>
+                                      </v-tooltip>
+
                                     </v-col>
                                   </v-row>
                                 </v-card-text>
@@ -436,6 +495,10 @@
                                       <div v-for="(item, i) in item.ped" :key="i">
                                         <span>{{item.cpr}}</span><br>
                                         <span><b>${{kit.redondear(item.importe,2,2)}}</b></span>
+                                        <v-btn icon
+                                          @click="print(item)">
+                                          <v-icon>mdi-printer</v-icon>
+                                        </v-btn>
                                       </div>
                                     </div>
                                     <div v-else>
@@ -447,6 +510,7 @@
                             </v-row>
                           </template>
 
+                          <!-- FAC -->
                           <template v-slot:item.fac="{ item }">
                             <v-row>
                               <v-col cols="12">
@@ -456,6 +520,10 @@
                                       <div v-for="(item, i) in item.fac" :key="i">
                                         <span>{{item.cpr}}</span><br>
                                         <span><b>${{kit.redondear(item.importe,2,2)}}</b></span>
+                                        <v-btn icon
+                                          @click="print(item)">
+                                          <v-icon>mdi-printer</v-icon>
+                                        </v-btn>
                                       </div>
                                     </div>
                                     <div v-else>
@@ -467,6 +535,7 @@
                             </v-row>
                           </template>
 
+                          <!-- NDD -->
                           <template v-slot:item.nddndc="{ item }">
                             <v-row>
                               <v-col cols="12">
@@ -476,6 +545,10 @@
                                       <div v-for="(item, i) in item.nddndc" :key="i">
                                         <span>{{item.cpr}}</span><br>
                                         <span><b>${{kit.redondear(item.importe,2,2)}}</b></span>
+                                        <v-btn icon
+                                          @click="print(item)">
+                                          <v-icon>mdi-printer</v-icon>
+                                        </v-btn>
                                       </div>
                                     </div>
                                     <div v-else>
@@ -487,6 +560,7 @@
                             </v-row>
                           </template>
 
+                          <!-- REM -->
                           <template v-slot:item.rem="{ item }">
                             <v-row>
                               <v-col cols="12">
@@ -494,6 +568,10 @@
                                   <v-card-text class="pt-0 pb-0 pr-2 pl-2 fg90">
                                     <div v-if="item.rem.length>0" class=" text-center pt-1 pb-1">
                                       <span>{{item.rem[0].cpr}}</span>
+                                      <v-btn icon
+                                        @click="print(item.rem[0])">
+                                        <v-icon>mdi-printer</v-icon>
+                                      </v-btn>
                                     </div>
                                     <div v-else>
                                       <span>Pendiente</span>
@@ -504,6 +582,7 @@
                             </v-row>
                           </template>
 
+                          <!-- REC -->
                           <template v-slot:item.rec="{ item }">
                             <v-row>
                               <v-col cols="12">
@@ -520,6 +599,10 @@
                                             :dark="temas.forms_btn_add_bg==true">
                                           </v-badge>
                                         </span>
+                                        <v-btn icon class="ml-4"
+                                          @click="print(item)">
+                                          <v-icon>mdi-printer</v-icon>
+                                        </v-btn>
                                       </div>
                                     </div>
                                     <div v-else>
@@ -621,7 +704,7 @@
                           <!-- HEV021 -->
                           <span>
                             Vas a iniciar el Reparto para la zona
-                            <b>{{itemActual!=null?itemActual.zona:''}}</b>.<br>
+                            <b>{{itemActual!=null?itemActual.zona.nombre:''}}</b>.<br>
                             Todos los Clientes del recorrido serán notificados.<br><br>
                             <span v-if="usaMaletines">
                               Si vas a realizar cobranzas quizás sea un buen<br>
@@ -669,7 +752,14 @@
                           :headers="headersRepartoArticulos"
                           :items="itemsRepartoPedidoUnds"
                           dense
-                          class="elevation-1">
+                          class="elevation-1"
+                          :footer-props="{
+                            itemsPerPageOptions: [10],
+                            showFirstLastPage: true,
+                            showCurrentPage: true,
+                            nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                            prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                          }">
                           <template v-slot:item.codigo="{ item }">
                             <span>{{ item.codigo }}</span>
                           </template>
@@ -716,7 +806,14 @@
                         <v-data-table
                           :headers="headersSaldo"
                           :items="itemsSaldo"
-                          dense class="elevation-1">
+                          dense class="elevation-1"
+                          :footer-props="{
+                            itemsPerPageOptions: [6],
+                            showFirstLastPage: true,
+                            showCurrentPage: true,
+                            nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                            prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                          }">
                           <template v-slot:item.cpr="{ item }">
                             <span>{{ kit.cpr(item.cpr) }}</span>
                           </template>
@@ -778,7 +875,13 @@
                             dense class="elevation-1"
                             single-select
                             @click:row="selArtStockClick"
-                            :footer-props="footerProps10">
+                            :footer-props="{
+                              itemsPerPageOptions: [10],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }">
                             <template v-slot:item.precio="{ item }">
                               <span>${{ formatoImporteDec(item.precio,3) }}</span>
                             </template>
@@ -872,7 +975,6 @@
               </v-card>
             </v-dialog>
             <!-- FIN MOSTRAR MAPA DEL REPARTO -->
-
 
             <!-- OBSERVACION PARA EL CLIENTE -->
             <v-dialog v-model="dialogObservacion" max-width="800px" persistent
@@ -969,7 +1071,14 @@
                             item-key="id"
                             show-select dense
                             class="elevation-1"
-                            @toggle-select-all="selectAll">
+                            @toggle-select-all="selectAll"
+                            :footer-props="{
+                              itemsPerPageOptions: [10],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }">
                           </v-data-table>
                         </v-col>
                       </v-row>
@@ -1061,11 +1170,6 @@
                             </v-text-field>
                           </v-badge>
                         </v-col>
-
-                        <!--
-                          HUGUITOOOOOOOOOOOOOOOO
-                        -->
-
                         <v-col cols="2" class="mt-0 pt-3 pl-1 pr-0">
                           <v-text-field
                             filled dense label="Precio"
@@ -1128,10 +1232,16 @@
                             :color="temas.forms_titulo_bg"
                             :items="selArt"
                             dense
-                            class="elevation-1"
                             single-select
                             @click:row="selArtClick"
-                            :footer-props="footerProps10">
+                            class="elevation-1"
+                            :footer-props="{
+                              itemsPerPageOptions: [10],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }">
                             <template v-slot:item.precio="{ item }">
                               <span>${{ formatoImporteDec(item.precio,3) }}</span>
                             </template>
@@ -1145,8 +1255,15 @@
                             :items="articulos"
                             dense
                             item-key='index'
+                            @click:row="editarArt"
                             class="elevation-1 pr-0 ml-0"
-                            @click:row="editarArt">
+                            :footer-props="{
+                              itemsPerPageOptions: [10],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }">
                             <template v-slot:item.codigo="{ item }">
                               <span class="fg85">{{ item.codigo }}</span>
                               <v-badge
@@ -1320,7 +1437,13 @@
                         :headers="headersPedidosAnteriores"
                         :items="pedidosAnteriores"
                         dense
-                        :footer-props="footerProps7">
+                        :footer-props="{
+                          itemsPerPageOptions: [7],
+                          showFirstLastPage: true,
+                          showCurrentPage: true,
+                          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                        }">
                         <template v-slot:item.fecha="{ item }">
                           <span>{{ formatoFechaCorta(item.fecha) }}</span>
                         </template>
@@ -1473,10 +1596,11 @@ export default {
     elMes: '',
     elAnio: '',
     anio: '',
-    anios: [],
-    meses: [],
     losMeses: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
     cliente: null,
+    selected: [],
+    anios: [],
+    meses: [],
     acciones: [],
     accionesRecorrido: [],
     equipo: [],
@@ -1494,10 +1618,11 @@ export default {
     itemsSaldo: [],
     itemsRepartoPedidoUnds: [],
     expandedPedidos: [],
-    itemActual: null,
-    itemActualCliente: null,
     viculosPadresDelCliente: [],
     vinculosPadresLicDelCliente: [],
+    pedAAgregarAlNuevoViaje: [],
+    itemActual: null,
+    itemActualCliente: null,
     rentabilidad: 0,
     totalPedido: 0,
     totalPedidos: 0,
@@ -1573,10 +1698,10 @@ export default {
 
     /*ok*/
     headers: [
-      { text: 'NºVje', value:'id', align: 'end', width: 70},
-      { text: 'Fecha', value:'fecha', align: 'left', width: 100},
+      { text: 'NºVje', value:'id', align: 'end', width: 100},
+      { text: 'Fecha', value:'fecha', align: 'left', width: 120},
       { text: 'Zona', value:'zona', align: 'left', width: 250},
-      { text: 'Estado', value:'estado', align: 'left', width: 100},
+      { text: 'Estado', value:'estado', align: 'left', width: 180},
 //    { text: 'Todo Cobrado', value:'todocobrado', align: 'left', width: 100},
       { text: 'Acciones', value:'accion', align: 'left', width: 100},
     ],
@@ -1651,6 +1776,15 @@ export default {
     headersTerceros: [
       { text: 'Id', value:'id', width: 120},
       { text: 'Nombre', value:'nombre', width: 320},
+    ],
+
+    /* Ok */
+    headersPedAAgregarAlNuevoViaje: [
+      { text: 'Donde Esta?', value:'ubi', width: 60},
+      { text: 'cpr', value:'cpr', width: 140},
+      { text: 'Fecha', value:'fecha', width: 89},
+      { text: 'Cliente', value:'nombre', width: 180},
+      { text: 'Total', value:'importe', width: 160, align: 'end'},
     ],
 
     medpag: [
@@ -1737,7 +1871,7 @@ export default {
 
   watch: {
     '$store.state.sucursal' () {
-      this.listarHTTP()
+      this.listarHTTP(false)
     },
     search(val) {
       this.listarHTTP(false)
@@ -1760,11 +1894,8 @@ export default {
   created () {
     this.cen_activo_bg   = this.$store.state.temas.cen_card_activo_bg
     this.cen_activo_dark = this.$store.state.temas.cen_card_activo_dark
-
-    debugger
     return HTTP().get('/user/'+this.userId).then(({ data }) => {
-      
-      debugger
+     
       let psuc = data[0].sucursales.map(function(e) { return e.id; }).indexOf(this.sucursal);
       for (let i=0; i<= data[0].sucursales[psuc].depositos.length-1; i++) {
         this.depItems.push(data[0].sucursales[psuc].depositos[i])
@@ -1775,7 +1906,8 @@ export default {
           this.ivaTasas.push(data[i])
         }
         
-        return HTTP().get('/indexter/false/3/false/'+this.operarioTerceroId+'/'+this.operarioUserId+'/%%').then(({ data })=>{
+        return HTTP().get('/indexter/false/3/false/'+this.operarioTerceroId+'/'+this.operarioUserId+'/null')
+          .then(({ data })=>{
           for (let i=0; i<=data.length-1; i++) {
             if (data[i].area=='V') {
               if (data[i].tercero.user!=null) {
@@ -1795,7 +1927,7 @@ export default {
             }
           }
           this.leoAnios().then( data => {
-            this.listarHTTP()
+            this.listarHTTP(false)
           })
         })
       })
@@ -1829,6 +1961,10 @@ export default {
 
     cerrarViajes() {
       this.dialogAdministracionPedidos=false
+    },
+
+    menuItems () {
+      return this.menu
     },
 
     sucursalActiva(cual) {
@@ -1906,9 +2042,13 @@ export default {
         } else if (cual=='O') {
           return (item.estado=='E')?'green':this.temas.barra_lateral_bg
         } else if (cual=='C') {
-          if (item.tercero.user==null) {
-            this.mensaje('¡Se requiere registro!', this.temas.forms_titulo_bg, 1500)
-          } else if (item.artped==0) {
+          if (item.tercero.user!=undefined) {
+            if (item.tercero.user==null) {
+              this.mensaje('¡Se requiere registro!', this.temas.forms_titulo_bg, 1500)
+              return
+            }
+          }
+          if (item.artped==0) {
             this.mensaje('¡Pedido sin Artículos!', this.temas.forms_titulo_bg, 1500)
           } else if (item.estado=='E') {
             this.mensaje('¡Pedido transferido a Administración!', this.temas.forms_titulo_bg, 1500)
@@ -1918,7 +2058,7 @@ export default {
             }
           }
         } else if (cual=='I') {
-          return (item.estado!='E'&&item.artped>0)?'mdi-send':'mdi-stop'
+          return (item.estado!='E'&&item.artped>0)?'mdi-send':'mdi-check'
         } else if (cual=='T') {
           if (item.tercero.user==null) {
             return 'Requiere Registro'
@@ -1928,7 +2068,7 @@ export default {
             } else if (item.artped==0) {
               return 'Pedido sin Artículos'
             } else {
-              return 'Transferir Pedido a Administración'
+              return 'Enviar pedido a Administración'
             }
           }
         }
@@ -1940,7 +2080,8 @@ export default {
       return this.ivaTasas[pos].tasa+'%'
     },
 
-    setAnio() {
+    setAnio(anio) {
+      /*
       this.anio = this.anio == null ? moment().format('YYYY') : this.anio
       this.meses = []
       for (let i=0; i<=this.periodos.length-1; i++) {
@@ -1951,6 +2092,7 @@ export default {
       }
       this.elMes = this.meses[0]
       this.listarHTTP()
+      */
     },
 
     seleccionoZona() {
@@ -1971,7 +2113,6 @@ export default {
 
       this.dialogMostrarMapaDelReparto = true
 
-      debugger
       let dir = this.itemActual.direcciones;
       if (typeof google != "undefined") {
         
@@ -1979,7 +2120,6 @@ export default {
 
         for (let i=0; i<=dir.length-1; i++) {
           geocoder.geocode({'address': dir[i]}, (results, status) => {
-            debugger
             if (status === 'OK') {
               this.currentLocation.lat = results[0].geometry.location.lat();
               this.currentLocation.lng = results[0].geometry.location.lng();
@@ -2044,6 +2184,8 @@ export default {
 
     cargoClientesDeLaZona() {
       this.clientes = []
+      this.pedAAgregarAlNuevoViaje = []
+
       return HTTP().post('clientesdelazona',{zona_id:this.editado.zona_id}).then(({data})=>{
         if (data.length==0) {
 
@@ -2068,7 +2210,34 @@ export default {
               direccion: dir,
               orden: data[i].usertercero.orden
             })
+
           }
+
+          return HTTP().post('/haypedidossinbajar', { clientes: this.clientes }).then(({ data }) => {
+
+            if (data>0) {
+
+              this.msg.msgTitle = 'Viaje no creado'
+              let m = 'Tienes pedidos correspondientes a esta zona que aún no han sido descargados. '
+              m += 'Debes descargarlos para que sean agregados al nuevo viaje.<br><br>'
+              m += 'Presiona en la campanita y baja los pedidos.'
+              this.msg.msgBody = m
+              this.msg.msgVisible = true
+              this.msg.msgAccion = 'pedidos sin bajar';
+              this.msg.msgButtons = ['Aceptar'];
+              this.dialog = false;
+              
+            } else {
+
+              return HTTP().post('/nuevoviajerevisopedidos', { clientes: this.clientes }).then(({ data }) => {
+                if (data.length>0) {
+                  this.pedAAgregarAlNuevoViaje = data
+                  this.selected = data
+                }
+              })
+
+            }
+          })
         }
       })
     },
@@ -2082,6 +2251,8 @@ export default {
       this.editado.viaticos = 0
       this.editado.observ = ''
       this.editado.recorrido = []
+      this.selected = []
+      this.pedAAgregarAlNuevoViaje = []
       this.editado.equipo_id = this.equipo.length>0?this.equipo[0].id:null
       this.seleccionoZona()
     },
@@ -2127,7 +2298,7 @@ export default {
     saySaldo(item) {
       this.itemsSaldo = []
       this.itemActualCliente = item
-      return HTTP().get('/pendientes/'+item.tercero.id+'/0').then(( { data }) => {
+      return HTTP().get('/pendientes/'+item.tercero.id+'/0/V').then(( { data }) => {
         let saldo = []
         let totPend = 0
         for ( let i=0; i<= data.length-1; i++) {
@@ -2154,7 +2325,6 @@ export default {
 
     agregarArticulos(item) {
 
-      debugger
       let existeUnPedido = false
       if (item.tercero.user==null) {
 
@@ -2173,7 +2343,6 @@ export default {
         // releo el recorrido por si ya hizo algun pedido y aun no se refresco en la lectura actual
         return HTTP().post('releorecorrido', {recorrido: item.id} ).then(({ data }) => {
 
-          debugger
 //        let pos1 = this.items.findIndex(x=>x.id==this.itemActual.id)
 //        let pos2 = this.items[pos1].clientes.findIndex(x=>x.id==item.id)
 
@@ -2183,7 +2352,6 @@ export default {
 
           return HTTP().get('/tercero/'+item.tercero.id+'/1/true/'+this.sucursal).then(({ data }) => {
   
-            debugger
             this.itemActualCliente = item;
             this.dialogArticulos = true;
             if (item.pedido.length==0) {
@@ -2192,15 +2360,12 @@ export default {
             } else {
               this.editedIndexArt = 0
 
-              debugger
               // AGREGO LA PROPIEDAD index
               this.articulos = item.pedido;
               for (let i=0; i<=this.articulos.length-1; i++) {
                 this.articulos[i].index = i
                 this.articulos[i].itemId = item.pedido[i].id
               }
-              debugger
-
               for (let i=0; i<=item.pedido.length-1; i++) {
                 item.pedido[i].precio = item.pedido[i].costo
               }
@@ -2210,9 +2375,7 @@ export default {
               this.totalPedido += this.articulos[i].total
             }
             this.editado.cpr = 'PED';
-
             return HTTP().post('vinculospadreslicdelcliente', {user_id: item.tercero.user.id,tercero_id: item.tercero.id}).then(({ data }) => {
-              debugger
               this.vinculosPadresLicDelCliente = data.userVinPadresLic;
               this.descuentosCli = data.descuentos;
             })
@@ -2223,7 +2386,7 @@ export default {
     },
 
     guardarViajeHTTP() {
-      debugger
+      this.pedAAgregarAlNuevoViaje = []
       let pos = this.sucursales.findIndex(x=>x.id=this.sucursal)
       // ordeno los recorridos
       this.clientes.sort(function(a, b) {
@@ -2246,26 +2409,40 @@ export default {
           nro ++
         }
       }
-      debugger
       this.editado.recorrido = this.clientes;
-      return HTTP().post('/nuevoviaje', { editado: this.editado }).then(({ data }) => {
-        debugger
+      return HTTP().post('/nuevoviaje', {
+        editado: this.editado,
+        selected: this.selected,
+        pedtransfavend: this.pedTransfAVend,
+        crearnuevomaletin: this.crearNuevoMaletin }).then(({ data }) => {
+
         if (data!='error') {
-          this.msg.msgTitle = 'Nuevo Viaje'
-          let m = '¡Viaje generado correctamente!<br>'
-          this.msg.msgBody = m
-          this.msg.msgVisible = true
-          this.msg.msgAccion = 'viaje ok'
-          this.msg.msgButtons = ['Aceptar']
+          // reviso si hay pedidos de clientes que aun no fueron enviados
+          // los envio y los agrego al recorrido
+
+          let m = '¡Viaje generado correctamente!. ';
+          if (data>0) {
+            if (data==1) {
+              m += '¡Se ha agregado 1 nuevo pedido!';
+            } else {
+              m += '¡Se han agregado '+data+' nuevos pedidos!';
+            }
+          }
+          this.mensaje(m, this.temas.forms_titulo_bg, 1500)
+          
         } else {
-          this.msg.msgTitle = 'Error'
-          this.msg.msgBody = 'Se ha producido un error en intentar generar un nuevo viaje.<br>Reintente, si el problema persiste consulte con sistemas<br>'
-          this.msg.msgVisible = true
-          this.msg.msgAccion = 'viaje error'
-          this.msg.msgButtons = ['Aceptar']
+
+          this.msg.msgTitle = 'Error';
+          this.msg.msgBody = 'Se ha producido un error en intentar generar un nuevo viaje.<br>Reintente, si el problema persiste consulte con sistemas<br>';
+          this.msg.msgAccion = 'viaje error';
+          this.msg.msgButtons = ['Aceptar'];
+          this.msg.msgVisible = true;
+
         }
-        this.dialog = false
-        this.listarHTTP()
+        
+        this.dialog = false;
+        this.listarHTTP(true);
+          
       })
     },
 
@@ -2316,8 +2493,6 @@ export default {
 
     setAcciones(item) {
 
-      debugger
-      this.itemActual = item
       this.acciones = []
 
       // estados de los viajes
@@ -2327,64 +2502,63 @@ export default {
       // L -> Viaje listo para Reparto
       // R -> Viaje en Reparto
       // F -> Viaje Finalizado
-
       let hayPedidos = false
-      for (let i=0; i<=this.itemActual.clientes.length-1; i++) {
-        if (this.itemActual.clientes[i].pedido_id!=null||this.itemActual.clientes[i].pedidob_id!=null) {
-          hayPedidos = true
-          break
+      return HTTP().post('/viaje',{ id:item.id, estado:item.estado }).then(({data})=>{
+        this.itemActual = data.res
+        for (let i=0; i<=data.res.recorrido.length-1; i++) {
+          if (data.res.recorrido[i].pedido_id!=null||data.res.recorrido[i].pedidob_id!=null) {
+            hayPedidos = true
+            break
+          }
         }
-      }
-      if (item.estado=='P') {
-        this.acciones.push({nombre: 'Iniciar Viaje', icon: 'mdi-play'})
-      }
-      if (!hayPedidos) {
-        this.acciones.push({nombre: 'Anular', icon: 'mdi-delete'})
-      }
-      if (item.estado=='I'&&(this.operarioArea=='X'||this.operarioArea=='V')) {
-        this.acciones.push({nombre: 'Novedades', icon: 'mdi-pencil'})
-        this.acciones.push({nombre: 'Finalizar Viaje', icon: 'mdi-checkbox-marked-circle'})
-      }
-      if (item.estado=='P'||item.estado=='I') {
-        this.acciones.push({nombre: 'Revisar si hay Clientes Nuevos', icon: 'mdi-account-plus'})
-      }
-      debugger
-      if (((this.operarioArea=='X'||this.operarioArea=='R')&&(item.estado=='R'))||
-          (this.operarioArea=='X'||this.operarioArea=='V')&&(item.estado=='P'||item.estado=='V'||item.estado=='I')) {
-        this.acciones.push({nombre: 'Ingresar al Viaje', icon: 'mdi-nut'})
-      }
-      if (((this.operarioArea=='X'||this.operarioArea=='R')&&(item.estado=='R'))||
-          (this.operarioArea=='X'||this.operarioArea=='V')&&(item.estado=='P'||item.estado=='V')) {
-        this.acciones.push({nombre: 'Ver Mapa del Reparto', icon: 'mdi-map-marker'})
-      }
-      if (((this.operarioArea=='X'||this.operarioArea=='R')&&(item.estado=='R'))||
-          (this.operarioArea=='X'||this.operarioArea=='V')&&(item.estado=='P'||item.estado=='V')) {
-        this.acciones.push({nombre: 'Ver Mapa del Reparto', icon: 'mdi-map-marker'})
-      }
-      //if (item.estado=='D') {
-      //  this.acciones.push({nombre: 'Viaje en Administración', icon: 'mdi-close'})
-      //}
-      this.acciones.push({nombre: 'Refrescar', icon: 'mdi-refresh'})
-      if (item.estado=='L'&&(this.operarioArea=='X'||this.operarioArea=='R')) {
-        this.acciones.push({nombre: 'Iniciar Reparto', icon: 'mdi-truck-delivery'})
-      }
-      if (item.estado=='R'&&(this.operarioArea=='R'||this.operarioArea=='X')) {
-        this.acciones.push({nombre: 'Finalizar Reparto', icon: 'mdi-checkbox-marked-circle'})
-      }
-      //this.acciones.push({nombre: 'Mapa', icon: 'mdi-earth'})
-      //this.acciones.push({nombre: 'Imprimir', icon: 'mdi-printer'})
+        if (item.estado=='P'&&(this.operarioArea=='X'||this.operarioArea=='V')) {
+          this.acciones.push({nombre: 'Iniciar Viaje', icon: 'mdi-play'})
+        }
+        if (!hayPedidos) {
+          this.acciones.push({nombre: 'Anular', icon: 'mdi-delete'})
+        }
+        if (item.estado=='I'&&(this.operarioArea=='X'||this.operarioArea=='V')) {
+          this.acciones.push({nombre: 'Novedades', icon: 'mdi-pencil'})
+          this.acciones.push({nombre: 'Finalizar Viaje', icon: 'mdi-checkbox-marked-circle'})
+        }
+        if (item.estado=='P'||item.estado=='I') {
+          this.acciones.push({nombre: 'Revisar si hay Clientes Nuevos', icon: 'mdi-account-plus'})
+        }
+        if (((this.operarioArea=='X'||this.operarioArea=='R')&&(item.estado=='R'))||
+            (this.operarioArea=='X'||this.operarioArea=='V')&&(item.estado=='P'||item.estado=='V'||item.estado=='I')) {
+          this.acciones.push({nombre: 'Ingresar al Viaje', icon: 'mdi-nut'})
+        }
+        if (((this.operarioArea=='X'||this.operarioArea=='R')&&(item.estado=='R'))||
+            (this.operarioArea=='X'||this.operarioArea=='V')&&(item.estado=='P'||item.estado=='V')) {
+          this.acciones.push({nombre: 'Ver Mapa del Reparto', icon: 'mdi-map-marker'})
+        }
+/*
+        if (((this.operarioArea=='X'||this.operarioArea=='R')&&(item.estado=='R'))||
+            (this.operarioArea=='X'||this.operarioArea=='V')&&(item.estado=='P'||item.estado=='V')) {
+          this.acciones.push({nombre: 'Ver Mapa del Reparto', icon: 'mdi-map-marker'})
+        }
+*/
+        //if (item.estado=='D') {
+        //  this.acciones.push({nombre: 'Viaje en Administración', icon: 'mdi-close'})
+        //}
+        this.acciones.push({nombre: 'Refrescar', icon: 'mdi-refresh'})
+        if (item.estado=='L'&&(this.operarioArea=='X'||this.operarioArea=='R')) {
+          this.acciones.push({nombre: 'Iniciar Reparto', icon: 'mdi-truck-delivery'})
+        }
+        if (item.estado=='R'&&(this.operarioArea=='R'||this.operarioArea=='X')) {
+          this.acciones.push({nombre: 'Finalizar Reparto', icon: 'mdi-checkbox-marked-circle'})
+        }
+        //this.acciones.push({nombre: 'Mapa', icon: 'mdi-earth'})
+        //this.acciones.push({nombre: 'Imprimir', icon: 'mdi-printer'})
+      })
 
     },
 
     async selAccion(item) {
       if (item.nombre=='Ingresar al Viaje') {
-        
         this.listarViajeHTTP()
         this.dialogAdministracionPedidos = true
-      
       } else if (item.nombre=='Anular') {
-
-        debugger
         let hayPedidos = false
         for (let i=0; i<=this.itemActual.clientes.length-1; i++) {
           if (this.itemActual.clientes[i].pedido_id!=null||this.itemActual.clientes[i].pedidob_id!=null) {
@@ -2420,11 +2594,9 @@ export default {
 
       } else if (item.nombre=='Finalizar Viaje') {
 
-        // hev021201
-        debugger
         let hayPedidos = false
-        for (let i=0; i<=this.itemActual.clientes.length-1; i++) {
-          if (this.itemActual.clientes[i].pedido_id!=null||this.itemActual.clientes[i].pedidob_id!=null) {
+        for (let i=0; i<=this.itemActual.recorrido.length-1; i++) {
+          if (this.itemActual.recorrido[i].pedido_id!=null||this.itemActual.recorrido[i].pedidob_id!=null) {
             hayPedidos = true
             break
           }
@@ -2438,11 +2610,29 @@ export default {
           this.msg.msgButtons = ['Aceptar']
         } else {
           this.msg.msgTitle = 'Finalizar Viaje'
-          let m = '<br>¡Vas a finalizar este Viaje!.<br><br>'
-          m += 'Todos los Pedidos aún no enviados serán transferidos a Administración para su procesamiento.<br><br>'
-          m += '<b>¡Importante!</b><br>Una vez finalizado el viaje no vas a poder agregar o modificar pedidos.<br>'
-          m += 'No obstante, si Clientes de esta zona realizan nuevos pedidos y no hay un Viaje abierto, sus pedidos serán transferidos '
-          m += 'a Administración a la espera de la apertura de un nuevo Viaje.<br><br>'
+
+          let pedidosSinEnviar = 0
+          for (let i=0; i<=this.itemActual.recorrido.length-1; i++) {
+            if ((this.itemActual.recorrido[i].pedido_id!=null||this.itemActual.recorrido[i].pedidob_id)&&
+                this.itemActual.recorrido[i].estado!='E') {
+              pedidosSinEnviar ++
+            }
+          }
+
+          let m = '' //'<br>¡Vas a finalizar este Viaje!.<br><br>'
+          if (pedidosSinEnviar==1) {
+            m += 'Un pedido aún no fue enviado, será transferido a Administración para su procesamiento.<br><br>'
+          } else if (pedidosSinEnviar>0) {
+            m += pedidosSinEnviar+' pedidos serán transferidos a Administración para su procesamiento.<br><br>'
+          } else {
+            m += 'Todos los pedidos ya fueron transferidos a Administración para su procesamiento.<br><br>'
+          }
+          if (pedidosSinEnviar!=0) {
+            m += '<b>¡Importante!</b><br>Una vez finalizado el viaje no vas a poder agregar o modificar pedidos.<br>'
+            m += 'No obstante, si Clientes de esta zona realizan nuevos pedidos y no hay un Viaje abierto, sus pedidos serán transferidos '
+            m += 'a Administración a la espera de la apertura de un nuevo Viaje.<br><br>'
+          }
+          m += '¿Confirmas finalizar este viaje?<br><br>'
           this.msg.msgBody = m
           this.msg.msgVisible = true
           this.msg.msgAccion = 'finalizar viaje'
@@ -2453,11 +2643,7 @@ export default {
         
         this.itemActual = this.itemActual
 
-        debugger
         this.listarViajeHTTP(this.itemActual,false).then( data => {
-
-          /* huguito */
-          debugger
           let fac = 0
           let des = 0
           for (let i=0; i<=this.clientes.length-1; i++) {
@@ -2587,6 +2773,17 @@ export default {
       this.dialogRepartoPedidoArticulos = true
     },
 
+    borrarRecorrido(item) {
+      this.itemActualCliente = item
+      this.msg.msgTitle = 'Borrar Recorrido'
+      let m = '<br>¿Quieres borrar este recorrido?.'
+      m = m + '<br>¡Una vez eliminado no vas a poder recuperarlo!.<br><br>'
+      this.msg.msgBody = m
+      this.msg.msgVisible = true
+      this.msg.msgAccion = 'borrar recorrido'
+      this.msg.msgButtons = ['Aceptar','Cancelar']
+    },
+
     msgRespuesta(op) {
       this.msg.msgVisible = false
       if (op==='Aceptar') {
@@ -2605,12 +2802,20 @@ export default {
               } else {
                 this.mensaje('¡Opps, hubo en error en el inicio del Viaje/Recorrido!', this.temas.snack_error_bg, 2500)
               }
-              this.listarHTTP()
+              this.listarHTTP(false)
             })
-//        } else if (this.msg.msgAccion=='iniciar reparto') {
-//          this.viajeIniciarRepartoHTTP()
         } else if (this.msg.msgAccion=='finalizar y enviar pedido a administracion') {
           this.finalizarYEnviarPedidoAAdministracionHTTP()
+        } else if (this.msg.msgAccion=='borrar recorrido') {
+          return HTTP().post('borrarrecorrido', { recorrido: this.itemActualCliente }).then(({data})=>{
+            if (data=='ok') {
+              this.mensaje('¡El Recorrido se ha eliminado correctamente!', this.temas.forms_titulo_bg, 1500)
+            } else {
+              this.mensaje('¡Opps, hubo en error al intentar eliminar el Recorrido!', this.temas.snack_error_bg, 2500)
+            }
+            this.listarViajeHTTP()
+          })
+
         }
       }
       this.msg.msgVisible = false;
@@ -2659,8 +2864,9 @@ export default {
       this.itemActualCliente = item
       this.msg.msgTitle = 'Enviar Pedido a Administración'
       this.msg.msgButtons = ['Aceptar','Cancelar']
-      let m = 'Vas a finalizar y enviar a Administración el pedido<br> <b>'+this.itemActualCliente.cpr+'</b> '
-      m += 'correspondiente a <b><br>'+this.itemActualCliente.tercero.nombre+'</b><br><br>'
+      let m = '<br>Vas a enviar pedido <b>'+this.itemActualCliente.cpr+'</b> '
+      m += 'correspondiente<b><br> a '+this.itemActualCliente.tercero.nombre+'</b>'
+      m += ' a Administración.<br><br>'
       m += '<b>Atención:</b> No podrás realizar más modificaciones sobre él.'
       m += '<br><br>¿Confirmas?'
       this.msg.msgBody = m
@@ -2670,20 +2876,10 @@ export default {
 
     viajeIniciarReparto(item) {
       this.dialogIniciarReparto = true
-      /*
-      this.msg.msgTitle = 'Iniciar Reparto'
-      let m = 'Vas a iniciar el Reparto para la zona<br>'
-      m += '<b>'+item.zona+'</b><br><br>'
-      m += '¡Todos los Clientes van a ser notificados!.'
-      this.msg.msgBody = m
-      this.msg.msgVisible = true
-      this.msg.msgAccion = 'iniciar reparto'
-      this.msg.msgButtons = ['Aceptar','Cancelar']
-      */
     },
 
+    /* HEV021201 */
     viajeIniciarRepartoHTTP() {
-      debugger // hev021
       return HTTP().post('iniciarviaje', {
         tipo: 'R', viaje_id: this.itemActual.id, crearNuevoMaletin: this.crearNuevoMaletin, operario: this.operarioUserId}).then(({data})=>{
         if (data=='ok') {
@@ -2697,17 +2893,22 @@ export default {
     },
 
     finalizarYEnviarPedidoAAdministracionHTTP() {
+
+      debugger
       let novedad = {
         cpr_id: this.itemActualCliente.pedido_id,
         novedad: 'Envio del Pedido',
         rel_id: null,
         estado: 'N'
       }
+      debugger
       return HTTP().patch('/enviarpedido', {
         id: this.itemActualCliente.pedido_id,
         novedad: novedad,
         vendedor: true,
         recorrido:this.itemActualCliente.id }).then(({ data })=>{
+
+        debugger
         if (data = 'ok') {
           this.mensaje('¡Pedido enviado correctamente!', this.temas.forms_titulo_bg, 1500)
         } else {
@@ -2718,8 +2919,6 @@ export default {
     },
 
     tomarControlDelPedido(item) {
-      //this.itemActual = item
-      debugger
       this.itemActualCliente = item
       this.msg.msgTitle = 'Tomar Control de este Pedido'
       this.msg.msgButtons = ['Aceptar','Cancelar']
@@ -2737,13 +2936,12 @@ export default {
       })
     },
 
-    listarHTTP() {
-      let refrescoMeses = true
+    listarHTTP(refrescoMeses) {
       if (refrescoMeses) {
         let aa = moment().format('YYYY')
-        let mm = moment().format('MMM')
+        let mm = moment().format('MMM').substring(0,3);
         let pos1 = this.anios.findIndex(x => x === aa);
-        let pos2 = this.meses.findIndex(x => x === mm);
+        let pos2 = this.meses.findIndex(x => x.toUpperCase() === mm.toUpperCase());
         if (pos1==-1 || pos2==-1) {
           this.leoAnios()
         }
@@ -2757,39 +2955,10 @@ export default {
       let periodo = ''
       let m = this.queMesEs(this.elMes)
       periodo = this.anio+'-'+m
-
-      debugger
       return HTTP().post('/viajes',{ perfiscal: periodo, area: this.operarioArea, tercero_id: this.operarioTerceroId }).then(({data})=>{
 
-        debugger
-        let dirs = []  // direcciones
         this.items = [] // los viajes
         for (let i=0; i<=data.length-1; i++) {
-
-          for (let j=0; j<=data[i].recorrido.length-1; j++) {
-            let dir = ''
-            if (data[i].recorrido[j].cliente!=null) {
-              if (data[i].recorrido[j].cliente.direcciones.length>0) {
-                for (let k=0; k<=data[i].recorrido[j].cliente.direcciones.length-1; k++) {
-                  if (data[i].recorrido[j].cliente.direcciones[k].postal!=null) {
-                    if (data[i].recorrido[j].cliente.direcciones[k].postal.provincia!=null) {
-                      if (data[i].recorrido[j].cliente.direcciones[k].postal.provincia.pais!=null) {
-                        dir = data[i].recorrido[j].cliente.direcciones[k].direccion
-                        dir += ' '
-                        dir += data[i].recorrido[j].cliente.direcciones[k].postal.nombre
-                        dir += ' '
-                        dir += data[i].recorrido[j].cliente.direcciones[k].postal.provincia.nombre
-                        dir += ' '
-                        dir += data[i].recorrido[j].cliente.direcciones[k].postal.provincia.pais.nombre
-                        dirs.push(dir)
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-
           this.items.push({
             id: data[i].id,
             fecha: moment(data[i].fecha).format('YYYY-MM-DD'),
@@ -2801,9 +2970,7 @@ export default {
             todocobrado: data[i].todocobrado,
             clientes: data[i].recorrido,
             pedidos: 0,
-            direcciones: dirs,
           })
-
         }
       }).catch(function (error) {
         console.log(error);
@@ -2811,17 +2978,12 @@ export default {
     },
 
     async listarViajeHTTP (item, say) {
-
-      debugger
       say = say==undefined?true:say
       if (item) { this.itemActual = item } else { item = this.itemActual }
       if (((this.operarioArea=='A'||this.operarioArea=='X'||this.operarioArea=='R')&&(item.estado=='R'||item.estado=='F'||item.estado=='L'||item.estado=='K'))||
         ((this.operarioArea=='A'||this.operarioArea=='X'||this.operarioArea=='V')&&(item.estado=='P'||item.estado=='D'||item.estado=='I'||item.estado=='F'||item.estado=='K'))||
         this.operarioArea==null) {
-
         return HTTP().post('/viaje',{ id:item.id, estado:item.estado }).then(({data})=>{
-
-          debugger
           data.res.recorrido.sort(function(a, b) {
             if (a.orden > b.orden) {
               return 1
@@ -2831,6 +2993,8 @@ export default {
               return 0
             }
           })
+
+          debugger
           for (let j=0; j<=data.res.recorrido.length-1; j++) {
             data.res.recorrido[j].orden = j+1
           }
@@ -2964,17 +3128,19 @@ export default {
                   this.clientes[j].tooltip='No se pueden agregar Artículos'
                 }
               }
+              let id = data.res.recorrido[j].pedido.id
               let cpr = data.res.recorrido[j].pedido.cpr
               let importe = data.res.recorrido[j].pedido.total
-              this.clientes[j].ped.push({cpr: this.kit.cpr(cpr), importe: importe})
+              this.clientes[j].ped.push({ id:id, cpr:this.kit.cpr(cpr), importe:importe })
 
               if (data.res.recorrido[j].pedido.vinculoPadre.length>0) {
 
                 if (data.res.recorrido[j].pedido.vinculoPadre[0].hijo) {
+                  let id = data.res.recorrido[j].pedido.vinculoPadre[0].hijo.id
                   let cpr = data.res.recorrido[j].pedido.vinculoPadre[0].hijo.cpr
                   let demo = data.res.recorrido[j].pedido.vinculoPadre[0].hijo.sucursal.sucursaldemo
                   let importe = this.roundTo(data.res.recorrido[j].pedido.vinculoPadre[0].hijo.total,2)
-                  this.clientes[j].fac.push({cpr: this.kit.cpr(cpr),demo: demo,importe: importe})
+                  this.clientes[j].fac.push({ id:id, cpr:this.kit.cpr(cpr), demo:demo,importe: importe})
                   this.totalDebitos += importe
                 }
 
@@ -2982,6 +3148,7 @@ export default {
 
                   for (let k=0; k<=data.res.recorrido[j].pedido.vinculoPadre[0].hijos.length-1; k++) {
 
+                    let id = data.res.recorrido[j].pedido.vinculoPadre[0].hijos[k].hijo.id
                     let cpr = data.res.recorrido[j].pedido.vinculoPadre[0].hijos[k].hijo.cpr
                     let tcpr = data.res.recorrido[j].pedido.vinculoPadre[0].hijos[k].hijo.cpr.substring(0,3)
                     let demo = data.res.recorrido[j].pedido.vinculoPadre[0].hijos[k].hijo.sucursal.sucursaldemo
@@ -2991,7 +3158,7 @@ export default {
                     if (tcpr=='REC'&&estado!='A') {
 
                       // a
-                      this.clientes[j].rec.push({cpr: this.kit.cpr(cpr), demo: demo, importe: importe, valores: [], hayMaletin: false })
+                      this.clientes[j].rec.push({id:id, cpr:this.kit.cpr(cpr), demo:demo, importe:importe, valores:[], hayMaletin:false })
                       let observ = ''
                       if (data.res.recorrido[j].cliente.user!=null) {
 
@@ -3043,7 +3210,7 @@ export default {
 
                     } else if (tcpr=='NDD'||tcpr=='NDC') {
 
-                      this.clientes[j].nddndc.push({ cpr: this.kit.cpr(cpr), demo: demo, importe: importe })
+                      this.clientes[j].nddndc.push({ id:id, cpr:this.kit.cpr(cpr), demo:demo, importe:importe })
                       if (tcpr=='NDD') {
                         this.totalDebitos += importe
                       } else {
@@ -3051,7 +3218,9 @@ export default {
                       }
 
                     } else if (tcpr=='REM') {
-                      this.clientes[j].rem.push({ cpr: this.kit.cpr(cpr), demo: demo, importe: importe })
+
+                      this.clientes[j].rem.push({ id:id, cpr:this.kit.cpr(cpr), demo:demo, importe:importe })
+
                     }
                   }
                 }
@@ -3102,6 +3271,7 @@ export default {
 
                 this.totalPedidos += data.res.recorrido[j].pedidob.total
 
+                let id = data.res.recorrido[j].pedidob.id
                 let cpr = data.res.recorrido[j].pedidob.cpr
                 let importe = this.roundTo(data.res.recorrido[j].pedidob.total,2)
                 this.clientes[j].ped.push({cpr: this.kit.cpr(cpr), importe: importe})
@@ -3127,10 +3297,11 @@ export default {
                 if (data.res.recorrido[j].pedidob.vinculoPadre.length>0) {
 
                   if (data.res.recorrido[j].pedidob.vinculoPadre[0].hijo) {
+                    let id = data.res.recorrido[j].pedidob.vinculoPadre[0].hijo.id
                     let cpr = data.res.recorrido[j].pedidob.vinculoPadre[0].hijo.cpr
                     let demo = data.res.recorrido[j].pedidob.vinculoPadre[0].hijo.sucursal.sucursaldemo
                     let importe = this.roundTo(data.res.recorrido[j].pedidob.vinculoPadre[0].hijo.total,2)
-                    this.clientes[j].fac.push({cpr: this.kit.cpr(cpr),demo: demo,importe: importe})
+                    this.clientes[j].fac.push({ id:id, cpr:this.kit.cpr(cpr), demo:demo, importe:importe })
                     this.totalDebitos += importe
                   }
 
@@ -3138,6 +3309,7 @@ export default {
                     
                     for (let k=0; k<=data.res.recorrido[j].pedidob.vinculoPadre[0].hijos.length-1; k++) {
 
+                      let id = data.res.recorrido[j].pedidob.vinculoPadre[0].hijos[k].hijo.id
                       let cpr = data.res.recorrido[j].pedidob.vinculoPadre[0].hijos[k].hijo.cpr
                       let tcpr = data.res.recorrido[j].pedidob.vinculoPadre[0].hijos[k].hijo.cpr.substring(0,3)
                       let demo = data.res.recorrido[j].pedidob.vinculoPadre[0].hijos[k].hijo.sucursal.sucursaldemo
@@ -3147,7 +3319,7 @@ export default {
                       if (tcpr=='REC'&&estado!='A') {
                         // b
 
-                        this.clientes[j].rec.push({cpr: this.kit.cpr(cpr), demo: demo, importe: importe, valores: [], hayMaletin: false })
+                        this.clientes[j].rec.push({id:id, cpr:this.kit.cpr(cpr), demo:demo, importe:importe, valores:[], hayMaletin:false })
                         let observ = ''
                         if (data.res.recorrido[j].cliente.user!=null) {
                         
@@ -3180,9 +3352,7 @@ export default {
                               observ = 'Todo Pago'
                             }
 
-                            debugger
                             this.clientes[j].rec[pos].hayMaletin = hayMaletin
-
                             this.clientes[j].rec[pos].valores.push({
                               id: idValor,
                               medioNombre: medioNombre,
@@ -3201,7 +3371,7 @@ export default {
 
                       } else if (tcpr=='NDD'||tcpr=='NDC') {
 
-                        this.clientes[j].nddndc.push({ cpr: this.kit.cpr(cpr), demo: demo, importe: importe })
+                        this.clientes[j].nddndc.push({id:id, cpr:this.kit.cpr(cpr), demo:demo, importe:importe })
                         if (tcpr=='NDD') {
                           this.totalDebitos += importe
                         } else {
@@ -3209,7 +3379,9 @@ export default {
                         }
 
                       } else if (tcpr=='REM') {
-                        this.clientes[j].rem.push({ cpr: this.kit.cpr(cpr), demo: demo, importe: importe })
+
+                        this.clientes[j].rem.push({ id:id, cpr:this.kit.cpr(cpr), demo:demo, importe:importe })
+
                       }
                     }
                   }
@@ -3254,28 +3426,32 @@ export default {
       }
       this.elMes = this.meses[0]
       this.elAnio = this.anio
-      this.listarHTTP()
+      this.listarHTTP(false)
     },
 
     async leoAnios() {
+      //let tipo = this.operarioEsVendedor?'A':'V'  // si es vendedor leo todos los tipos de comprobantes
+
       return HTTP().post('anios/', {tipo: 'V'}).then(({ data }) => {
-        //alert('en leoAnios paso el http')
         this.anios = []
         this.meses = []
         this.periodos = []
         let pos = -1
+
         // UN CASO ESPECIAL: SI ES VENDEDOR PUEDE ESTAR HACIENDO PEDIDOS POR CUENTA DE SUS CLIENTES
         // PERO SI CAMBIO EL MES Y EL CLIENTE NO HIZO MOVIMIENTOS AUN, NO TENDRA ACTUALIZADO EL PERIDODO
         // POR LO TANTO LO TENGO QUE AGREGAR A MANO.
-        if (this.operarioEsVendedor) {
-          // PRIMERO CALCULO EL AÑO Y MES ACUAL
-          let aniomes = moment().format('YYYYMM')
-          if (data[0][0].perfiscal != aniomes) {
-            this.anios.push(aniomes.substr(0,4))
-            pos = Number(aniomes.substr(5,2))-1
-            this.meses.push(this.losMeses[pos])
-          }
+        //if (this.operarioEsVendedor) {
+        // PRIMERO CALCULO EL AÑO Y MES ACUAL
+
+        let aniomes = moment().format('YYYYMM')
+        if (data[0][0].perfiscal != aniomes) {
+//          this.anios.push(aniomes.substring(0,4))
+//          pos = Number(aniomes.substring(4,6))-1
+//          this.meses.push(this.losMeses[pos])
         }
+
+        //}
         for (let i=0; i<=data[0].length-1; i++) {
           this.periodos.push(data[0][i].perfiscal)
           pos = this.anios.findIndex( x => x == data[0][i].perfiscal.substring(0,4))
@@ -3291,12 +3467,12 @@ export default {
         }
         this.anio = this.anios[0]
         this.elAnio = this.anio
-        let elMes = (this.elMes==null||this.elMes=='')?moment().format('MMM').substring(0,3):this.elMes
-        pos = this.meses.findIndex(x => x.toUpperCase() === elMes.toUpperCase())
+        let mesActual = moment().format('MMM').substring(0,3)
+        pos = this.meses.findIndex(x => x.toUpperCase() === mesActual.toUpperCase())
         if (pos==-1) {
           // porque aun no hay movimientos en el mes actual, busco en el anterior
           if (this.meses.length>0) {
-            this.elMes = this.meses[this.meses.length-1]
+            this.elMes = this.meses[0]
           } else {
             this.elMes = ''
           }
@@ -3308,23 +3484,16 @@ export default {
 
     guardarArticulosHTTP() {
       let prov = this.$store.state.proveedor.id==0?this.userId:this.$store.state.proveedor.id
-      debugger
-
-      debugger
       if (this.itemActualCliente.pedido_id==null) {
 
-        return HTTP().post('/generarpedido', {
-          proveedor: prov,
-          sucursales: this.$store.state.sucursales,
-          sucursal: this.$store.state.sucursal,
-          cart: this.articulos,
-          vendedor: this.operarioEsVendedor,
-          operarioTerceroId: this.operarioTerceroId,
+        return HTTP().post('/nuevopedido', {
+          origen: 'viajes',
+          userProv_id: this.userId,
+          userClie_id: this.itemActualCliente.tercero.user.id,
+          vendedor_id: this.oprarioTerceroId,
           viaje_id: this.itemActual.id,
           recorrido_id: this.itemActualCliente.id,
-          cliente_id: this.itemActualCliente.tercero.id}).then(({data})=>{
-
-          debugger
+          articulos: this.articulos }).then(({data})=>{
 
           this.dialogArticulos = false
           this.listarViajeHTTP()
@@ -3340,17 +3509,13 @@ export default {
         })
       } else {
 
-        debugger
         return HTTP().patch('/updateitems/'+this.itemActualCliente.pedido_id, { articulos: this.articulos }).then(({data})=>{
-
-          debugger
           if (data==true) {
             this.mensaje('¡Pedio actualizado!', this.temas.forms_titulo_bg, 1500)
           } else {
             this.mensaje('¡Opps, hubo en error en la modificación del pedido!', this.temas.snack_error_bg, 2500)
           }
           this.dialogArticulos = false
-          
           this.listarViajeHTTP()
         })
       }
@@ -3398,7 +3563,6 @@ export default {
         des.push(this.descuentosCli[0])
       }
       
-      debugger
       /*
       des = []
       des.push(
@@ -3420,10 +3584,9 @@ export default {
       debugger
       return HTTP().post('/articuloz', {
         search: this.busArt,
-        vinculosPadresLic: this.vinculosPadresLicDelCliente,
+        vinculosPadresLic: this.$store.state.vinculosPadresLic, //this.vinculosPadresLicDelCliente,
         vinculosPadresAll: vinPadAll,
-        proveedor: 0, stockProv: false, grupo: '', marca: '', userex: null, soloArtComprados: false, descuentos: des,
-//      proveedor: 2, stockProv: false, grupo: '', marca: '', userex: this.userId, soloArtComprados: false, descuentos: des,
+        proveedor: this.userId, stockProv: false, grupo: '', marca: '', userex: null, soloArtComprados: false, descuentos: des,
         dolar: this.$store.state.dolar, activos: true, limit: this.cttLoadReg }).then(({ data })=>{
 
         debugger
@@ -3459,8 +3622,6 @@ export default {
           }
         }
 
-        debugger
-
         // INICIALIZO VALORES DE DESCUENTOS Y PRIMERA ASIGNACION. LUEGO CONTROLO X CANTIDAD
         let descual = 'Lista'
         this.precioOrigen = 'Lista'
@@ -3476,7 +3637,6 @@ export default {
         }
 
         if (data.length==1) {
-          debugger
           let impdes = this.roundTo((data[0].precios[0].precio*this.editadoArt.cantidad)*(this.promoDescuento/100),data[0].precios[0].decimales)
           let pre = this.roundTo(data[0].precios[0].precio, data[0].precios[0].decimales) //data[0].precios[0].precio
           //let pre = data[0].precios[0].costo //data[0].precios[0].precio
@@ -3572,7 +3732,6 @@ export default {
       let vinPadAll = JSON.parse(JSON.stringify(this.$store.state.vinculosPadresAll));
       let pos = vinPadAll.findIndex(x=>x==elUserActual)
       vinPadAll.splice(pos,1);
-    //vinPadAll.unshift(199);
 
       debugger
       return HTTP().post('/articuloz', {
@@ -3618,14 +3777,11 @@ export default {
       let descual = 'Lista'
       this.precioOrigen = 'Lista'
       this.promoDescuento = this.editadoArt.ofetasadescuento
-
-      debugger
       // Veo si tomo el descuento de la promo
       if (this.editadoArt.ofeprecio && this.editadoArt.ofeestado=='A' && this.editadoArt.ofeunidades!=0 &&
           this.editadoArt.ofeunidades>this.editadoArt.cantidad) {
         descual = 'Promocion'
       }
-
       // CARGO EL DESCUENTO EN pordes
       let pordes = 0
       if (descual=='Promocion') {
@@ -3647,7 +3803,6 @@ export default {
     },
 
     guardarItem(columna) {
-
       this.totalPedido = 0
       for (let i=0; i<=this.articulos.length-1; i++) {
         this.totalPedido += this.articulos[i].total
@@ -3725,7 +3880,6 @@ export default {
     actualizoItem(ctt, pre, actualizo) {
       // tengo que ver si las unidades ingresadas impactan en algun descuento
 
-      debugger
       let txt = !actualizo ? this.editadoArt.texto : this.articulos[this.editedIndexArt].texto
       let pordes = 0
       let impdes = 0
@@ -3736,16 +3890,12 @@ export default {
         pordes = this.editadoArt.tasadescuento
       }
       impdes = this.roundTo(((Number(ctt)*pre) * (pordes/100)),2)
-
-      debugger
       let proxId = 1
        if (this.articulos.length>0) {
         let cods = this.articulos.map(o => o.index)
         proxId = Math.max(cods);
         proxId = proxId + 1
       }
-
-      debugger
 
       if (!actualizo) {
         this.articulos.unshift({
@@ -3796,7 +3946,6 @@ export default {
     },
 
     cancelaLinea() {
-      debugger
       if (this.formTitleArt == 'Editar Item') {
         this.articulos.unshift({
           id:               this.editadoArt.id,
@@ -3936,8 +4085,6 @@ export default {
     },
 
     editarArt(item) {
-      // huguito
-      debugger
       this.formTitleArt = 'Editar Item'
       this.seleccionarArticulo = false;
       this.editedIndexArt = this.articulos.indexOf(item)
@@ -3956,7 +4103,6 @@ export default {
     },
 
     selArtClick (item, row) {
-      debugger
       this.seleccionarArticulo = false;
       this.editedIndexArt = this.articulos.indexOf(item)
       this.busArt = this.$store.state.codigooid=='C'?item.codigo:item.articulo_id.toString()
@@ -3988,9 +4134,7 @@ export default {
     },
 
     tomarControlDelPedidoHTTP() {
-      debugger
       return HTTP().post('/tomarcontroldelpedido', {itemActual: this.itemActualCliente}).then(({data})=>{
-        debugger
         if (data=='error') {
           this.mensaje('¡Opps, se ha producido un error!', this.temas.snack_error_bg, 1500)
         } else {
@@ -3998,14 +4142,6 @@ export default {
         }
         this.listarViajeHTTP(false)
       });
-    },
-
-    finalizarViaje() {
-      this.msg.msgTitle = 'Finalizar Viaje'
-      this.msg.msgBody = '¿Confirmas finalizar este viaje?.<br>Todos sus pedidos serán transferidos a Administración.'
-      this.msg.msgVisible = true
-      this.msg.msgAccion = 'pedido ok'
-      this.msg.msgButtons = ['Aceptar']
     },
 
     anularViajeHTTP() {
@@ -4037,9 +4173,7 @@ export default {
     },
 
     finalizarRepartoHTTP() {
-      debugger
       return HTTP().post('/finalizarreparto', { viaje: this.itemActual.id }).then(({data})=>{
-        debugger
         if (data=='error') {
           this.mensaje('¡Opps, se ha producido un error al intentar finalizar este reparto!', this.temas.snack_error_bg, 1500)
         } else {
@@ -4084,7 +4218,15 @@ export default {
     },
 
     editadoArtStock(stock) {
-      return stock==null ? 'Sin Stock' : 'stk '+this.formatoImporte(stock)
+      if (stock==null) {
+        return 'Sin Stock'
+      } else {
+        if (typeof stock === 'number') {
+          return this.formatoImporte(stock)
+        } else {
+          return stock
+        }
+      }
     },
 
     getEstado (estado, accion) {
@@ -4266,6 +4408,12 @@ export default {
       }
     },
 
+    print(item) {
+      return HTTP().post('comprobanteventa', { id: item.id }).then(({ data }) => {
+        this.$refs.impresion.ventasPrint(data.c, 'yo');
+      })
+    },
+
     diasDelViaje(item) {
       let f1 = moment().format('YYYY-MM-DD')
       let f2 = moment(item.fecha).format('YYYY-MM-DD')
@@ -4279,6 +4427,14 @@ export default {
       } else {
         return d + ' días'
       } 
+    },
+
+    selectAll(event) {
+      if (event.value) {
+        this.selected = this.pedAAgregarAlNuevoViaje
+      } else {
+        this.selected = []
+      }
     },
 
     fechavalida() {
@@ -4300,6 +4456,12 @@ export default {
       let signo = valor >= 0?1:-1
       let v = Math.round((valor*Math.pow(10,dec))+(signo*.0001))/Math.pow(10,dec).toFixed(dec)
       return v.toString()
+    },
+
+    formatoFechaDiaYMes(value) {
+      let a = moment(String(value)).format('dd')
+      let b = moment(String(value)).format('DD') 
+      return a+' '+b
     },
 
     formatoFechaCorta(value) {

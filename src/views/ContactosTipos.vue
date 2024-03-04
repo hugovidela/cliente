@@ -8,7 +8,13 @@
         sort-by="id"
         dense
         class="elevation-3"
-        :footer-props="footerProps">
+        :footer-props="{
+          itemsPerPageOptions: [9],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }">
         <template v-slot:top>
           <v-toolbar
             :color="temas.forms_titulo_bg"
@@ -185,7 +191,6 @@ export default {
       (v) => !!v || 'El código es requerido',
       (v) => v.length <= 15 || 'Ingrese hasta 15 caracteres'
     ],      
-    footerProps: {'items-per-page-options': [9, 12, 15, 100]},
     search: '', // para el cuadro de búsqueda de datatables  
     dialog: false, // para que la ventana de dialogo o modal no aparezca automáticamente      
     // definimos los headers de la datatables
@@ -256,6 +261,7 @@ export default {
         })
     },
     msgRespuesta(op) {
+      debugger
       if (op==='Aceptar') {
         if (this.msg.msgAccion=='borrar item') {
           this.borrar(this.itemActual)
@@ -276,51 +282,50 @@ export default {
     buscoCodigo (event) {
       // who caused it? "event.target.id"
     	const cod = event.target.value
-      return HTTP().get(`/${this.modelo}/exists/${cod}`)
-        .then(({ data }) => {
-          if(data) {
-            this.mensaje('¡El código ingresado ya existe.!', 'black', 1500) 
-            this.$refs.codigo.focus()
-          }
+      return HTTP().get(`/${this.modelo}/exists/${cod}`).then(({ data }) => {
+        if(data) {
+          this.mensaje('¡El código ingresado ya existe.!', 'black', 1500) 
+          this.$refs.codigo.focus()
+        }
       });
     },
     listarHTTP:function() {
-      return HTTP().get('/'+this.modelo)
-        .then(({ data }) => {
-          this.items = data;
+      return HTTP().get('/'+this.modelo).then(({ data }) => {
+        this.items = data;
       });
     },
     altaHTTP:function() {
-      return HTTP().post('/'+this.modelo, {
-        icono: this.icono,
-        activo: true,
-        }).then(({ data }) => {
-          this.listarHTTP();
-        });
+      return HTTP().post('/'+this.modelo, {icono: this.icono,activo: true}).then(({ data }) => {
+        this.listarHTTP();
+      });
     },
     editarHTTP:function(data) {
-      return HTTP().patch(`${this.modelo}/${data.id}`, data)
-        .then(() => {
-          this.listarHTTP();
-        });       
-    },
-    borrarHTTP:function(id) {
-      return HTTP().delete(`/${this.modelo}/${id}`)
-        .then(() => {
-          this.listarHTTP();
-        });
+      return HTTP().patch(`${this.modelo}/${data.id}`, data).then(() => {
+        this.listarHTTP();
+      });       
     },
     preguntoBorrar (item) {
-      // este viene del form y activa el componente confirmacion, luego este va a msgRespuesta con lo confirmado
-      this.msg.msgTitle = 'Borrar'
-      this.msg.msgBody = 'Confirma borrar '+item.icono
-      this.msg.msgVisible = true
-      this.msg.msgAccion = 'borrar item'
-      this.msg.msgButtons = ['Aceptar','Cancelar']
-      this.itemActual = item;
+      debugger
+      return HTTP().get(`/contactostipospuedoborrar/${item.id}`).then((data) => {
+        debugger
+        if (data.data=='ok') {
+          this.msg.msgTitle = 'Borrar'
+          this.msg.msgBody = 'Confirma borrar '+item.icono
+          this.msg.msgVisible = true
+          this.msg.msgAccion = 'borrar item'
+          this.msg.msgButtons = ['Aceptar','Cancelar']
+          this.itemActual = item;
+        } else {
+          this.msg.msgTitle = 'Borrar'
+          this.msg.msgBody = 'No se puede borrar este contacto, esta siendo utilizado por otros usuarios'
+          this.msg.msgVisible = true
+          this.msg.msgAccion = 'error al borrar item'
+          this.msg.msgButtons = ['Cancelar']
+          this.itemActual = item;
+        }
+      })
     },
     exportarAPDF () {
-      // este viene del form y activa el componente confirmacion, luego este va a msgRespuesta con lo confirmado
       this.msg.msgTitle = 'Exportar a PDF'
       this.msg.msgBody = 'Desea exportar los datos a PDF'
       this.msg.msgVisible = true
@@ -328,7 +333,6 @@ export default {
       this.msg.msgButtons = ['Aceptar','Cancelar']
     },
     exportarAXLS () {
-      // este viene del form y activa el componente confirmacion, luego este va a msgRespuesta con lo confirmado
       this.msg.msgTitle = 'Exportar a XLS'
       this.msg.msgBody = 'Desea exportar los datos a XLS'
       this.msg.msgVisible = true
@@ -341,16 +345,12 @@ export default {
       this.dialog = true;
     },
     borrar (item) {
-      const index = this.items.indexOf(item);
-      var r = confirm('¿Está seguro de borrar el registro?');
-      if (r === true) {
-        this.borrarHttp(this.items[index].id);
-        this.snackbar = true;
-        this.textSnack = 'Se eliminó el registro.';
-      } else {
-        this.snackbar = true;
-        this.textSnack = 'Operación cancelada.';
-      }
+      return HTTP().delete(`/contactostipos/${item.id}`).then((data) => {
+        this.mensaje(data.data, this.temas.forms_titulo_bg, 3000) 
+        this.listarHTTP();
+      }).catch((err)=>{
+        this.mensaje('¡Opps, se ha producido un error al intentar eliminar este registro!', this.temas.snack_error_bg, 2500) 
+      })
     },
     cancelar() {
       this.dialog = false;

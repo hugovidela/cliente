@@ -52,7 +52,13 @@
             item-key="codigo"
             dense
             class="pl-1 pr-3 elevation-3"
-            :footer-props="footerProps">
+            :footer-props="{
+              itemsPerPageOptions: [8],
+              showFirstLastPage: true,
+              showCurrentPage: true,
+              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+            }">
             <template v-slot:item.codigo="{ item }">
               <span class="mini-font">{{ item.codigo }}</span>
             </template>
@@ -89,7 +95,7 @@
               </v-tooltip>
               <v-tooltip bottom>
                 <template v-slot:activator="{ on }">
-                  <v-btn
+                  <v-btn v-if="item.codbar!=null"
                     class="mr-2" fab icon small
                     :color="temas.forms_btn_editar_bg"
                     :dark="temas.forms_btn_editar_dark==true"
@@ -199,7 +205,6 @@ export default {
     items: [],
     item: null,
     headers: [],
-    footerProps: {'items-per-page-options': [7]},
     search: '',
     msg: {
       msgAccion: null,
@@ -277,10 +282,13 @@ export default {
 
     confirmarCodBarHTTP() {
       return HTTP().post('/updatecodbar', {id: this.itemActual.id, codbar: this.codbar }).then(({ data }) => {
-        debugger
-        if (data=='ya existe') {
+        if (data.msg=='ya existe') {
           this.msg.msgTitle = 'Código de Barra Existente'
-          let m = '¡El código de barra ya existe!.<br>'
+          let m = '<br>¡El código de barra <b>'
+          m += this.codbar + '</b></b> ya existe!.<br><br>'
+          m += 'Esta asignado al artículo:<br><br>'
+          m += 'Cód: <b>'+data.cod+'</b><br>'
+          m += 'Nom: <b>'+data.nom+'</b><br><br>'
           this.msg.msgBody = m
           this.msg.msgVisible = true
           this.msg.msgAccion = 'codigo de barra existente'
@@ -310,24 +318,12 @@ export default {
     listarHTTP() {
       if (this.search==null) this.search = '';
       let s = this.search.length>0 ? this.search.trim() : '';
-//    let v = [];
-//    v.push(this.userId)
-      debugger
       return HTTP().post('/articuloz', {
         search: s,
         vinculosPadresLic: this.$store.state.vinculosPadresLic,
         vinculosPadresAll: this.$store.state.vinculosPadresAll,
         proveedor: 0, stockProv: false, grupo: '', marca: '', userex: null, soloArtComprados: true, descuentos: this.descuentos,
         dolar: this.$store.state.dolar, activos: true, limit: 300 }).then(({ data })=>{
-        debugger
-      /*
-      return HTTP().post('/articulosx', {
-        search: s, vinculos: v,
-        vinculosPadresLic: this.$store.state.vinculosPadresLic,
-        vinculosPadresAll: this.$store.state.vinculosPadresAll,
-        estricto: false, codigooid: this.$store.state.codigooid, userex: null, dolar: this.$store.state.dolar, ambiente: 'consulta', tipo:'', rubro:'',
-        marca:'', grupo:'', proveedor: 0, ancla: false, saySoloArtsPropios: false, activos: true, limit: 300, descuentos: this.descuentos }).then(({ data })=>{
-      */
         if (data.length>0) {
           this.itemActual = data[0]
           this.items = data;

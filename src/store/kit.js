@@ -27,7 +27,15 @@ function redondear(imp, dec, cttdec) {
 }
 
 function cpr(cpr) {
-  return cpr!=null?cpr.substring(0,1)+cpr.substring(2,3)+cpr.substring(4,5)+' '+cpr.substring(7,10)+'-'+cpr.substring(13,20):''
+  if (cpr==null) {
+    return ''
+  } else {
+    if (cpr.substring(0,3)=='PED') {
+      return cpr!=null?cpr.substring(4,20):''
+    } else {
+      return cpr!=null?cpr.substring(0,1)+cpr.substring(2,3)+cpr.substring(4,5)+' '+cpr.substring(7,10)+'-'+cpr.substring(13,20):''
+    }
+  }
 }
 
 export default {

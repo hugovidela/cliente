@@ -148,7 +148,13 @@
                         :show-select="showModificarDatos"
                         dense
                         class="elevation-3 pt-0"
-                        :footer-props="footerProps">
+                        :footer-props="{
+                          itemsPerPageOptions: [8],
+                          showFirstLastPage: true,
+                          showCurrentPage: true,
+                          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                        }">
                         <template v-slot:item.codigo="{ item }">
                           <span class="fg">{{ item.codigo }}</span>
                         </template>
@@ -265,7 +271,13 @@
                         :show-select="showModificarDatos"
                         dense
                         class="elevation-3 pt-0"
-                        :footer-props="footerProps">
+                        :footer-props="{
+                          itemsPerPageOptions: [8],
+                          showFirstLastPage: true,
+                          showCurrentPage: true,
+                          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                        }">
                         <template v-slot:item.nombre="{ item }">
                           {{ item.nombre.substring(0,10) }}
                         </template>
@@ -372,7 +384,13 @@
                         :show-select="showModificarDatos"
                         dense
                         class="elevation-3 pt-0"
-                        :footer-props="footerProps">
+                        :footer-props="{
+                          itemsPerPageOptions: [10],
+                          showFirstLastPage: true,
+                          showCurrentPage: true,
+                          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                        }">
                         <template v-slot:top>
                           <v-col cols="4" sm="4">  <!-- Barra de búsqueda  -->
                             <v-text-field
@@ -461,7 +479,13 @@
                         :show-select="showModificarDatos"
                         dense
                         class="elevation-3 pt-0"
-                        :footer-props="footerProps">
+                        :footer-props="{
+                          itemsPerPageOptions: [10],
+                          showFirstLastPage: true,
+                          showCurrentPage: true,
+                          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                        }">
                         <template v-slot:top>
                           <v-col cols="4" sm="4">  <!-- Barra de búsqueda  -->
                             <v-text-field
@@ -878,7 +902,6 @@ export default {
       this.itemsExcel.sort(function(a, b) {
         if (a.codigo > b.codigo) { return 1 } else if (a.codigo < b.codigo ) { return -1 } else { return 0 }
       })
-      debugger
       for (let i=0; i<=this.itemsExcel.length-1; i++) {
         c1 = this.itemsExcel[i].codigo
         if (c1===c2&&c2!='') {
@@ -900,7 +923,6 @@ export default {
         }
         c2 = this.itemsExcel[i].nombre
       }
-      debugger
       if (errC!='') {
         errTxt = '<li>Se encontraron Códigos de Artículos repetidos.</li>'
         errTxt += 'Codigo: <b>'+errC+'</b><br>'
@@ -933,16 +955,12 @@ export default {
     },
 
     async importarArt() {
-
-      debugger
       let news = []
       if (this.registrosXls-this.encontradosXls>0) {
         for (let i=0; i<=this.items.length-1; i++) {
           news.push(this.items[i].codigo)
         }
       }
-
-      debugger
       let formData = new FormData();
       formData.append('file', this.nuevoXls );
       formData.append('user', this.userId );
@@ -952,16 +970,13 @@ export default {
       formData.append('decimales', this.decimales);
       formData.append('nuevos', news)
       this.progress = true
-
-      debugger
       return HTTP().post('/importararticulos', 
         formData, {
           onUploadProgress: function( progressEvent ) {
             this.uploadPercentage = parseInt(Math.round((progressEvent.loaded/progressEvent.total))*100);
           }.bind(this)
         }).then(({ data }) => { 
-          
-          debugger
+         
           this.progress = false
           if (data.errno) {
             this.msg.msgTitle = 'Error'
@@ -1084,12 +1099,8 @@ export default {
     },
 
     cargarXls() {
-      debugger
-      
       if (this.nuevoXls.name != undefined) {
-        
         if (this.tab=='articulos') {
-
           return HTTP().get('/configarticulosexcel').then(({ data }) => {
             this.cfgExcel = data
             this.progress = true
@@ -1103,16 +1114,13 @@ export default {
               let sheet = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
               let dataset = await this.parseFileContent(sheet);
             }.bind(this);
+
             reader.readAsArrayBuffer(file);
             this.mios = [];
             this.aImportar = 0;
             this.encontradosXls = 0;
             // ver de poner el rubro, por ahora van todos.
-
-            debugger
-            return HTTP().post('/userarticulosimp').then(({ data }) => {
-              
-              debugger
+            return HTTP().post('/userarticulosimp', {id:this.userId}, {timeout: 50000}).then(({ data }) => {
               this.misMarcas = []
               this.xlsMarcas = []
               let pos = null
@@ -1131,10 +1139,7 @@ export default {
                   this.items = []
                   // AHORA VOY POR LOS ARTICULOS DE EXCEL
                   let err = false
-                    
-                  debugger
                   for (let i=0; i<=this.itemsExcel.length-1; i++) {
-
                     pos = this.mios.find( x => x.codigo == this.itemsExcel[i].codigo.trim())
                     if (pos!=undefined) {
                       this.itemsExcel[i].estado = 'M'
@@ -1142,7 +1147,6 @@ export default {
                     } else {
                       this.aImportar ++
                     }
-
                     pos = this.xlsMarcas.find(x => x == this.itemsExcel[i].marca.nombre)
                     if (pos==undefined) {
                       this.xlsMarcas.push(this.itemsExcel[i].marca.nombre)
@@ -1199,7 +1203,6 @@ export default {
         } else if (this.tab=='grupos') {
 
           return HTTP().get('/gruposrubros/'+this.rubro_id).then(response => {
-            debugger
             let aux = [];
             for(var i in response.data[0]) {
               aux.push({
@@ -1226,16 +1229,12 @@ export default {
             }
 
             this.usersGrupos = getNestedChildren2(aux,0)
-
-            debugger
             if (this.usersGrupos.length>0) {
               let armoObjeto = this.puedoDesactivar(this.usersGrupos)
               this.mios = this.strDeGrupos(armoObjeto)
             } else {
               this.mios = []
             }
-
-            debugger
             this.items = []
             this.encontrados = 0
             for (let i=0; i<=this.itemsExcel.length-1; i++) {
@@ -1393,7 +1392,6 @@ export default {
     },
 
     cargarXls2() {
-      debugger
       if (this.nuevoXls.name != undefined) {
         try {
           let url = ''
@@ -1406,7 +1404,6 @@ export default {
           } else if (this.tab=='clientesyproveedores') {
             url = 'configtercerosexcel'
           }
-          debugger
           return HTTP().get('/'+url).then(({ data }) => {
             this.cfgExcel = data
             this.progress = true
@@ -1425,8 +1422,6 @@ export default {
             this.aImportar = 0;
             this.encontradosXls = 0;
             // ver de poner el rubro, por ahora van todos.
-
-            debugger
             if (this.tab=='articulos') {
 
               return HTTP().post('/userarticulosimp').then(({ data }) => {
@@ -1492,10 +1487,7 @@ export default {
 
                       // AHORA VOY POR LOS ARTICULOS DE EXCEL
                       let err = false
-                      
-                      debugger
                       for (let i=0; i<=this.itemsExcel.length-1; i++) {
-
                         pos = this.mios.find( x => x.codigo == this.itemsExcel[i].codigo.trim())
                         if (pos!=undefined) {
                           this.itemsExcel[i].estado = 'M'
@@ -1503,7 +1495,6 @@ export default {
                         } else {
                           this.aImportar ++
                         }
-
                         pos = this.xlsMarcas.find(x => x == this.itemsExcel[i].marca.nombre)
                         if (pos==undefined) {
                           this.xlsMarcas.push(this.itemsExcel[i].marca.nombre)
@@ -1511,7 +1502,6 @@ export default {
                         } else {
                           this.itemsExcel[i].marca = {id:0, nombre: pos }
                         }
-
                         pos = this.xlsGrupos.find(x => x == this.itemsExcel[i].grupo.nombre)
                         if (pos==undefined) {
                           this.xlsGrupos.push(this.itemsExcel[i].grupo.nombre)
@@ -1620,13 +1610,9 @@ export default {
               .catch(err => {
                 console.log(err)
               })
-
             } else if ( this.tab == 'grupos') {
               // ORDENO EL ARRAY DE GRUPOS PARA QUE SE PAREZA A: PADRE > HIJO > NIETO
-
-              debugger
               return HTTP().get('/gruposrubros/'+this.rubro_id).then(response => {
-                debugger
                 let aux = [];
                 for(var i in response.data[0]) {
                   aux.push({
@@ -1651,18 +1637,13 @@ export default {
                   }
                   return out
                 }
-
                 this.usersGrupos = getNestedChildren2(aux,0)
-
-                debugger
                 if (this.usersGrupos.length>0) {
                   let armoObjeto = this.puedoDesactivar(this.usersGrupos)
                   this.mios = this.strDeGrupos(armoObjeto)
                 } else {
                   this.mios = []
                 }
-
-                debugger
                 this.items = []
                 this.encontrados = 0
                 for (let i=0; i<=this.itemsExcel.length-1; i++) {
@@ -1817,12 +1798,9 @@ export default {
     },
 
     async parseFileContent(sheet) {
-
-      debugger
       let abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
       this.itemsExcel = []
       if (this.tab=='articulos') {
-        debugger
         for (let i=0; i<=this.cfgExcel.length-1; i++) {
           // cargo las columnas donde estan los datos
           let pcod    = this.cfgExcel[i].codigo
@@ -1846,7 +1824,6 @@ export default {
             return 0
           }
 
-          debugger
           for (let j=Number(this.cfgExcel[i].comienza)-1; j<=sheet.length-1; j++) {
   
             let r = sheet[j]
@@ -1913,8 +1890,6 @@ export default {
           }
         }
       } else if (this.tab=='grupos') {
-
-        debugger
         for (let i=0; i<=this.cfgExcel.length-1; i++) {
           // cargo la columna donde estan los datos
           let pnom    = this.cfgExcel[i].nombre

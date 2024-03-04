@@ -15,7 +15,6 @@
           prevIcon: 'mdi-arrow-left-drop-circle-outline',
         }">
         <template v-slot:top>
-
           <v-toolbar flat
             :color="$store.state.temas.forms_titulo_bg"
             :dark="$store.state.temas.forms_titulo_dark==true">
@@ -87,35 +86,6 @@
                   Cambiar Cheques
                 </v-btn>
               </template>
-
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on }">
-                  <v-btn
-                    fab
-                    :color="$store.state.temas.forms_btn_pdf_bg"
-                    :dark="$store.state.temas.forms_btn_pdf_dark==true"
-                    class="mr-2"
-                    @click="print" v-on="on">
-                    <v-icon>mdi-printer</v-icon>
-                  </v-btn>
-                </template>
-                <span class="fg">Imprimir</span>
-              </v-tooltip>
-
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on }">
-                  <v-btn
-                    fab
-                    :color="$store.state.temas.forms_btn_xls_bg"
-                    :dark="$store.state.temas.forms_btn_xls_dark==true"
-                    class="mr-2"
-                    @click="exportExcel" v-on="on">
-                    <v-icon>mdi-file-excel</v-icon>
-                  </v-btn>
-                </template>
-                <span class="fg">Enviar a Excel</span>
-              </v-tooltip>
-
             </template>
 
             <v-toolbar-title class="fg">
@@ -125,8 +95,10 @@
             <v-spacer></v-spacer>
             <!-- Modal del diálogo para Alta y Edicion -->
 
-            <!--CAMBIO DE CHEQUES -->
-            <v-dialog v-model="dialogCambio" max-width="1300px"
+            <!--
+              CAMBIO DE CHEQUES
+            -->
+            <v-dialog v-model="dialogCambio" max-width="1100px"
               :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
@@ -135,7 +107,7 @@
                 <v-btn
                   :color="$store.state.temas.forms_close_bg"
                   :dark="$store.state.temas.forms_close_dark==true"
-                  icon @click="cancelar">
+                  icon @click="cancelar()">
                   <v-icon>mdi-arrow-left-circle</v-icon>
                 </v-btn>
                 <span class="fg">Cambio de Cheques</span>
@@ -172,7 +144,7 @@
                         </v-col>
                       </v-row>
                       <v-row class="fg">
-                        <v-col cols="12" sm="12" md="12">
+                        <v-col cols="12" md="12">
                           <v-data-table
                             v-model="selectedCheque"
                             :headers="headersSel"
@@ -180,7 +152,13 @@
                             dense
                             class="elevation-3"
                             item-key="id"
-                            :footer-props="footerProps8">
+                            :footer-props="{
+                              itemsPerPageOptions: [8],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }">
                             <template v-slot:item.importe="{ item }">
                               <span>${{ formatoImporte(item.importe) }}</span>
                             </template>
@@ -196,8 +174,7 @@
                                 <template v-slot:activator="{ on }">
                                   <v-btn
                                     fab x-small
-                                    :color=
-                                    "item.seleccionado==0?
+                                    :color="item.seleccionado==0?
                                     $store.state.temas.cen_btns_bg:
                                     $store.state.temas.cen_card_activo_bg"
                                     :dark="$store.state.temas.cen_btns_dark==true"
@@ -213,9 +190,9 @@
                           </v-data-table>
                         </v-col>
                       </v-row>
-                      <!-- PIDO PROVEEDOR -->
+                      <!-- PIDO PROVEEDOR1 -->
                       <v-row class="fg">
-                        <v-col cols="7" sx="7" mx="7" class="pt-0">
+                        <v-col cols="12" md="6" class="pt-0">
                           <v-autocomplete
                             v-model="tercero_id"
                             :items="itemsTerceros"
@@ -230,14 +207,14 @@
                             prepend-icon="mdi-database-search">
                           </v-autocomplete>
                         </v-col>
-                        <v-col cols="2" sm="2" md="2">
+                        <v-col cols="12" md="2">
                           <v-text-field
                             disabled dense outlined
                             v-model="totCheTerSel"
                             label="Cheques seleccionados">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="1" sm="1" md="1">
+                        <v-col cols="12" md="2">
                           <v-text-field
                             dense outlined
                             v-model="porcentaje"
@@ -245,7 +222,7 @@
                             @change="calculos(1)">
                           </v-text-field>
                         </v-col>
-                        <v-col cols="2" sm="2" md="2">
+                        <v-col cols="12" md="2">
                           <v-text-field
                             dense outlined
                             v-model="totEfeRecibido"
@@ -261,143 +238,6 @@
               </v-card>
             </v-dialog>
             <!-- FIN DEL CAMBIO DE CHEQUES -->
-
-            <!--RECHAZO DE CHEQUES -->
-            <v-dialog v-model="dialogCambio" max-width="1300px"
-              :transition="transition==null?'false':transition">
-              <template v-slot:activator="{}"></template>
-              <v-toolbar flat
-                :color="$store.state.temas.forms_titulo_bg"
-                :dark="$store.state.temas.forms_titulo_dark==true">
-                <v-btn
-                  :color="$store.state.temas.forms_close_bg"
-                  :dark="$store.state.temas.forms_close_dark==true"
-                  icon @click="cancelar">
-                  <v-icon>mdi-arrow-left-circle</v-icon>
-                </v-btn>
-                <span class="fg">Rechazo de Cheques</span>
-                <v-spacer></v-spacer>
-                <v-btn class="fg85"
-                  v-show="totCheTerSel!=0 && totEfeRecibido!=0 && tercero_id!=0"
-                  :color="$store.state.temas.cen_btns_bg"
-                  :dark="$store.state.temas.cen_btns_dark==true"
-                  @click="guardarCambio(item)">
-                  Confirmar
-                </v-btn>
-              </v-toolbar>
-              <v-card>
-                <v-form ref="pend">
-                  <v-card-text>
-                    <v-container fluid>
-                      <!-- GRILLA DE CHEQUES DE TERCERO -->
-                      <v-row class="fg">
-                        <v-col cols="2" class="pt-6 pl-6">
-                          <v-btn class="fg"
-                            :color="$store.state.temas.cen_btns_bg"
-                            :dark="$store.state.temas.cen_btns_dark==true"
-                            @click="marcarDesmarcar(1)">
-                            Marcar Todos
-                          </v-btn>
-                        </v-col>
-                        <v-col cols="2" class="pt-6 pl-6">
-                          <v-btn class="fg"
-                            :color="$store.state.temas.cen_btns_bg"
-                            :dark="$store.state.temas.cen_btns_dark==true"
-                            @click="marcarDesmarcar(2)">
-                            Desmarcar Todos
-                          </v-btn>
-                        </v-col>
-                      </v-row>
-                      <v-row class="fg">
-                        <v-col cols="12" sm="12" md="12">
-                          <v-data-table
-                            v-model="selectedCheque"
-                            :headers="headersSel"
-                            :items="cartera"
-                            dense
-                            class="elevation-3"
-                            item-key="id"
-                            :footer-props="footerProps8">
-                            <template v-slot:item.importe="{ item }">
-                              <span>${{ formatoImporte(item.importe) }}</span>
-                            </template>
-                            <template v-slot:item.seleccionado="{ item }">
-                              <v-chip
-                                :color="getColor(item.seleccionado)"
-                                dark>{{item.seleccionado?'Sí':'No'}}
-                              </v-chip>
-                            </template>
-
-                            <template v-slot:item.accion="{item}">
-                              <v-tooltip bottom>
-                                <template v-slot:activator="{ on }">
-                                  <v-btn
-                                    fab x-small
-                                    :color=
-                                    "item.seleccionado==0?
-                                    $store.state.temas.cen_btns_bg:
-                                    $store.state.temas.cen_card_activo_bg"
-                                    :dark="$store.state.temas.cen_btns_dark==true"
-                                    class="mr-2"
-                                    @click="selectCartera(item)" v-on="on">
-                                    <v-icon>mdi-checkbox-marked-outline</v-icon>
-                                  </v-btn>
-                                </template>
-                                <span class="fg">Seleccionar</span>
-                              </v-tooltip>
-                            </template>
-
-                          </v-data-table>
-                        </v-col>
-                      </v-row>
-                      <!-- PIDO PROVEEDOR -->
-                      <v-row class="fg">
-                        <v-col cols="7" sx="7" mx="7" class="pt-0">
-                          <v-autocomplete
-                            v-model="tercero_id"
-                            :items="itemsTerceros"
-                            :loading="isLoadingTerceros"
-                            :search-input.sync="searchTerceros"
-                            :color="temas.forms_titulo_bg"
-                            item-text="nombre"
-                            item-value="id"
-                            autofocus
-                            label="Comprador"
-                            placeholder="Escriba para buscar"
-                            prepend-icon="mdi-database-search">
-                          </v-autocomplete>
-                        </v-col>
-                        <v-col cols="2" sm="2" md="2">
-                          <v-text-field
-                            disabled dense outlined
-                            v-model="totCheTerSel"
-                            label="Cheques seleccionados">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="1" sm="1" md="1">
-                          <v-text-field
-                            dense outlined
-                            v-model="porcentaje"
-                            label="% Comisión"
-                            @change="calculos(1)">
-                          </v-text-field>
-                        </v-col>
-                        <v-col cols="2" sm="2" md="2">
-                          <v-text-field
-                            dense outlined
-                            v-model="totEfeRecibido"
-                            label="Efectivo a Recibir"
-                            @change="calculos(2)">
-                          </v-text-field>
-                        </v-col>
-                      </v-row>
-                      <!-- GRILLA DE CHEQUES DE TERCERO -->
-                    </v-container>
-                  </v-card-text>
-                </v-form>
-              </v-card>
-            </v-dialog>
-            <!-- FIN DE RECHAZO DE CHEQUES -->
 
             <!--RECHAZO DE CHEQUES -->
             <v-dialog v-model="dialogRechazo" max-width="600px"
@@ -461,9 +301,7 @@
                             <br>
                           </span>
                           <span>
-                            Además se restaurará a
-                            <b>{{itemActual!=null ? itemActual.origen : ''}}</b>
-                            la deuda cancelada por el mismo.
+                            Además se restaurará la deuda cancelada por el mismo.
                           </span><br><br>
                           <span><b>Gastos del Cheque</b></span>
                           <br>
@@ -542,53 +380,24 @@
             </v-text-field>
           </v-col>
         </template>
-
         <template v-slot:item.fecha="{ item }">
           {{ formatoFecha(item.fecha) }}
         </template>
-
         <template v-slot:item.tasadescuento="{ item }">
           {{ formatoImporte(item.tasadescuento) }}%
         </template>
-
-        <!--
-        <template v-slot:item.importedescuento="{ item }">
-          ${{ formatoImporte(item.importedescuento) }}
-        </template>
-        -->
-
         <template v-slot:item.banco="{ item }">
           {{ item.banco }}
         </template>
-
         <template v-slot:item.echeq="{ item }">
           {{ item.echeq?'sí':'no' }}
         </template>
-
         <template v-slot:item.origen="{ item }">
           {{ item.origen==null?'Propio':item.origen }}
         </template>
-
         <template v-slot:item.entrego="{ item }">
           {{ item.entrego }}
-          <!--
-          <v-badge
-            :content="item.propio?'Prop':'3ro'"
-            :dark="true"
-            icon="mdi-gift"
-            color="grey">
-          </v-badge>
-          -->
-<!--
-          <v-badge v-if="!item.propio"
-            content="3ro"
-            :dark="true"
-            icon="mdi-gift"
-            :color="temas.cen_card_activo_bg">
-          </v-badge>
--->
         </template>
-
         <template v-slot:item.importe="{ item }">
           $ {{ formatoImporte(item.importe,2) }}
           <v-badge v-if="item.arechazar"
@@ -613,34 +422,6 @@
             </template>
             <span>Rechazar</span>
           </v-tooltip>
-
-          <!--
-          <v-menu bottom left v-if="cual=2">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn icon v-bind="attrs" v-on="on" @click="setAcciones(item)">
-                <v-icon>mdi-18px mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list dense>
-              <v-list-item-group :color="$store.state.temas.forms_titulo_bg">
-                <v-list-item
-                  v-for="(item, i) in acciones" :key="i">
-                  <v-list-item-icon>
-                    <v-icon
-                      class="font-size: 24px"
-                      @click="selAccion(item)" v-text="item.icon">
-                    </v-icon>
-                  </v-list-item-icon>
-                  <v-list-item-content>
-                    <v-list-item-title
-                      class="caption" @click="selAccion(item)">{{ item.nombre }}
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list-item-group>
-            </v-list>
-          </v-menu>
-        -->
         </template>
 
       </v-data-table>
@@ -665,8 +446,6 @@ import router from '../../router';
 import moment from 'moment';
 import SBar from './../Forms/snackbar.vue';
 import Confirmacion from "./../Forms/confirmacion.vue"
-import XLSX from 'xlsx'
-import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 
 export default {
@@ -677,7 +456,6 @@ export default {
   data: () => ({
     cual: 1,
     total: 0,
-    tituloResumen: '',
     itemActual: null,
     acciones: [],
     selectedCheque:[],
@@ -753,8 +531,6 @@ export default {
       (v) => !!v || 'El nombre es requerido',
       (v) => v.length <= 50 || 'Ingrese hasta 50 caracteres'
     ],
-    footerProps: {'items-per-page-options': [9, 12, 15, 100]},
-    footerProps8: {'items-per-page-options': [8]},
     search: '', // para el cuadro de búsqueda de datatables  
     dialog: false, // para que la ventana de dialogo o modal no aparezca automáticamente
     dialogCambio: false, 
@@ -799,16 +575,8 @@ export default {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId']),
     ...mapMutations(['alert','closeAlert']),
     ...mapState([
-      'sucursal',
-      'sucursalFiscal',
-      'sucursalDemo',
-      'empresa',
-      'tema',
-      'temas',
-      'operarioEsVendedor',
-      'operarioTerceroId',
-      'operarioUserId',
-      'caja','transition']),
+      'sucursal', 'sucursalFiscal', 'sucursalDemo', 'empresa', 'tema', 'temas', 'operarioEsVendedor',
+      'operarioTerceroId', 'operarioUserId', 'caja','transition']),
     formTitle () {
       return this.editedIndex === -1 ? 'Nuevo' : 'Editar';
     },
@@ -842,9 +610,8 @@ export default {
       if (this.isLoadingTerceros) return
       this.isLoadingTerceros = true
       // Lazily load input items
-      debugger
-      return HTTP().get('/indexter/false/2/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/%%  ').then(({ data }) => {
-        debugger
+      return HTTP().get('/indexter/false/2/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/null')
+        .then(({ data }) => {
         this.entriesTerceros = []
         this.tercerosUserId = []
         for (let i=0; i<= data.length-1; i++) {
@@ -903,25 +670,13 @@ export default {
     },
 
     init_component() {
-      this.tituloResumen = 'Cheques '+this.cuales+': $'+this.formatoImporte(this.total,2)
       this.cualesver(1)
-    //this.listarHTTP(1);
-    },
-
-    exportExcel: function () {
-      let data = XLSX.utils.json_to_sheet(this.items)
-      const workbook = XLSX.utils.book_new()
-      const filename = 'cheques'
-      XLSX.utils.book_append_sheet(workbook, data, filename)
-      XLSX.writeFile(workbook, `${filename}.xlsx`)
     },
 
     msgRespuesta(op) {
       if (op==='Aceptar') {
         if (this.msg.msgAccion=='exportar a PDF') {
           alert('exportando a PDF...')
-        } else if (this.msg.msgAccion=='exportar a XLS') {
-          this.exportExcel()
         } else if (this.msg.msgAccion=='cambiar cheques') {
           this.altaHTTP()
         } else if (this.msg.msgAccion=='rechazar cheque') {
@@ -932,7 +687,6 @@ export default {
     },
 
     cualesver(cual) {
-      debugger
       this.cual = cual  // 1 disponibles, 2 entregados, 
       this.headers = []
       if (cual==1) {
@@ -958,9 +712,6 @@ export default {
         this.headers.push({ text: 'Dias', value:'dias', width: 80})
         this.headers.push({ text: 'Importe', value:'importe', width: 130, align: 'end'})
       }
-//    if (cual==2 || cual==3) {
-//      this.headers.push({ text: 'E', value:'tipo', width: 60, align: 'end'})
-//    }
       if (cual==2||cual==1) {
         this.headers.push({ text: 'ACC', value: 'accion', sortable: false })
       }
@@ -977,27 +728,6 @@ export default {
 
     async rechazar(item) {
       if (item.nombre=='Rechazar') {
-        debugger
-        if (this.itemActual.userid!=null) {
-          this.msg.msgTitle = 'No se puede rechazar este cheque!' 
-          this.msg.msgAccion = 'rechazar cheque'
-          let msg = 'Este cheque ingreso por una operación vinculada.<br><br>'
-          msg += 'Debera informar a '+this.itemActual.entrego+' que realice el rechazo '
-          msg += 'o esperar a que ellos lo hagan.<br>'
-          msg += 'Cuando el mismo sea realizado le llegara una factura con los gastos correspondientes mas '
-          msg += 'el importe del cheque'
-          this.msg.msgBody = msg
-          this.msg.msgVisible = true
-          this.msg.msgButtons = ['Cerrar']
-        } else {
-          this.rechazar(this.itemActual)
-        }
-      }
-    },
-
-    async selAccion(item) {
-      if (item.nombre=='Rechazar') {
-        debugger
         if (this.itemActual.userid!=null) {
           this.msg.msgTitle = 'No se puede rechazar este cheque!' 
           this.msg.msgAccion = 'rechazar cheque'
@@ -1024,7 +754,6 @@ export default {
     },
 
     rechazar(item) {
-      debugger
       this.gasto.articulo_id = 8
       this.gasto.librador = item.origen // item.librador
       this.gasto.nombre = 'GASTOS POR CHEQUE RECHAZADO'
@@ -1153,18 +882,13 @@ export default {
       } else if (cual==4) {
         this.cuales = 'Vendidos'
       }
-      debugger
       return HTTP().post('/cheques', { sucursal: this.sucursal, cuales: this.cuales}).then(({ data }) => {
-
-        debugger
         let d = 0
         let hoy = moment()
         this.items = data;
         this.cartera = [];
         this.vendidos = [];
         this.total = 0
-
-        debugger
         for (let i=0; i<=this.items.length-1; i++) {
           this.items[i].cpr = this.kit.cpr(this.items[i].cpr)
           if (this.cuales=='Vendidos') {
@@ -1219,24 +943,6 @@ export default {
       this.msg.msgVisible = true
       this.msg.msgButtons = ['Aceptar','Cancelar']
       this.itemActual = item
-    },
-
-    exportarAPDF () {
-      // este viene del form y activa el componente confirmacion, luego este va a msgRespuesta con lo confirmado
-      this.msg.msgTitle = 'Exportar a PDF'
-      this.msg.msgBody = 'Desea exportar los datos a PDF'
-      this.msg.msgVisible = true
-      this.msg.msgAccion = 'exportar a PDF'
-      this.msg.msgButtons = ['Aceptar','Cancelar']
-    },
-
-    exportarAXLS () {
-      // este viene del form y activa el componente confirmacion, luego este va a msgRespuesta con lo confirmado
-      this.msg.msgTitle = 'Exportar a XLS'
-      this.msg.msgBody = 'Desea exportar los datos a XLS'
-      this.msg.msgVisible = true
-      this.msg.msgAccion = 'exportar a XLS'
-      this.msg.msgButtons = ['Aceptar','Cancelar']
     },
 
     cambiarValores() {
@@ -1299,79 +1005,6 @@ export default {
      var power = Math.pow(10, places);
      return Math.round(value * power) / power;
     },
-
-    print() {
-      this.headersRes = [
-        { title: 'Librador',   dataKey: 'librador',        halign: 'left',  width: 120 },
-        { title: 'Banco',      dataKey: 'banco',           halign: 'left',  width: 120 },
-        { title: 'Cuenta',     dataKey: 'cuenta',          halign: 'left',  width: 120 },
-        { title: 'Número',     dataKey: 'nrovalor',        halign: 'rigth', width: 120 },
-        { title: 'Fec.Finan',  dataKey: 'fechafinanciera', halign: 'left',  width: 120 },
-        { title: 'Dias',       dataKey: 'dias',            halign: 'right', width: 120 },
-        { title: 'Importe',    dataKey: 'importe2',        halign: 'right', width: 120 },
-        ]
-      for (let i=0; i<=this.items.length-1; i++) {
-        //this.items[i].importe2 = this.formatImporte(this.items[i].importe,2)
-      }
-      this.imprimir('CHEQUES DISPONIBLES', this.headersRes, this.items, 'l' )
-    },
-
-    imprimir(informeTitulo, headersRes, itemRes, orientacion ) {
-      var doc = new jsPDF(orientacion, 'pt');   // 'p' normal 'l' horizontal ( landscape )
-      const totalPagesExp = '{total_pages_count_string}'
-      const emp = this.empresa
-      const tit = informeTitulo
-//    const des = this.editado.fdesde.substr(8,2)+'/'+this.editado.fdesde.substr(5,2)+'/'+this.editado.fdesde.substr(0,4)
-//    const has = this.editado.fhasta.substr(8,2)+'/'+this.editado.fhasta.substr(5,2)+'/'+this.editado.fhasta.substr(0,4)
-//    ESTE ANDA PERO NO MUESTRA LA PAGINA
-      doc.autoTable(headersRes, itemRes, {
-        didDrawPage: function (data) {
-          // Footer
-
-          var str = "Página " + doc.internal.getNumberOfPages()
-          if (typeof doc.putTotalPages === 'function') {
-            str = str + " de " + totalPagesExp;
-          }
-
-          doc.setFontSize(14);
-          doc.text ( emp, 40, 47 )           // COL, FIL
-          doc.setFontSize(16);
-          doc.text ( tit, 180, 47 )
-//        doc.setFontSize(12);
-//        doc.text ( informeTitulo, 180, 67 )
-          doc.setFontSize(8);
-          doc.text ( 'gohu', orientacion == 'p' ? 565 : 785, 15 )
-          doc.setFontSize(9);
-
-          var pageSize = doc.internal.pageSize;
-          var pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
-          doc.text(str, data.settings.margin.left, pageHeight-10 );
-        },
-
-        margin: {top: 100, bottom: 25},
-        headStyles: {
-          fillColor: [25, 21, 23], fontSize: 8,
-        },
-        styles: {
-          fillColor: [236, 233, 223], fontSize: 8,
-        },
-        showHeader: true,
-        headerStyles: {
-          librador: { halign: "left",},
-          dias: { halign: "right",},
-//        importe: { halign: "right",}
-        },
-        columnStyles: {
-          nrovalor: { halign: 'right', width: 50, },
-          importe:  { halign: 'right', width: 90, },
-          styles:   { fillColor: [100, 255, 255], fontSize: 8 },
-        },
-      });
-      if (typeof doc.putTotalPages === 'function') {
-        doc.putTotalPages(totalPagesExp);
-      }
-      doc.output ('dataurlnewwindow')
-    },
   },
 };
 </script>
@@ -1381,37 +1014,13 @@ export default {
     font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: 100%;
   }
-  .fg100b {
-    font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 100%;
-    font-weight: bold;
-  }
-  .fg115b {
-    font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 115%;
-    font-weight: bold;
-  }
-  .fg135b {
-    font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 135%;
-    font-weight: bold;
-  }
-  .fg150b {
-    font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 150%;
-    font-weight: bold;
-  }
   .fg85 {
     font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: 85%;
-  }
-  .fg70 {
-    font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 70%;
   }
   .fg78 {
     font-family: Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: 78%;
   }
-  // 10986
+  // 1502
 </style> 

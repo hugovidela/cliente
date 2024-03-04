@@ -576,14 +576,9 @@ export default {
           return this.temas.cen_estado_pendiente_dark
         } else if (estado==='T') {
           return this.temas.cen_estado_facturado_dark 
-        } else if (estado==='F' && comprobante.pendientes.length>0) {
-          if (comprobante.pendientes[0].pendiente==0) {
-            e = 'Cobrado'
-            c = this.temas.cen_estado_finalizado_dark
-          } else {
-            e = 'A Cobrar'
-            c = this.temas.cen_estado_pendiente_dark
-          }
+        } else if (estado==='F') {
+          e = 'Cobrado'
+          c = this.temas.cen_estado_finalizado_dark
         }
       } else {
         if (estado==='P') {
@@ -592,14 +587,9 @@ export default {
         } else if (estado==='T') {
           e = 'Facturado'
           c = this.temas.cen_estado_facturado_bg 
-        } else if (estado==='F' && comprobante.pendientes.length>0) {
-          if (comprobante.pendientes[0].pendiente==0) {
-            e = 'Cobrado'
-            c = this.temas.cen_estado_finalizado_bg
-          } else {
-            e = 'A Cobrar'
-            c = this.temas.cen_estado_pendiente_bg
-          }
+        } else if (estado==='F') {
+          e = 'Finalizado'
+          c = this.temas.cen_estado_finalizado_bg
         }
       }
       return accion==='c' ? c : e
@@ -615,7 +605,6 @@ export default {
       this.basadoEnOtroCpr = []
 
       this.articulos = []
-      this.pendientes = []
       this.valores = []
       this.editado.fecha = moment().format('YYYY-MM-DD')
 
@@ -657,7 +646,6 @@ export default {
       this.basadoEnOtroCpr = []
 
       this.articulos = []
-      this.pendientes = []
       this.valores = []
       this.editado.fecha = moment().format('YYYY-MM-DD')
 
@@ -887,14 +875,6 @@ export default {
         escombo:          false,
       })
 
-      this.pendientes.push({
-        comprobante_id: null,
-        vencimiento: this.editado.fecha,
-        importe: this.editado.total,
-        pendiente: this.editado.total,
-        concepto: 'LICENCIA'
-      })
-
       this.ivas.push({
         Id: 5,
         BaseImp: this.roundTo(this.editado.gravado,2),
@@ -902,10 +882,15 @@ export default {
       })
 
       let cpr = this.editado.cpr+'-A '+this.sucursalFiscal+'-'+'00000001'
+
+      debugger
+      let ctacte = this.itemActual.user.tercero.ctacte
       
       return HTTP().post('/nuevaventa', {
         fecha:               moment().format('YYYY-MM-DD'),
         perfiscal:           pf,
+        vencimiento:         moment(this.editado.fecha).format('YYYY-MM-DD'),
+        ctacte:              ctacte,
         cpr:                 cpr,
         user_id:             1,
         sucursal_id:         1,
@@ -933,7 +918,6 @@ export default {
         activo:              true,
         articulos:           this.articulos,
         valores:             this.valores,
-        pendientes:          this.pendientes,
         notificacion:        0,
         notificaEnBaseAOtro: this.notificaEnBaseAOtro,
         notificaOriginal:    this.notificaOriginal,

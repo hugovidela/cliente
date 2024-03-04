@@ -40,7 +40,7 @@
                     <v-icon>mdi-arrow-left-circle</v-icon>
                   </v-btn>
 
-                  <span class="headdline">{{ informeTitulo }}</span>
+                  <span class="fg">{{ informeTitulo }}</span>
                   <v-spacer></v-spacer>
                   <v-btn
                     color="teal accent-4"
@@ -56,7 +56,7 @@
                   </v-progress-linear>
                 </v-toolbar>
 
-                <v-form ref="form">
+                <v-form ref="form" class="fg">
                   <v-card-text>
                     <v-container>
                       <v-row>
@@ -173,7 +173,13 @@
                             item-key="codigo"
                             show-select
                             dense
-                            :footer-props="footerProps"
+                            :footer-props="{
+                              itemsPerPageOptions: [6],
+                              showFirstLastPage: true,
+                              showCurrentPage: true,
+                              nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                              prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                            }"
                             class="pl-1 pr-3 elevation-1 pt-2">
                             <template v-slot:top>
                               <v-text-field
@@ -335,7 +341,6 @@ export default {
     progress: false,
 
     op: 0,
-    footerProps: {'items-per-page-options': [7]},
     headers: [
       { text: 'INFORME', value:'informe' },
     ],
@@ -369,7 +374,6 @@ export default {
       'vinculosPadres',
       'vinculosPadresLic',
       'vinculosPadresAll',
-      'soloArtComprados',
       'codigooid',
       'descuentos',
       'transition'
@@ -461,20 +465,14 @@ export default {
                 }
                 return out
               }
-
               return HTTP().post('articulosmovidos', { userId: this.userId }).then(( {data} ) => {
-
-                debugger
                 this.artConMovs = []
                 for (let i=0; i<=data.length-1; i++) {
                   this.artConMovs.push(data[i].articulo_id)
                 }
-
                 this.headersArt[0].text = this.$store.state.codigooid  == 'C'?'Código':'ID'
                 this.headersArt[0].value = this.$store.state.codigooid == 'C'?'codigo':'id'
-
                 this.filtrar();
-              
               });
             });
           });
@@ -540,8 +538,6 @@ export default {
     },
 
     filtrar() {
-
-      debugger
       this.articulos = []
       this.selected = []
       let grusel = []
@@ -553,30 +549,13 @@ export default {
       if (grusel.length==0) { grusel = '' }
       if (this.marca==undefined) { this.marca = '' }
       this.prov = this.prov==''?0:this.prov
-
       this.progress = true
-
-      debugger
       return HTTP().post('/articuloz', {
         search: this.artConMovs,
         vinculosPadresLic: this.$store.state.vinculosPadresLic,
         vinculosPadresAll: this.$store.state.vinculosPadresAll,
         proveedor: this.prov, stockProv: false, grupo: grusel, marca: this.marca, userex: null, soloArtComprados: true, descuentos: this.descuentos,
         dolar: this.$store.state.dolar, activos: true, limit: this.artConMovs.length }).then(({ data })=>{
-        debugger
-
-      /*
-      return HTTP().post('/articulosx', {
-        search: this.artConMovs, vinculos: v,
-        vinculosPadresLic: this.$store.state.vinculosPadresLic,
-        vinculosPadresAll: this.$store.state.vinculosPadresAll,
-        estricto: false, codigooid: this.$store.state.codigooid, userex: null, dolar: this.$store.state.dolar, ambiente: '',
-        tipo: 'consulta', rubro: this.rubro.id, marca: this.marca, grupo: grusel, proveedor: this.prov, ancla: false, saySoloArtsPropios: false,
-        activos: true, limit: this.artConMovs.length, descuentos: this.descuentos}) .then(({ data }) => {
-      */
-        debugger
-          
-        // campor
         if (data.length>0) {
           for (let i=0; i<=data.length-1; i++) {
             this.articulos.push({
@@ -607,13 +586,10 @@ export default {
 
     generarInforme(item, row) {
 
-      debugger
       if (this.informeTitulo=='MOVIMIENTOS DE STOCK DETALLADO') {
-
         return HTTP().post('/infart_detalladoporarticulos', {
           fechadesde: this.editado.fdesde, fechahasta: this.editado.fhasta, sucursal: this.sucursal, arts: this.selected }).then((data) => {
           this.rows = []
-          debugger
           for (let i=0; i<=data.data.length-1; i++) {
             let pos = -1
             if (this.$store.state.codigooid=='C') {
@@ -665,8 +641,9 @@ export default {
           search: sel,
           vinculosPadresLic: this.$store.state.vinculosPadresLic,
           vinculosPadresAll: this.$store.state.vinculosPadresAll,
-          proveedor: 0, stockProv: false, grupo: '', marca: '', userex: null, soloArtComprados: false, descuentos: this.descuentos,
+          proveedor: 0, stockProv: false, grupo: '', marca: '', userex: null, soloArtComprados: true, descuentos: this.descuentos,
           dolar: this.$store.state.dolar, activos: true, limit: this.artConMovs.length }).then(({ data })=>{
+
           debugger
 
           this.rows = []
@@ -675,23 +652,26 @@ export default {
           for (let i=0; i<=data.length-1; i++) {
             agrego =  (data[i].stock!=0 &&
                       ((this.informeTitulo=='ARTICULOS BAJO EXISTENCIA MINIMA' && data[i].stock<data[i].exmin) ||
-                       (this.informeTitulo=='VALORIZACION DE STOCK')) && data[i].padre_id==null)
-
+                       (this.informeTitulo=='VALORIZACION DE STOCK'))) // && data[i].padre_id==null)
             if (agrego) {
+
+              debugger
+              let u = data[i].precios[0].costo
+              let x = this.formatoImporte(u, 5);
+
               this.rows.push({
                 id: data[i].id, 
                 codigo: data[i].codigo, 
                 nombre: data[i].nombre,
                 stock: this.kit.redondear(data[i].stock,4),
-                exmin: this.formatoImporte(data[i].precios[0].exmin),
-                costo: '$'+this.formatoImporte(data[i].precios[0].costo, data[i].precios[0].decimales),
+              //exmin: this.formatoImporte(data[i].precios[0].exmin),
+                costo: '$'+this.formatoImporte(data[i].precios[0].costo, 5),
                 precio: '$'+this.formatoImporte(data[i].precios[0].precio, data[i].precios[0].decimales),
-                total: '$'+this.formatoImporte((this.roundTo(data[i].precios[0].precio,data[i].precios[0].decimales))*data[i].stock)
+                total: '$'+this.formatoImporte (this.roundTo(data[i].precios[0].precio*data[i].stock , data[i].precios[0].decimales ))
               })
             totalValorizacion += (this.roundTo(data[i].precios[0].precio,data[i].precios[0].decimales)*data[i].stock)
             }
           }
-          debugger
           if (this.informeTitulo=='VALORIZACION DE STOCK') {
             this.rows.push({id:'TOTAL',codigo:'TOTAL',nombre:'',stock:'',exmin:'',costo:'',precio:'',total:'$'+this.formatoImporte(totalValorizacion)})
           }
@@ -726,9 +706,23 @@ export default {
       this.msg.msgVisible = false;
     },
 
-    formatoImporte(value, dec=2) {
+    formatoImporte2(value, dec=2) {
       let val = (value/1).toFixed(dec).replace('.', ',')
-      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+      return val.toString().replace(/\B(?=(\d{dec})+(?!\d))/g, ".")
+    },
+
+    formatoImporte(importe, dec=2) {
+      const importeRedondeado = this.roundTo(importe,dec)
+      const importeCadena = importeRedondeado.toFixed(dec);
+      const importeFormateado = this.agregarSeparadoresMiles(importeCadena);
+      return `${importeFormateado}`;
+    },
+
+    // Función para agregar separadores de miles a una cadena numérica
+    agregarSeparadoresMiles(cadena) {
+      const partes = cadena.split('.');
+      partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      return partes.join('.');
     },
 
     print(informeTitulo, orientacion ) {
@@ -809,10 +803,7 @@ export default {
       let topWidth = orientacion == 'p' ? 570 : 800
 
       if (this.informeTitulo=='MOVIMIENTOS DE STOCK DETALLADO') {
-        
-        debugger
         for (let i=0; i<=this.rows.length-1; i++) {
-          
           if (i==this.rows.length-1) {
             doc.line( 40, f+25, topWidth, f+25)
             //f+=5

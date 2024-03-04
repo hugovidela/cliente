@@ -7,7 +7,13 @@
         :search="search"
         dense
         class="fg elevation-3"
-        :footer-props="footerProps">
+        :footer-props="{
+          itemsPerPageOptions: [9],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }">
         <template v-slot:top>
           <v-toolbar flat
             :color="temas.forms_titulo_bg"
@@ -86,9 +92,7 @@ import moment from 'moment';
 export default {
   data: () => ({
     modelo: 'cotizaciones',
-    footerProps: {'items-per-page-options': [9, 12, 15, 100]},
-    search: '', // para el cuadro de búsqueda de datatables  
-    // definimos los headers de la datatables
+    search: '',
     items: [],
     headers: [
       { text: 'Fecha',        value:'fecha'},

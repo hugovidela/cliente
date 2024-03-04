@@ -5,8 +5,7 @@
         <v-col v-for="(cbt, idx) in vendedores" v-bind:key="idx">
           <v-card class="mx-auto"
             @click="selectVendedor(cbt.tercero_id)"
-            tile outlined
-            max-width="170">
+            outlined max-width="170">
             <v-app-bar
               :color="cbt.tercero_id==filtroVendedor ? temas.cen_card_activo_bg : cbt.bg"
               :dark="cbt.tercero_id==filtroVendedor ? temas.cen_card_activo_dark : cbt.dark">
@@ -101,7 +100,7 @@
               </v-progress-circular>
             </v-toolbar-title>
             <!-- DIALOG PARA NUEVA COMISION  -->
-            <v-dialog v-model="dialog" max-width="1200px"
+            <v-dialog v-model="dialog" max-width="1300px" persistent
               :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
               <v-toolbar flat
@@ -343,8 +342,8 @@ export default {
     // definimos los headers de la datatables
     headers: [
       { text: 'Cliente', value:'cliente', align: 'left', width: '250' },
-      { text: 'Comprobante', value:'cpr', align: 'left', width: '140'},
-      { text: 'Recibo', value:'rec', align: 'left', width: '140'},
+//    { text: 'Comprobante', value:'cpr', align: 'left', width: '140'},
+      { text: 'Recibo', value:'cpr', align: 'left', width: '140'},
       { text: 'Tipo', value:'tipo', align: 'left', width: '100'},
       { text: 'NroValor', value:'nrovalor', align: 'end', width: '150'},
       { text: 'Fec.Finan', value:'fechafinan', align: 'left', width: '140'},
@@ -353,14 +352,14 @@ export default {
       { text: 'Imp.Comis.', value:'importecomision', align: 'end', width: '180'},
     ],
     headersValores: [
-      { text: 'Cliente', value:'cliente', align: 'left' },
-      { text: 'Tipo', value:'tipo', align: 'left'},
-      { text: 'NroValor', value:'nrovalor', align: 'end'},
-      { text: 'Recibo', value:'rec', align: 'left'},
-      { text: 'Comprobante', value:'cpr', align: 'left'},
-      { text: 'Fec.Finan', value:'fechafinan', align: 'left'},
-      { text: 'Fec.Salida', value:'fechasalida', align: 'left'},
-      { text: 'Importe', value:'importe', align: 'end'},
+      { text: 'Cliente', value:'cliente', align: 'left', width: '220' },
+      { text: 'Tipo', value:'tipo', align: 'left', width: '80'},
+      { text: 'NroValor', value:'nrovalor', align: 'end', width: '100'},
+      { text: 'Recibo', value:'rec', align: 'left', width: '130'},
+      { text: 'Comprobante', value:'cpr', align: 'left', width: '130'},
+      { text: 'Fec.Fin.', value:'fechafinan', align: 'left', width: '92'},
+      { text: 'Fec.Sal.', value:'fechasalida', align: 'left', width: '92'},
+      { text: 'Importe', value:'importe', align: 'end', width: '140'},
     ],
   }),
 
@@ -416,11 +415,8 @@ export default {
   created () {
     this.cen_activo_bg   = this.$store.state.temas.cen_card_activo_bg
     this.cen_activo_dark = this.$store.state.temas.cen_card_activo_dark
-    debugger
-    return HTTP().get('/indexter/false/3/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/%%')
+    return HTTP().get('/indexter/false/3/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/null')
       .then(({ data })=>{
-
-      debugger
       for (let i=0; i<=data.length-1; i++) {
         if (data[i].area=='V') {
           if (data[i].tercero.user!=null) {
@@ -598,7 +594,10 @@ export default {
       let m = this.queMesEs(this.elMes)
       perfiscal = this.anio+m
       this.progress = true
+      debugger
       return HTTP().post('/comisiones', {suc:this.sucursal,ope:this.filtroVendedor,perfiscal:perfiscal}).then(({data})=>{
+
+        debugger
         this.progress = false
         this.items = data.coms
         return HTTP().post('/ventasvendedores', {suc: this.sucursal,per: perfiscal,ope: null }).then(({ data }) => {

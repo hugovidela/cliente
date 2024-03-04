@@ -8,8 +8,14 @@
         :server-items-length="totalItems"
         dense
         :loading="loading"
-        :footer-props="footerProps"
-        class="elevation-1">
+        class="elevation-1"
+        :footer-props="{
+          itemsPerPageOptions: [11],
+          showFirstLastPage: true,
+          showCurrentPage: true,
+          nextIcon: 'mdi-arrow-right-drop-circle-outline',
+          prevIcon: 'mdi-arrow-left-drop-circle-outline',
+        }">
         <template v-slot:top>
           <v-toolbar class="fg"
             :color="temas.forms_titulo_bg"
@@ -180,7 +186,6 @@ export default {
     pagination: {
       page: 1,
     },
-    footerProps: {'items-per-page-options': [11]},
     search: '', 
     headers: [
       { text: 'NID',      value: 'id',     width: "40", align: 'end' },

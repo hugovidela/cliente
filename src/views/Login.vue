@@ -2,11 +2,12 @@
   <v-container>
     <v-layout wrap>
       <v-flex sm12 md6 offset-md3>
-        <v-card elevation="4" light tag="section" tile class="fg">
+        <v-card elevation="3" tag="section" tile class="fg">
           <v-card-title>
             <v-layout align-center justify-space-between>
               <v-flex>
-                <v-img height="50" width="70" src="/images/logoGoHu.jpg">
+                <v-img height="50" width="70"
+                  :src="$vuetify.theme.dark?'/images/logoGoHuDark.jpg':'/images/logoGoHu.jpg'">
                 </v-img>
               </v-flex>
             </v-layout>
@@ -66,6 +67,7 @@ export default {
         'tercero',
         'operario',
         'level',
+        'dark',
       ]),
   },
   methods: {

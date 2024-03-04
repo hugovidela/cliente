@@ -176,45 +176,62 @@
                   <v-card-text>
                     <v-row>
 
-                      <v-col cols="6" sm="6" md="6"
-                        class="fg pt-0 pb-0">
-                        <v-autocomplete
-                          ref="cliente"
-                          v-model="editadoRet.tercero_id"
-                          autofocus
-                          :items="itemsTerceros"
-                          :loading="isLoadingTerceros"
-                          :search-input.sync="searchTerceros"
-                          item-text="razon_social"
-                          item-value="id"
-                          label="Nombre del Cliente"
-                          :color="temas.forms_titulo_bg"
-                          placeholder="Escriba para buscar"
-                          prepend-icon="mdi-database-search"
-                          auto-select-first
-                          clearable
-                          v-on:keydown.tab="buscoSiElTerceroEstaVinculado">
-                        </v-autocomplete>
-                      </v-col>
-
-                      <v-col cols="2" sm="2" md="2"
-                        class="fg pt-3">
-                        <v-btn
-                          :color="temas.cen_btns_bg"
-                          :dark="temas.cen_btns_dark==true"
-                          @click="verClientesPendientesHTTP()">
-                          Ver Pendientes
-                        </v-btn>
-                      </v-col>
-
-                      <v-col cols="2" sm="2" md="2" v-if="editadoRet.tercero_id!=null"
-                        class="fg pt-5">
-                        <span>Usa el sistema{{'\xa0'}}{{'\xa0'}}</span>
-                        <v-chip class="ml-0" label
-                          :color="temas.barra_principal_bg"
-                          :dark="temas.barra_principal_dark">
-                          <b>{{ usaElSistema?'Sí':'No' }}</b>
-                        </v-chip>
+                      <v-col cols="12" md="12" class="fg pt-0">
+                        <v-row v-if="!encontroElCliente">
+                          <v-col cols="12" sm="3" class="fg pt-3">
+                            <v-text-field
+                              ref="codigocliente"
+                              v-model="editado.tercero_id"
+                              :color="temas.forms_titulo_bg"
+                              label="Ingresa el Código, el Nombre o el CUIT. Utiliza el caracter % para buscar por parecido."
+                              autofocus>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" md="1" class="fg pt-6">
+                            <v-btn
+                              :color="temas.barra_principal_bg"
+                              :dark="temas.barra_principal_dark"
+                              class="white--text"
+                              @click="buscarCliente()">
+                              Buscar
+                            </v-btn>
+                          </v-col>
+                        </v-row>
+                        <v-row v-else>
+                          <v-col cols="12" md="1" class="pt-6 pl-2 fg">
+                            <v-btn
+                              :color="temas.cen_btns_bg"
+                              :dark="temas.cen_btns_dark==true"
+                              class="mt-0 mr-2 text-capitalize"
+                              @click="encontroElCliente=false">
+                              Buscar
+                            </v-btn>
+                          </v-col>
+                          <v-col cols="12" md="1" class="pt-3 fg">
+                            <v-text-field
+                              ref="codigocliente"
+                              v-model="editado.tercero_id"
+                              label="Código"
+                              disabled>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" md="5" class="pt-3 fg">
+                            <v-text-field
+                              v-model="editado.nombre"
+                              label="Nombre del Cliente"
+                              disabled>
+                            </v-text-field>
+                          </v-col>
+                          <v-col cols="12" md="2" v-if="editadoRet.tercero_id!=null"
+                            class="fg pt-6">
+                            <span>¿Usa el sistema?{{'\xa0'}}{{'\xa0'}}</span>
+                            <v-chip class="ml-0"
+                              :color="temas.barra_principal_bg"
+                              :dark="temas.barra_principal_dark">
+                              <b>{{ usaElSistema?'Sí':'No' }}</b>
+                            </v-chip>
+                          </v-col>
+                        </v-row>
                       </v-col>
                     </v-row>
 
@@ -224,6 +241,13 @@
                           :headers="headersValores"
                           :items="valoresPendientes"
                           dense
+                          :footer-props="{
+                            itemsPerPageOptions: [13],
+                            showFirstLastPage: true,
+                            showCurrentPage: true,
+                            nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                            prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                          }"
                           class="elevation-1">
                           <template v-slot:item.cpr="{ item }">
                             <span class="fg">{{ kit.cpr(item.cpr) }}</span>
@@ -251,76 +275,66 @@
                         </v-data-table>
                       </v-col>
                     </v-row>
+
                   </v-card-text>
                 </v-card>
               </v-card>
             </v-dialog>
             <!-- FIN RECAUDACION DE VALORES -->
 
-            <!-- SELECCION DE CLIENTES -->
-            <v-dialog v-model="dialogSeleccionCliente" max-width="970px" persistent
+            <!-- DIALOG SELECCION DE CLIENTE -->
+            <v-dialog
+              v-model="dialogSeleccionClientes"
+              max-width="750px"
               :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
-              <v-card class="fg">
-                <v-toolbar flat
-                  :color="temas.forms_titulo_bg"
-                  :dark="temas.forms_titulo_dark==true">
-                  <v-btn
-                    icon @click="dialogSeleccionCliente=false"
-                    :color="temas.forms_close_bg"
-                    :dark="temas.forms_close_dark==true">
-                    <v-icon>mdi-arrow-left-circle</v-icon>
-                  </v-btn>
-                  <span>Clientes Pendientes</span>
-                </v-toolbar>
-                <v-card flat>
+              <v-toolbar flat
+                :color="temas.forms_titulo_bg"
+                :dark="temas.forms_titulo_dark==true">
+                <v-btn
+                  icon @click="dialogSeleccionClientes=false"
+                  :color="temas.forms_close_bg"
+                  :dark="temas.forms_close_dark==true">
+                  <v-icon>mdi-arrow-left-circle</v-icon>
+                </v-btn>
+                <span class="text--right">{{empresa}} - SELECCION DE CLIENTES</span>
+              </v-toolbar>
+              <v-card>
+                <v-form ref="art3">
                   <v-card-text>
-                    <v-row>
-                      <v-data-table
-                        :headers="headersClientesPendientes"
-                        :items="clientesPendientesMaletin"
-                        dense
-                        class="elevation-1"
-                        :footer-props="{
-                          itemsPerPageOptions: [13],
-                          showFirstLastPage: true,
-                          showCurrentPage: true,
-                          nextIcon: 'mdi-arrow-right-drop-circle-outline',
-                          prevIcon: 'mdi-arrow-left-drop-circle-outline',
-                        }">
-                        <template v-slot:top></template>
-                        <template v-slot:item.cpr="{ item }">
-                          <span class="fg"> {{ kit.cpr(item.cpr) }} </span>
-                        </template>
-                        <template v-slot:item.accion="{ item }">
-                          <v-tooltip v-if="!item.cargado">
-                            <template v-slot:activator="{ on }">
-                              <v-btn
-                                fab x-small
-                                :color="item.cargado?'red':'green'"
-                                :dark="temas.cen_btns_dark==true"
-                                class="mr-2"
-                                @click="seleccionarCliente(item)" v-on="on">
-                                <v-icon>mdi-checkbox-marked-outline</v-icon>
-                              </v-btn>
-                            </template>
-                            <span>Seleccionar</span>
-                          </v-tooltip>
-                        </template>
-                      </v-data-table>
-                    </v-row>
+                    <v-container>
+                       <v-row>
+                        <v-col cols="12" sm="12" md="12">
+                          <v-form ref="art">
+                            <v-data-table
+                              :headers="headersSeleccionClientes"
+                              :items="clientes"
+                              dense
+                              class="pl-1 pr-3 elevation-1 pt-2"
+                              :footer-props="{
+                                itemsPerPageOptions: [10],
+                                showFirstLastPage: true,
+                                showCurrentPage: true,
+                                nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                                prevIcon: 'mdi-arrow-left-drop-circle-outline',
+                              }"
+                              @click:row="seleccionDelCliente">
+                            </v-data-table>
+                          </v-form>
+                        </v-col>
+                      </v-row>
+                     </v-container>
                   </v-card-text>
-                </v-card>
+                </v-form>
               </v-card>
             </v-dialog>
-            <!-- FIN SELECCION CLIENTES -->
-
+            <!-- FIN DIALOG SELECCION DEL CLIENTE -->
 
             <!-- FORMULARIO DE INGRESO DE VALORES NUS -->
-            <v-dialog v-model="dialogAgregarValoresNUS" max-width="450px" persistent
+            <v-dialog v-model="dialogAgregarValoresNUS" max-width="500px" persistent
               :transition="transition==null?'false':transition">
               <template v-slot:activator="{}"></template>
-              <v-card class="fg" height="450px">
+              <v-card class="fg" height="615px">
 
                 <v-toolbar flat
                   :color="temas.forms_titulo_bg"
@@ -332,23 +346,19 @@
                     <v-icon>mdi-arrow-left-circle</v-icon>
                   </v-btn>
                   <span>Valor Entregado</span>
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    v-if="valoresHabilitados()"
-                    :color="temas.barra_principal_bg"
-                    :dark="temas.barra_principal_dark"
-                    class="ma-2 white--text"
-                    @click="guardarActualizarValoresHTTP()">
-                    Guardar
-                  </v-btn>
                 </v-toolbar>
 
                 <v-card flat>
                   <v-card-text>
 
                     <v-row>
-                      <v-col cols="8" offset="2" sm="8" md="8"
-                        class="fg pt-6">
+                      <v-col cols="12" offset="1" md="10" class="fg100b pt-6 pb-0">
+                        {{ editado.tercero_id+' - '+editado.nombre }}
+                      </v-col>
+                    </v-row>
+
+                    <v-row class="pb-0">
+                      <v-col cols="12" offset="1" md="10" class="fg pt-6 pb-0">
                         <v-select
                           label='Sucursal'
                           autofocus
@@ -357,53 +367,102 @@
                           :items="sucursales"
                           item-value="id"
                           item-text="nombre"
-                          @change="valoresHabilitados()">
+                          @change="cargoDatosDeLaSucursal()">
                         </v-select>
                       </v-col>
                     </v-row>
 
                     <v-row>
-                      <v-col cols="8" offset="2" sm="8" md="8"
-                        class="fg pt-0">
+                      <v-col cols="12" offset="1" md="10" class="fg pt-0 pb-0">
                         <v-select
-                          label="Medio"
-                          v-model="editadoNUS.medio_id"
+                          label='Como paga el Cliente'
                           :color="temas.forms_titulo_bg"
-                          :items="medpag"
+                          v-model="editadoNUS.lista_id"
+                          :items="condicionesDePago"
                           item-value="id"
-                          item-text="nombre"
-                          @change="valoresHabilitados()">
+                          :disabled="yaHayMovimientos"
+                          :item-text="condicionesDePago=>
+                          `${condicionesDePago.nombre} ($${formatoImporte(condicionesDePago.apagar)} )`"
+                          @change="cargoDatosDeLaSucursal()">
                         </v-select>
                       </v-col>
                     </v-row>
 
-                    <v-row v-if="editadoNUS.medio_id!=1">
-                      <v-col cols="8" offset="2" sm="8" md="8"
-                        class="fg pt-0">
+                    <v-row>
+                      <v-col cols="12" offset="1" md="10" class="fg pt-0 pb-0">
+                        <table style="width:100%">
+                          <tr>
+                            <td style="text-align:left">Deuda Total</td>
+                            <td style="text-align:right">
+                              <b>${{ formatoImporte(sayDeudaTotalSucursal) }}</b>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:left">Descuentos</td>
+                            <td style="text-align:right">
+                              <b>${{ formatoImporte(sayDescuentos) }}</b>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:left">A Pagar</td>
+                            <td style="text-align:right">
+                              <b>${{ formatoImporte(sayAPagar) }}</b>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:left">Ya Cargado</td>
+                            <td style="text-align:right">
+                              <b>${{ formatoImporte(sayYaCargado) }}</b>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:left">A Cargar</td>
+                            <td style="text-align:right">
+                              <b>${{ formatoImporte(sayACargar) }}</b>
+                            </td>
+                          </tr>
+                        </table>
+                      </v-col>
+                    </v-row>
+
+                    <v-row>
+                      <v-col cols="12" offset="1" md="10" class="fg pt-2 pb-0">
+                        <v-select
+                          label="Medio"
+                          dense filled
+                          v-model="editadoNUS.medio_id"
+                          :color="temas.forms_titulo_bg"
+                          :items="medpaghab"
+                          item-value="id"
+                          item-text="nombre">
+                        </v-select>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col cols="12" offset="1" md="5" class="fg pt-0 pb-0">
                         <v-text-field
                           v-model="editadoNUS.observ"
+                          dense filled
                           :label="sayObserv">
                         </v-text-field>
                       </v-col>
-                    </v-row>
-
-                    <v-row>
-                      <v-col cols="4" offset="2" sm="4" md="4"
-                        class="fg pt-6">
-                        <v-text-field
-                          v-model="editadoNUS.saldo"
-                          disabled
-                          label="Saldo">
-                        </v-text-field>
-                      </v-col>
-
-                      <v-col cols="4" sm="4" md="4"
-                        class="fg pt-6">
+                      <v-col cols="12" md="5" class="fg pt-0 pb-0">
                         <v-text-field
                           v-model="editadoNUS.importe"
-                          label="Importe"
-                          @change="valoresHabilitados()">
+                          dense filled
+                          label="Importe">
                         </v-text-field>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col cols="12" offset="1" md="10" class="fg pt-0 pb-0">
+                        <v-btn v-if="editadoNUS.importe!=0"
+                          :color="temas.barra_principal_bg"
+                          :dark="temas.barra_principal_dark"
+                          class="white--text"
+                          @click="guardarActualizarValoresHTTP()">
+                          Guardar
+                        </v-btn>
                       </v-col>
                     </v-row>
 
@@ -412,6 +471,7 @@
               </v-card>
             </v-dialog>
             <!-- FIN FORMULARIO DE INGRESO DE VALORES NUS -->
+
           </v-toolbar>
 
           <v-row class="pt-2 pl-2">
@@ -434,6 +494,13 @@
               :headers="headersClientes"
               :items="item.clientes"
               dense
+              :footer-props="{
+                itemsPerPageOptions: [10],
+                showFirstLastPage: true,
+                showCurrentPage: true,
+                nextIcon: 'mdi-arrow-right-drop-circle-outline',
+                prevIcon: 'mdi-arrow-left-drop-circle-outline',
+              }"
               @click:row="recaudacionClick">
               <template v-slot:item.valor.ingresados.cpr="{ item }">
                 <span class="fg">{{ item.valor?kit.cpr(item.valor.ingresados.cpr):'Pendiente' }}</span>
@@ -442,7 +509,7 @@
                 <span class="fg">${{ formatoImporte(item.importe) }}</span>
               </template>
               <template v-slot:item.valor.observ="{ item }">
-                <span class="fg">{{ item.valor?item.valor.observ:item.observ }}</span>
+                <span class="fg85">{{ item.valor?item.valor.observ:item.observ }}</span>
               </template>
               <template v-slot:item.accion="{ item }">
 
@@ -589,7 +656,6 @@ export default {
     impresiones,
   },
   data: () => ({
-    agregando: false,
     color: { 10: 'purple', 40: 'blue', 30: 'green' },
     expanded: [],
     progress: false,
@@ -605,8 +671,27 @@ export default {
     equipo: [],
     clientes: [],
     items: [],
+    
+    condicionDePago: '',
+    condicionDePagoOriginal: '',
+    condicionesDePago: [],
+    sucsItems: [],
 
+    // datos en pantalla maletin
+    sayDeudaTotalSucursal: 0,
+    sayDescuentos: 0,
+    sayAPagar: 0,
+    sayYaCargado: 0,
+    sayACargar: 0,
+
+    lista_id: 0,
+
+    pendientesMaletin: [],
     clientesPendientesMaletin: [],
+    pendientes: [],
+    pend: [],
+    maletinItems: [],
+    yaHayMovimientos: false,
 
     itemActual: null,
     itemActualValor: null,
@@ -616,26 +701,19 @@ export default {
     dialogValores: false,
     dialogClientes: false,
     dialogAgregarValoresNUS: false,
-    dialogSeleccionCliente: false,
+    dialogSeleccionClientes: false,
 
     usaElSistema: false,
 
     buscarPor: '',
-    isLoadingTerceros: false,
-    entriesTerceros: [],
     userDelTercero: 0,
-    userDelTerceroDatos: null,
     searchTerceros: '',
 
     valoresPendientes: [],
-
-    saldoctacte: 0,
-    disponible: 0,
-    creditomaximo: 0,
-    tienesaldo: 0,
+    encontroElCliente: false,
 
     editado: {
-      fecha: '', user_id: null, cobrador_id: null, estado: null
+      tercero_id: null, nombre: '', fecha: '', user_id: null, cobrador_id: null, estado: null
     },
 
     editadoRet: {
@@ -643,11 +721,13 @@ export default {
     },
 
     editadoNUS: {
-      id: null, maletin_id: null, cliente_id: null, sucursal_id: null, medio_id: null, observ: null, importe: null, saldo: null
+      id: null, maletin_id: null, cliente_id: null, sucursal_id: null, medio_id: null, lista_id: null, desc1: null, desc2: null,
+      observ: null, importe: null, descuento: null, saldo: null, dias: null,
     },
 
     editadoNUSDefault: {
-      id: null, maletin_id: null, cliente_id: null, sucursal_id: null, medio_id: null, observ: null, importe: null
+      id: null, maletin_id: null, cliente_id: null, sucursal_id: null, medio_id: null, lista_id: null, desc1: null, desc2: null,
+      observ: null, importe: null, descuento: null, saldo: null, dias: null,
     },
 
     editadoValor: [],
@@ -668,15 +748,22 @@ export default {
 
     /*ok*/
     headersClientes: [
+      { text: 'Código', value:'cliente.id', align: 'left', width: 80 },
       { text: 'Cliente', value:'cliente.nombre', align: 'left', width: 190 },
-      { text: 'Sucsal', value:'sucursal.id', align: 'left', width: 60 },
+      { text: 'Suc.', value:'sucursal.id', align: 'left', width: 60 },
       { text: 'Recibo', value:'valor.ingresados.cpr', align: 'left', width: 115 },
       { text: 'Medio', value:'medio.abrev', align: 'left', width: 50 },
-      { text: 'Detalles', value:'valor.observ', align: 'left', width: 430 },
+      { text: 'Detalles', value:'valor.observ', align: 'left', width: 350 },
 //    { text: 'Observ', value:'observ', align: 'left', width: 150 },
       { text: 'Importe', value:'importe', align: 'end', width: 120 },
 //    { text: 'Chk', value:'estado', align: 'end', width: 60 },
       { text: 'Acciones', value:'accion', align: 'left', width: 90},
+    ],
+
+    headersSeleccionClientes: [
+    { text: 'ID', value:'id', align: 'end', width: 100 },
+    { text: 'Cliente', value:'nombre', align: 'left', width: 250 },
+    { text: 'CUIT', value:'cuit', align: 'left', width: 120 },
     ],
 
     /*ok*/
@@ -689,9 +776,22 @@ export default {
       { text: 'Sel', value:'accion', align: 'left', width: 80},
     ],
 
+    headersPendientes: [
+      { text: 'Cpr', value:'cpr', align: 'left', width: 150 },
+      { text: 'Vencimiento', value:'vencimiento', align: 'left', width: 130 },
+      { text: 'Pendiente', value:'pendiente', align: 'end', width: 150 },
+      { text: 'Descuento', value:'descuentos', align: 'end', width: 150 },
+    ],
+
+    headersMaletinItems: [
+      { text: 'Medio', value:'nombre', align: 'left', width: 150 },
+      { text: 'Observ', value:'observ', align: 'left', width: 150 },
+      { text: 'Importe', value:'importe', align: 'end', width: 150 },
+      { text: 'Acciones', value:'accion', align: 'left', width: 90},
+    ],
+
     /*ok*/
     headersValores: [
-//    { text: 'Id', value:'id', align: 'left', width: 80 },
       { text: 'Fecha', value:'fecha', align: 'left', width: 98 },
       { text: 'Cpr', value:'cpr', align: 'left', width: 98 },
       { text: 'MP', value:'abrev', align: 'left', width: 40 },
@@ -704,12 +804,23 @@ export default {
       {id:1, nombre: 'Efectivo',         activo: true,  tipo:'CAJ', total: 0},
       {id:2, nombre: 'Tarj.de Crédito',  activo: true,  tipo:'TDC', total: 0},
       {id:3, nombre: 'Tarj.de Débito',   activo: true,  tipo:'TDD', total: 0},
-//    {id:4, nombre: 'Cuenta Corriente', activo: false, tipo:'CTE', total: 0},
+      {id:4, nombre: 'CtaCte',           activo: false, tipo:'CTA', total: 0},
       {id:5, nombre: 'Transferencia',    activo: true,  tipo:'TRA', total: 0},
-      {id:6, nombre: 'Cheque',           activo: true,  tipo:'CHE', total: 0},
-      {id:7, nombre: 'Mercado Pago',     activo: true,  tipo:'MEP', total: 0},
-      {id:8, nombre: 'Todo Pago',        activo: true,  tipo:'TPA', total: 0},
-//    {id:9, nombre: 'Canje',            activo: false, tipo:'CJE', total: 0},
+      {id:6, nombre: 'Ch.3ro.',          activo: true,  tipo:'CHE', total: 0},
+      {id:7, nombre: 'Ch.Propio',        activo: true,  tipo:'CHE', total: 0},
+      {id:8, nombre: 'Mercado Pago',     activo: true,  tipo:'MEP', total: 0},
+      {id:9, nombre: 'Todo Pago',        activo: true,  tipo:'TPA', total: 0},
+    ],
+
+    medpaghab: [],
+
+    headersCondDePagos: [
+      { text: 'Detalles', value:'nombre', align: 'left', width:260},
+      { text: 'A Pagar', value:'apagar', align: 'end', width: 120},
+    ],
+
+    headersSucursales: [
+      { text: 'Nombre', value:'nombre', align: 'left', width:260},
     ],
 
   }),
@@ -717,19 +828,12 @@ export default {
   computed: {
     ...mapGetters('authentication', ['isLoggedIn', 'userName', 'userId']),
     ...mapState(['empresa','sucursal', 'sucursales', 'sucursalDemo', 'tema', 'temas', 'centrales', 'operario', 'operarioUserId',
-      'operarioEsVendedor', 'operarioTerceroId', 'operarioArea', 'level', 'transition' ]),
-
-    itemsTerceros () {
-      return this.entriesTerceros.map(entry => {
-        const nombre = entry.nombre.length > this.descriptionLimit
-          ? entry.nombre.slice(0, this.descriptionLimit) + '...'
-          : entry.nombre
-        return Object.assign({}, entry, { nombre })
-      })
-    },
+      'operarioEsVendedor', 'operarioTerceroId', 'operarioArea', 'level', 'transition', 'dark' ]),
 
     sayObserv () {
-      if (this.editadoNUS.medio_id==2||this.editadoNUS.medio_id==3) {
+      if (this.editadoNUS.medio_id==1) {
+        return 'Efectivo'
+      } else if (this.editadoNUS.medio_id==2||this.editadoNUS.medio_id==3) {
         return 'Nro Cupón'
       } else if (this.editadoNUS.medio_id==5||this.editadoNUS.medio_id==7||this.editadoNUS.medio_id==8) {
         return 'Nro Transf'
@@ -742,45 +846,11 @@ export default {
 
   watch: {
     '$store.state.sucursal' () {
-      this.listarHTTP()
+      this.listarHTTP(false)
     },
     search(val) {
       this.listarHTTP(false)
     },
-
-    searchTerceros (val) {
-      if (this.isLoadingTerceros) return
-      this.isLoadingTerceros = true
-      this.userDelTercero = 0
-      this.userDelterceroDatos = null
-      this.dondeEstoy = 'F'
-      this.dialogSelFacturas = false  //para remitos
-      this.buscoPor = 'nombre'
-
-      return HTTP().get('/indexter/false/1/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/%'+val+'%')
-        .then(({ data })=>{
-        this.entriesTerceros = []
-        this.tercerosUserId = []
-        for (let i=0; i<= data.length-1; i++) {
-          this.entriesTerceros.push(data[i].tercero)
-          this.tercerosUserId.push(data[i].tercero_id)
-        }
-        if (val !== null && val !== '') {
-          let ipos = this.entriesTerceros.findIndex(i => i.nombre == val || i.id == val );
-          if (ipos!=-1) {
-            let valor = this.tercerosUserId[ipos]
-            this.userDelTercero = data[ipos].tercero.user!=null ? data[ipos].tercero.user.id : 0
-            this.editado.tercero_id = data[ipos].tercero.id
-            this.searchTercerosMetodo(this.editado.tercero_id)
-          }
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
-      .finally(() => (this.isLoadingTerceros = false))
-    },
-
   },
 
   mounted () {
@@ -794,9 +864,22 @@ export default {
   created () {
     this.cen_activo_bg   = this.$store.state.temas.cen_card_activo_bg
     this.cen_activo_dark = this.$store.state.temas.cen_card_activo_dark
+
+    debugger
+    this.sucsItems = []
+    for(let i=0; i<=this.sucursales.length-1; i++) {
+      this.sucsItems.push({
+        id: this.sucursales[i].id,
+        nombre: this.sucursales[i].nombre,
+        pagoHabilitado: true,
+        selected: false,
+      });
+    }
+    this.sucsItems[0].selected = true
+
     return HTTP().get('/user/'+this.userId).then(({ data }) => {
       let psuc = data[0].sucursales.map(function(e) { return e.id; }).indexOf(this.sucursal);
-      return HTTP().get('/indexter/false/3/false/'+this.operarioTerceroId+'/'+this.operarioUserId+'/%%')
+      return HTTP().get('/indexter/false/3/false/'+this.operarioTerceroId+'/'+this.operarioUserId+'/null')
         .then(({ data })=>{
         for (let i=0; i<=data.length-1; i++) {
           if (data[i].area=='V') {
@@ -816,8 +899,8 @@ export default {
           }
         }
         this.leoAnios().then( data => {
-          this.listarHTTP()
-         })
+          this.listarHTTP(true)
+        })
       })
     })
   },
@@ -838,121 +921,256 @@ export default {
     },
 
     buscarCliente() {
-      this.buscoPor = 'codigo'
-      this.searchTercerosMetodo(this.editadoRet.tercero_id);
-    },
 
-    searchTercerosMetodo(valor) {
+      this.sayAPagar = 0;
+      this.sayACargar = 0;
+      this.sayYaCargado = 0;
+      this.sayDescuentos = 0;
+      this.sayDeudaTotalSucursal = 0;
+      this.lista_id = 0
       let yaCargado = 0
-      return HTTP().get('/tercero/'+valor+'/1/true/'+this.sucursal).then(({ data }) => {
+      let pos = 0
+      this.dialogSeleccionClientes = false
+      if (this.editado.tercero_id=='') {
+        this.$nextTick(() => {
+          const f = this.$refs.codigocliente;
+          f.focus();
+        });
+        return
+      }
+
+      this.encontroElCliente = false
+      return HTTP().get('/buscartercero/'+this.editado.tercero_id+'/CLI/true/'+this.sucursal).then(({ data }) => {
+
+        debugger
         if (data=='inexistente') {
-          this.mensaje('¡Cliente inexistente!', this.temas.forms_titulo_bg, 1500)
+          this.mensaje('¡Cliente inexistente!', this.temas.snack_error_bg, 1500)
           this.$nextTick(() => {
-            const f = this.buscarPor='codigo'?this.$refs.codigocliente:this.$refs.cliente
+            const f = this.$refs.codigocliente;
             f.focus();
           });
-        } else {
-          this.usaElSistema = false
-          if (data.t[0].tercero.user!=undefined) {
-            this.usaElSistema = data.t[0].tercero.user.usaelsistema
+          return
+        }
+        
+        if (data.t.length>1) {
+          this.clientes = []
+          for (let i=0; i<=data.t.length-1; i++) {
+            this.clientes.push({
+              id: data.t[i].tercero.id,
+              nombre: data.t[i].tercero.nombre,
+              cuit: data.t[i].tercero.cuit
+            })
           }
-          this.entriesTerceros = []
-          this.entriesTerceros.push(data.t[0].tercero)
-          this.itemActualValor = data.t[0]
-          this.userDelTercero = data.t[0].tercero.user!=null ? data.t[0].tercero.user.id : 0
-          this.userDelTerceroDatos = data.t           // para cuando es un pedido de un vendedor
-          this.editadoRet.tercero_id = data.t[0].tercero.id;
-          this.editadoRet.nombre = data.t[0].tercero.nombre;
-          this.valoresPendientes = []
+          this.dialogSeleccionClientes = true
+          return
+        }
+
+        this.encontroElCliente = true
+        this.usaElSistema = false
+        if (data.t[0].tercero.user!=undefined) {
+          this.usaElSistema = data.t[0].tercero.user.usaelsistema
+        }
+        this.itemActualValor = data.t[0]
+        this.userDelTercero = data.t[0].tercero.user!=null ? data.t[0].tercero.user.id : 0
+        this.editadoRet.tercero_id = data.t[0].tercero.id;
+        this.editadoRet.nombre = data.t[0].tercero.nombre;
+        this.valoresPendientes = []
+
+        this.editado.tercero_id = data.t[0].tercero.id
+        this.editado.nombre = data.t[0].tercero.nombre
+
+        this.lista_id = data.t[0].lista_id
+
+        return HTTP().get('/datosmaletin/'+this.editadoRet.tercero_id+'/null').then(({ data }) => { 
 
           debugger
-          return HTTP().get('/valorespendientes/'+this.editadoRet.tercero_id).then(({ data }) => { 
-
-            debugger
-            for (let i=0; i<=data.length-1; i++) {
+          if (this.usaElSistema) {
+            for (let i=0; i<=data.valorespendientes.length-1; i++) {
               this.valoresPendientes.push({
-                id: data[i].id,
-                cpr: data[i].cpr,
-                sel: data[i].maletinitem_id==null?false:true,
-                nro: data[i].nrovalor,
-                fecha: data[i].fecha,
-                abrev: data[i].abrev,
-                observ: data[i].observ,
-                importe: data[i].importe,
-                medio_id: data[i].medio_id,
-                sucursal_id: data[i].sucursal_id,
-                medionombre: data[i].medionombre,
+                id: data.valorespendientes[i].id,
+                cpr: data.valorespendientes[i].cpr,
+                sel: data.valorespendientes[i].maletinitem_id==null?false:true,
+                nro: data.valorespendientes[i].nrovalor,
+                fecha: data.valorespendientes[i].fecha,
+                abrev: data.valorespendientes[i].abrev,
+                observ: data.valorespendientes[i].observ,
+                importe: data.valorespendientes[i].importe,
+                medio_id: data.valorespendientes[i].medio_id,
+                sucursal_id: data.valorespendientes[i].sucursal_id,
+                medionombre: data.valorespendientes[i].medionombre,
               })
             }
+            return
+          }
 
-            if (!this.usaElSistema) {
-              return HTTP().get('/maletinescargadosdelcliente/'+this.editadoRet.tercero_id).then(( { data }) => {
-                yaCargado = data[0].cargado
-                this.editadoNUS.id = null // null es alta, !=null es edicion
-                this.editadoNUS.maletin_id = this.itemActual.id
-                this.editadoNUS.cliente_id = this.editadoRet.tercero_id
-                this.editadoNUS.sucursal_id = this.sucursales[0].id
-                this.editadoNUS.medio_id = 6
-                this.editadoNUS.importe = 0
-                this.editadoNUS.saldo = 0
-                this.dialogAgregarValoresNUS = true
-                return HTTP().get('/pendientes/'+this.editadoRet.tercero_id+'/0').then(( { data }) => {
-                  for ( let i=0; i<= data.length-1; i++) {
-                    this.editadoNUS.saldo += data[i].pendiente
-                  }
-                  this.editadoNUS.importe = this.editadoNUS.saldo - yaCargado
-                })
-              })
+          this.dialogClientes = false
 
-            } else {
+          // cargo los datos en editadoNUS y calculo los importes
+          this.editadoNUS.id          = null,
+          this.editadoNUS.maletin_id  = this.itemActual.id
+          this.editadoNUS.cliente_id  = this.editadoRet.tercero_id
+          this.editadoNUS.sucursal_id = null
+          this.editadoNUS.medio_id    = null
+          this.editadoNUS.lista_id    = null //this.lista_id
+          this.editadoNUS.dias        = null
+          this.editadoNUS.desc1       = 0
+          this.editadoNUS.desc2       = 0
+          this.editadoNUS.observ      = ''
+          this.editadoNUS.importe     = 0
+          this.editadoNUS.descuento   = 0
+          this.editadoNUS.estado      = 'P'
 
-              if (this.valoresPendientes.length==0) {
-                this.msg.msgTitle = 'Sin Recibos'
-                this.msg.msgBody = 'No hay Recibos pendientes para este Cliente'
-                this.msg.msgVisible = true
-                this.msg.msgAccion = 'sin recibos'
-                this.msg.msgButtons = ['Aceptar']
-              }
-            }
-          })
-        }
+          // Cargo los pendientes
+          this.pend = []
+          this.pendientes = []
+          for (let i=0; i<=data.pendientes[0].det.length-1; i++) {
+            this.pendientes.push({
+              id: data.pendientes[0].det[i].id,
+              cpr: data.pendientes[0].det[i].cpr,
+              importe: data.pendientes[0].det[i].total,
+              vencimiento: moment(data.pendientes[0].det[i].vencimiento).format('YYYY-MM-DD'),
+              pendiente: data.pendientes[0].det[i].pendiente,
+              descuentos: 0,
+              acancelar: 0,
+              lista_id: null,
+              desc1: 0,
+              desc2: 0,
+              espejo_id: data.pendientes[0].det[i].espejo_id,
+              sucursal_id: data.pendientes[0].det[i].sucursal_id,
+            })
+          }
+
+          // Cargo las condiciones comerciales
+          this.condicionDePago = []
+          this.condicionesDePago = []
+          for (let i=0; i<=data.condDePagos.length-1; i++) {
+            this.condicionesDePago.push({
+              id: data.condDePagos[i].id,
+              nombre: data.condDePagos[i].nombre,
+              desc1: data.condDePagos[i].desc1,
+              desc2: data.condDePagos[i].desc2,
+              medio_id: data.condDePagos[i].medio_id,
+              dias: data.condDePagos[i].dias,
+              apagar: 0,
+              selected: this.lista_id==data.condDePagos[i].id?true:false,
+            })
+          }
+          this.dialogAgregarValoresNUS = true;
+
+          this.maletinItems = []
+          for (let i=0; i<=data.maletinitems.length-1; i++) {
+            this.maletinItems.push(data.maletinitems[i])
+          }
+
+        })
       })
     },
 
-    buscoSiElTerceroEstaVinculado() {
-      let estaVinculado = false
-      if (this.editado.tercero_id!=null && (this.editado.cpr=='FAC' || this.editado.cpr=='REC')) {
-        if (this.editado.vendedor.id!=null && this.editado.cpr=='FAC') {
-          this.msg.msgTitle = 'Cliente con Vendedor'
-          let msg = 'El cliente pertenece al vendedor '+this.editado.vendedor.nombre+'<br>';
-          msg += 'El vendedor debera realizar un pedido para luego ser imputado a una Factura.';
-          this.msg.msgBody = msg
-          this.msg.msgVisible = true
-          this.msg.msgAccion = 'cliente vinculado'
-          this.msg.msgButtons = ['Aceptar']
-          estaVinculado = true
-        } else {
-          return HTTP().get('/user/'+this.userDelTercero).then(({ data }) => {
-            let pos = this.vinculosHijos.findIndex(x=>x==this.userDelTercero)
-            if (pos!=-1&&data[0].usaelsistema&&data[0].userexclusivo_id!=this.userId) {
-              this.msg.msgTitle = 'Cliente Vinculado'
-              let msg = 'El cliente esta vinculado, debes pedirle que te realice un '
-              msg += this.editado.cpr=='FAC' ? 'pedido.' : 'pago.'
-              this.msg.msgBody = msg
-              this.msg.msgVisible = true
-              this.msg.msgAccion = 'cliente vinculado'
-              this.msg.msgButtons = ['Aceptar']
-              estaVinculado = true
-              return estaVinculado
-            }
-          })
+    cargoDatosDeLaSucursal() {
+      debugger
+
+      // sumo lo ya cargado
+      this.sayYaCargado = 0
+      let lis = 0
+      for (let i=0; i<=this.maletinItems.length-1; i++) {
+        if (this.maletinItems[i].sucursal_id==this.editadoNUS.sucursal_id) {
+          this.yaHayMovimientos = true
+          this.sayYaCargado += this.maletinItems[i].importe
+          lis = this.maletinItems[i].lista_id
         }
       }
+      if (lis!=0) {
+        this.editadoNUS.lista_id = lis
+      } else {
+        if (this.editadoNUS.lista_id == null) {
+          this.editadoNUS.lista_id = this.lista_id
+        }
+      }
+
+      // sumo el total de deuda de la sucursal
+      this.yaHayMovimientos = false
+      this.sayDeudaTotalSucursal = 0
+      for (let i=0; i<=this.pendientes.length-1; i++) {
+        if (this.editadoNUS.sucursal_id==this.pendientes[i].sucursal_id) {
+          this.sayDeudaTotalSucursal += this.pendientes[i].pendiente
+        }
+      }
+
+      // calculo los descuentos por cada condicion de pago
+      let pos1 = this.condicionesDePago.findIndex(x=>x.id == this.editadoNUS.lista_id)
+      this.editadoNUS.lista_id = this.condicionesDePago[pos1].id
+      this.editadoNUS.medio_id = this.condicionesDePago[pos1].medio_id
+      this.editadoNUS.dias = this.condicionesDePago[pos1].dias
+      this.editadoNUS.desc1 = this.condicionesDePago[pos1].desc1
+      this.editadoNUS.desc2 = this.condicionesDePago[pos1].desc2
+      let aPagar = 0;
+      for (let i=0; i<=this.condicionesDePago.length-1; i++) {
+        aPagar = this.sayDeudaTotalSucursal - (this.sayDeudaTotalSucursal*(this.condicionesDePago[i].desc1/100))
+        aPagar = aPagar - (aPagar*(this.condicionesDePago[i].desc2/100))
+        this.condicionesDePago[i].apagar = this.roundTo(aPagar,2)
+      }
+
+      aPagar = 0;
+//    pos1 = this.condicionesDePago.findIndex(x=>x.id == this.lista_id)
+      aPagar = this.condicionesDePago[pos1].apagar;
+
+      // sumo lo ya cargado
+      this.sayYaCargado = 0
+      for (let i=0; i<=this.maletinItems.length-1; i++) {
+        if (this.maletinItems[i].sucursal_id==this.editadoNUS.sucursal_id) {
+          this.yaHayMovimientos = true
+          this.sayYaCargado += this.maletinItems[i].importe
+        }
+      }
+
+      this.sayDescuentos = this.sayDeudaTotalSucursal - aPagar;
+      this.sayACargar = this.sayDeudaTotalSucursal - ( this.sayYaCargado + this.sayDescuentos );
+      this.sayAPagar = this.sayDeudaTotalSucursal - this.sayDescuentos
+      this.editadoNUS.importe = this.sayACargar;
+
+      // seteo los medios de pagos habilitados
+      this.medpag[0].activo = true;   // efectivo
+      this.medpag[1].activo = false;  // Tj Credito
+      this.medpag[2].activo = false;  // Tj Debito
+      this.medpag[4].activo = false;  // Transferencia
+      this.medpag[5].activo = false;  // Ch.3ro
+      this.medpag[6].activo = false;  // Ch.Propio
+      this.medpag[7].activo = false;  // Mcado.Pago
+      this.medpag[8].activo = false;  // Todo Pago
+
+      let pos2 = this.medpag.findIndex(x=>x.id==this.condicionDePago.medio_id);
+      if (pos2!=-1) {
+        this.medpag[pos2].activo = true
+      }
+
+      // SIEMPRE HABILITO EFECTIVO
+      // si la lista es de cheques habilito los de terceros los propios y efectivo
+      if (this.editadoNUS.medio_id==5||this.editadoNUS.medio_id==6) {
+        this.medpag[5].activo = true
+        this.medpag[6].activo = true
+        this.maxDiasChq = this.editadoNUS.dias
+      }
+
+      // HABILITO SOLO LAS QUE CORRESPONDEN SEGUN LISTA SELECCIONADA
+      this.medpaghab = []
+      for (let i=0; i<=this.medpag.length-1; i++) {
+        if (this.medpag[i].activo) {
+          this.medpaghab.push(this.medpag[i])
+        }
+      }
+
+      if (this.editadoNUS.medio_id==0) {
+        this.editadoNUS.observ = 'EFECTIVO'
+      }
+
+    },
+
+    pagoHabilitado() {
+      let pos = this.sucsItems.findIndex(x=>x.selected==true)
+      return this.sucsItems[pos].pagoHabilitado
     },
 
     maletinClick(item, row) {
-//    debugger
-//    this.editarRecaudacion(item)
     },
 
     recaudacionClick(item, row) {
@@ -965,61 +1183,27 @@ export default {
       this.itemActual = item
       this.editadoRet.tercero_id = null
       this.valoresPendientes = []
+      this.encontroElCliente = false
       this.dialogClientes = true;
-    },
-
-    verClientesPendientesHTTP() {
-      this.clientesPendientesMaletin = []
-      return HTTP().get('/clientespendientesmaletin/'+this.sucursal ).then(({ data }) => {
-        let pmaletin = this.items.findIndex(x=>x.id==this.itemActual.id)
-        for (let i=0; i<=data.qexe1.length-1; i++) {
-          if (data.qexe1[i].pendiente_id!=null) {
-            let pos = this.items[pmaletin].clientes.findIndex(x=>x.cliente_id == data.qexe1[i].terid)
-            this.clientesPendientesMaletin.push({
-              id: data.qexe1[i].cpid,
-              terId: data.qexe1[i].terid,
-              nombre: data.qexe1[i].ternom,
-              cpr: data.qexe1[i].cpr,
-              cargado: pos==-1?false:true,
-              pendiente: data.qexe1[i].pendiente,
-              vencimiento: moment(data.qexe1[i].vencimiento).format('DD/MM/YY'),
-            })
-          }
-        }
-        for (let i=0; i<=data.qexe2.length-1; i++) {
-          this.clientesPendientesMaletin.push({
-            id: data.qexe2[i].vid,
-            terId: data.qexe2[i].id,
-            nombre: data.qexe2[i].nombre,
-            cpr: null,
-            pendiente_id: null,
-          })
-        }
-        this.dialogSeleccionCliente = true
-      })
-    },
-
-    planillaDeRecaudacion(item) {
-      if (item==null&&this.items.length>0) { // informe sobre el periodo
-        this.$refs.impresion.planillaDeRecaudacion(this.items,'P');
-      } else {
-        this.$refs.impresion.planillaDeRecaudacion(item,'M');
-      }
     },
 
     editarRecaudacion(item) {
       debugger
-      this.agregando = false
       this.dialogAgregarValoresNUS = true
       this.editadoRet.tercero_id = item.cliente_id
-      this.editadoNUS.id = item.id
+      this.editadoNUS.id = itemid
       this.editadoNUS.sucursal_id = item.sucursal_id
       this.editadoNUS.cliente_id = item.cliente_id
       this.editadoNUS.medio_id = item.medio_id
+      this.editadoNUS.lista_id = item.lista_id
+      this.editadoNUS.desc1 = item.desc1
+      this.editadoNUS.desc2 = item.desc2
       this.editadoNUS.observ = item.observ
       this.editadoNUS.importe = item.importe
+      this.editadoNUS.descuento = item.descuento
       this.editadoNUS.saldo = 0
-      return HTTP().get('/pendientes/'+item.cliente_id+'/0').then(( { data }) => {
+
+      return HTTP().get('/pendientes/'+item.cliente_id+'/0/V').then(( { data }) => {
         for ( let i=0; i<= data.length-1; i++) {
           this.editadoNUS.saldo += data[i].pendiente
         }
@@ -1047,7 +1231,7 @@ export default {
       this.msg.msgBody = '¿Confirmas que quieres eliminar este maletín?'
       this.msg.msgVisible = true
       this.msg.msgAccion = 'borrar maletin'
-      this.msg.msgButtons = ['Aceptar']
+      this.msg.msgButtons = ['Cancelar','Aceptar']
     },
 
     desmarcarRecaudacion(item) {
@@ -1058,8 +1242,8 @@ export default {
         if (data=='error') {
           this.mensaje('¡Opps, se ha producido un error, reintente!', this.temas.snack_error_bg, 2500)
         } else if (data=='ya chequeado') {
-          this.mensaje('¡Valor ya chequeado, imposible desmarcar!', this.temas.snack_error_bg, 2500)
-          this.listarHTTP()
+          this.mensaje('¡Valor ya chequeado, no se puede desmarcar!', this.temas.snack_error_bg, 2500)
+          this.listarHTTP(false)
         } else {
           return HTTP().post('/actualizototalmaletin', { maletin_id: item.maletin_id }).then(({ data }) => {
             if (data=='error') {
@@ -1067,7 +1251,7 @@ export default {
             } else {
               this.mensaje('¡Movimiento desmarcado con éxito!', this.temas.forms_titulo_bg, 2500)
             }
-            this.listarHTTP()
+            this.listarHTTP(false)
           })
         }
       })
@@ -1080,7 +1264,7 @@ export default {
         } else {
           return HTTP().post('/todochequeado', { maletin_id: item.maletin_id }).then(({ data }) => {
             this.mensaje('¡Movimiento chequeado con éxito!', this.temas.forms_titulo_bg, 2500)
-            this.listarHTTP()
+            this.listarHTTP(false)
           })
         }
       })
@@ -1097,7 +1281,7 @@ export default {
             } else {
               this.mensaje('¡Opps, se ha producido un error, reintente!', this.temas.snack_error_bg, 2500)
             }
-            this.listarHTTP()
+            this.listarHTTP(false)
           })
         }
       })
@@ -1118,32 +1302,25 @@ export default {
       }
     },
 
-    setAnio() {
-      this.anio = this.anio == null ? moment().format('YYYY') : this.anio
-      this.meses = []
-      for (let i=0; i<=this.periodos.length-1; i++) {
-        if (this.periodos[i].substring(0,4)==this.anio) {
-          let pos = Number(this.periodos[i].substring(4))-1
-          this.meses.push(this.losMeses[pos])
-        }
-      }
-      this.elMes = this.meses[0]
-      this.listarHTTP()
-    },
-
     setMaletin(item) {
       this.cobrador_id = item.item.cobrador.id
       this.itemActual = item.item
     },
 
     nuevoMaletin() {
-      this.agregando = true
       this.dialog = true
       this.editado.fecha = moment().format('YYYY-MM-DD')
       this.editado.user_id = this.userId
       this.editado.cobrador_id = this.operarioUserId!=null?this.operarioUserId:this.userId
 //    this.editado.cobrador_id = this.operarioEsVendedor?this.operarioUserId:this.userId
       this.editado.estado = 'P'
+    },
+
+    seleccionDelCliente(value) {
+      this.clientes = []
+      this.dialogSeleccionClientes = false
+      this.editado.tercero_id = value.id
+      this.buscarCliente()
     },
 
     guardarMaletinHTTP() {
@@ -1166,62 +1343,95 @@ export default {
           this.msg.msgButtons = ['Aceptar']
         }
         this.dialog = false
-        this.listarHTTP()
+        this.listarHTTP(true)
       })
     },
 
     guardarActualizarValoresHTTP() {
-      let alta = this.editadoNUS.id==null
-      let aaa = this.editadoRet.tercero_id
+      debugger
       return HTTP().post('/actualizovalores', { 
+
         cliente_id: this.editadoRet.tercero_id, // this.editadoNUS.cliente_id,
         maletin_id: this.itemActual.id,
         valoresPendientes: this.valoresPendientes,
         usaElSistema: this.usaElSistema,
         editadoNUS: this.editadoNUS }).then(({ data }) => {
-        if (data!='error') {
-          return HTTP().post('/actualizototalmaletin', { maletin_id: this.itemActual.id }).then(({ data }) => {
-            if (data!='error') {
-              this.mensaje('¡Valor guardado correctamente!', this.temas.forms_titulo_bg, 2500)
-            } else {
-              this.msg.msgTitle = 'Error'
-              this.msg.msgBody = 'Se ha producido un error en intentar actualizar los valores indicados.<br>Reintente, si el problema persiste consulte con sistemas<br>'
-              this.msg.msgVisible = true
-              this.msg.msgAccion = 'valores error'
-              this.msg.msgButtons = ['Aceptar']
-            }
-            this.dialogClientes = false
-            this.listarHTTP()
-            if (!alta) {
-              this.dialogAgregarValoresNUS = false
-            }
-          })
 
-        } else {
+        if (data=='error') {
+
           this.msg.msgTitle = 'Error'
           this.msg.msgBody = 'Se ha producido un error en intentar actualizar los valores indicados.<br>Reintente, si el problema persiste consulte con sistemas<br>'
           this.msg.msgVisible = true
           this.msg.msgAccion = 'valores error'
           this.msg.msgButtons = ['Aceptar']
+          return
+        
         }
-        //this.dialogClientes = false
-        //this.valoresPendientes = []
-        //this.editadoRet.tercero_id = null
-        if (!this.agregando) {
-          this.dialogAgregarValoresNUS = false
-        }
-        this.listarHTTP()
+
+        debugger
+        return HTTP().post('/actualizototalmaletin', { maletin_id: this.itemActual.id }).then(({ data }) => {
+
+          debugger
+          if (data=='error') {
+
+            this.msg.msgTitle = 'Error'
+            this.msg.msgBody = 'Se ha producido un error en intentar actualizar los valores indicados.<br>Reintente, si el problema persiste consulte con sistemas<br>'
+            this.msg.msgVisible = true
+            this.msg.msgAccion = 'valores error'
+            this.msg.msgButtons = ['Aceptar']
+            return
+            
+          }
+
+          this.mensaje('¡Valor guardado correctamente!', this.temas.forms_titulo_bg, 2500)
+
+          debugger
+
+          if (this.usaElSistema==false) {
+
+            this.maletinItems.push({
+              cliente_id: this.editadoNUS.cliente_id, desc1: this.editadoNUS.desc1, desc2: this.editadoNUS.desc2,
+              estado: this.editadoNUS.estado, id: null, importe: Number(this.editadoNUS.importe),
+              lista_id: this.editadoNUS.lista_id, maletin_id: this.editadoNUS.maletin_id,
+              medio_id: this.editadoNUS.medio_id, nombre: null,
+              observ: this.editadoNUS.observ, sucursal_id: this.editadoNUS.sucursal_id,
+            })
+
+            this.editadoNUS.id          = null,
+            this.editadoNUS.maletin_id  = this.itemActual.id
+            this.editadoNUS.cliente_id  = this.editadoRet.tercero_id
+            this.editadoNUS.dias        = null
+            this.editadoNUS.desc1       = 0
+            this.editadoNUS.desc2       = 0
+            this.editadoNUS.observ      = ''
+            this.editadoNUS.importe     = 0
+            this.editadoNUS.descuento   = 0
+            this.editadoNUS.estado      = 'P'
+
+            this.cargoDatosDeLaSucursal()
+
+          } else {
+
+            this.encontroElCliente = false
+            
+          }
+          
+          this.listarHTTP(false)
+          if (this.usaElSistema) {
+            this.encontroElCliente = false
+          }
+
+        })
+
       })
     },
 
-    seleccionarCliente(item)  {
-      this.editadoRet.tercero_id = item.terId
-      this.dialogSeleccionCliente = false
-      this.$nextTick(() => {
-        const f = this.$refs.codigocliente;
-        f.focus();
-      });
-      this.searchTercerosMetodo(item.terId)
+    planillaDeRecaudacion(item) {
+      if (item==null&&this.items.length>0) { // informe sobre el periodo
+        this.$refs.impresion.planillaDeRecaudacion(this.items,'P');
+      } else {
+        this.$refs.impresion.planillaDeRecaudacion(item,'M');
+      }
     },
 
     selectValor(item) {
@@ -1232,13 +1442,17 @@ export default {
       this.msg.msgVisible = false
       if (op==='Aceptar') {
         if (this.msg.msgAccion=='borrar movimiento') {
+          debugger
           return HTTP().post('/eliminarrecaudacion', { id: this.editadoNUS.id, maletin_id: this.editadoNUS.maletin_id }).then(({ data }) => {
-            if (data=='error') {
+            debugger
+            if (data=='ya procesado') {
+              this.mensaje('¡Maletín ya procesado en Administración, refresque los datos para actualizar!', this.temas.snack_error_bg, 2500)
+            } else if (data=='error') {
               this.mensaje('¡Opps, se ha producido un error, reintente!', this.temas.snack_error_bg, 2500)
             } else {
               this.mensaje('¡Movimiento eliminado con éxito!', this.temas.forms_titulo_bg, 2500)
             }
-            this.listarHTTP()
+            this.listarHTTP(false)
           })
         } else if (this.msg.msgAccion=='borrar maletin') {
           return HTTP().post('/eliminarmaletin', { id: this.itemActual.id }).then(({ data }) => {
@@ -1247,19 +1461,18 @@ export default {
             } else {
               this.mensaje('¡Maletín eliminado con éxito!', this.temas.forms_titulo_bg, 2500)
             }
-            this.listarHTTP()
+            this.listarHTTP(false)
           })
         }
       }
     },
 
-    listarHTTP() {
-      let refrescoMeses = true
+    listarHTTP(refrescoMeses) {
       if (refrescoMeses) {
         let aa = moment().format('YYYY')
-        let mm = moment().format('MMM')
+        let mm = moment().format('MMM').substring(0,3)
         let pos1 = this.anios.findIndex(x => x === aa);
-        let pos2 = this.meses.findIndex(x => x === mm);
+        let pos2 = this.meses.findIndex(x => x.toUpperCase() === mm.toUpperCase());
         if (pos1==-1 || pos2==-1) {
           this.leoAnios()
         }
@@ -1301,10 +1514,11 @@ export default {
 
     setMes(mes) {
       this.elMes = mes
-      this.listarHTTP()
+      this.listarHTTP(false)
     },
 
     setAnio(anio) {
+      debugger
       if (anio) {
         this.anio = anio
       } else {
@@ -1319,23 +1533,16 @@ export default {
       }
       this.elMes = this.meses[0]
       this.elAnio = this.anio
-      this.listarHTTP()
+      this.listarHTTP(false)
     },
 
     async leoAnios() {
+      //let tipo = this.operarioEsVendedor?'A':'V'  // si es vendedor leo todos los tipos de comprobantes
       return HTTP().post('anios/', {tipo: 'V'}).then(({ data }) => {
         this.anios = []
         this.meses = []
         this.periodos = []
         let pos = -1
-        if (this.operarioEsVendedor) {
-          let aniomes = moment().format('YYYYMM')
-          if (data[0][0].perfiscal != aniomes) {
-            this.anios.push(aniomes.substr(0,4))
-            pos = Number(aniomes.substr(5,2))-1
-            this.meses.push(this.losMeses[pos])
-          }
-        }
         for (let i=0; i<=data[0].length-1; i++) {
           this.periodos.push(data[0][i].perfiscal)
           pos = this.anios.findIndex( x => x == data[0][i].perfiscal.substring(0,4))
@@ -1351,12 +1558,12 @@ export default {
         }
         this.anio = this.anios[0]
         this.elAnio = this.anio
-        let elMes = (this.elMes==null||this.elMes=='')?moment().format('MMM').substring(0,3):this.elMes
-        pos = this.meses.findIndex(x => x.toUpperCase() === elMes.toUpperCase())
+        let mesActual = moment().format('MMM').substring(0,3)
+        pos = this.meses.findIndex(x => x.toUpperCase() === mesActual.toUpperCase())
         if (pos==-1) {
           // porque aun no hay movimientos en el mes actual, busco en el anterior
           if (this.meses.length>0) {
-            this.elMes = this.meses[this.meses.length-1]
+            this.elMes = this.meses[0]
           } else {
             this.elMes = ''
           }
