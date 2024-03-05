@@ -1081,12 +1081,14 @@
                                       <v-switch
                                         label="Activa Facturación Electrónica"
                                         v-model="editadoSuc.electronica"
-                                        :color="temas.forms_titulo_bg">
+                                        :color="temas.forms_titulo_bg"
+                                        @click="setElectronicaOnOff">
                                       </v-switch>
                                     </v-col>
                                     <v-col cols="3" sx="3" mx="3">
                                       <v-switch
                                         label="Es Sucursal Demo"
+                                        :disabled="editadoSuc.electronica"
                                         v-model="editadoSuc.sucursaldemo"
                                         :color="temas.forms_titulo_bg">
                                       </v-switch>
@@ -2573,6 +2575,12 @@ export default {
         resp = false
       }
       return resp
+    },
+
+    setElectronicaOnOff() {
+      if (this.editadoSuc.electronica) {
+        this.editadoSuc.sucursaldemo = 0
+      }
     },
 
     avatarClick(cual) {

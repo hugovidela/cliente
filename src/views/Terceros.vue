@@ -85,7 +85,6 @@
                 @click="listarHTTP()">
               </v-switch>
             </template>
-
             <v-toolbar-title v-if="tipo!='PP'">
               {{ $store.state.formTercerosTitulo=='Equipo' ? 'Mi' : 'Mis'}}
               {{ $store.state.formTercerosTitulo }}
@@ -354,41 +353,6 @@
                                     label="Máx.d/días de cheq.en Pagos">
                                   </v-text-field>
                                 </v-col>
-                                <!--
-                                  % de remarcacion solo se puede activar cuando:
-                                  es un ciente,
-                                  no es la cuenta del usuario,
-                                -->
-                                <!--
-                                <v-col v-if="tipoTer=='Cliente'"
-                                  v-show="porRemActivos()"
-                                  cols="12" sm="3" class="fg">
-                                  <v-row>
-                                    <v-col cols="12">
-                                      Porcentaje de Remarcación Sugerido
-                                    </v-col>
-                                  </v-row>
-                                  <v-row class="gf pt-0 mt-0">
-                                    <v-radio-group v-model="editado.porrev"
-                                      row
-                                      outlined
-                                      class="pl-2">
-                                      <v-radio
-                                        :color="temas.forms_titulo_bg"
-                                        :label="'('+porrev[0]+'%)'" value="1">
-                                      </v-radio>
-                                      <v-radio
-                                        :color="temas.forms_titulo_bg"
-                                        :label="'('+porrev[1]+'%)'" value="2">
-                                      </v-radio>
-                                      <v-radio
-                                        :color="temas.forms_titulo_bg"
-                                        :label="'('+porrev[2]+'%)'" value="3">
-                                      </v-radio>
-                                    </v-radio-group>
-                                  </v-row>
-                                </v-col>
-                                -->
                                 <v-col cols="12" sm="1"
                                   class="fg mb-0 pb-0 pt-0">
                                   <v-text-field
@@ -469,7 +433,6 @@
                             @click:row="locateGeoLocation">
                             <template v-slot:top>
                               <v-toolbar flat>
-
                                 <v-dialog v-model="dialogDir" max-width="500px"
                                   :transition="transition==null?'false':transition">
                                   <template v-slot:activator="{ on, attrs }">
@@ -481,7 +444,6 @@
                                       <v-icon>mdi-18px mdi-plus</v-icon>
                                     </v-btn>
                                   </template>
-
                                   <v-card class="fg">
                                     <v-toolbar flat
                                       :color="temas.forms_titulo_bg"
@@ -497,8 +459,7 @@
                                       </span>
                                       <v-spacer></v-spacer>
                                       <v-btn
-                                        v-if="(editadoDir.direccion &&
-                                               editadoDir.postal_id)"
+                                        v-if="(editadoDir.direccion&&editadoDir.postal_id)"
                                         color="teal accent-4" class="ma-2 white--text"
                                         @click="guardarDir(editadoDir)">
                                         Guardar
@@ -594,11 +555,10 @@
 
                           <!-- MAPA -->
                           <div>
-<!--
+                            <!--
                             <div>
                               <h2>Agrege dirección</h2>
                               <label>
-
                                 <gmap-autocomplete
                                   @place_changed="initMarker"
                                   :options="{fields: ['geometry']}">
@@ -611,7 +571,7 @@
                               <br/>
                             </div>
                             <br>
--->
+                            -->
                             <gmap-map
                               :zoom="15"
                               :center="center"
@@ -623,7 +583,6 @@
                                 @click="center=m.position">
                               </gmap-marker>
                             </gmap-map>
-
                           </div>
                           <!--<AddGoogleMap />-->
                         </v-tab-item>
@@ -1202,35 +1161,6 @@
                                                           </v-row>
                                                         </v-container>
                                                       </v-card-text>
-<!--
-                                                      <v-card-actions>
-                                                        <v-spacer></v-spacer>
-                                                        <v-btn v-show="puedeEditar
-                                                          && editedIndexTarjeta==-1"
-                                                          :color="temas.cen_btns_bg"
-                                                          :dark="temas.cen_btns_dark==true"
-                                                          text
-                                                          @click="cancelarTarjetaEdit">
-                                                          Cancelar
-                                                        </v-btn>
-                                                        <v-btn v-show="puedeEditar
-                                                          && editedIndexTarjeta==-1"
-                                                          :color="temas.cen_btns_bg"
-                                                          :dark="temas.cen_btns_dark==true"
-                                                          text
-                                                          @click="guardarTarjeta(editadoTarjeta)">
-                                                          Guardar
-                                                        </v-btn>
-                                                        <v-btn v-show="puedeEditar
-                                                          && editedIndexTarjeta!=-1"
-                                                          :color="temas.cen_btns_bg"
-                                                          :dark="temas.cen_btns_dark==true"
-                                                          text
-                                                          @click="cancelarTarjetaEdit">
-                                                          Cerrar
-                                                        </v-btn>
-                                                      </v-card-actions>
--->
                                                     </v-card>
                                                   </v-dialog>
                                                 </v-toolbar>
@@ -1263,13 +1193,11 @@
                                             </v-data-table>
                                           </v-col>
                                         </v-row>
-
                                       </v-container>
                                     </v-card-text>
                                   </v-card>
                                 </v-dialog>
                                 <!-- FIN TARJETAS -->
-
                               </v-toolbar>
                             </template>
                             <template v-slot:item.activo="{ item }">
@@ -1465,7 +1393,8 @@
 
                         <v-tab-item value="acceso">
                           <v-row>
-                            <v-col cols="4" sm="4" md="4" v-show="terUser.username==null">
+
+                            <v-col cols="12" md="4" v-show="terUser.username==null">
                               <v-btn
                                 :color="temas.cen_btns_bg"
                                 :dark="temas.cen_btns_dark==true"
@@ -1473,7 +1402,7 @@
                                 Generar Acceso al Sistema
                               </v-btn>
                             </v-col>
-                            <v-col cols="4" sm="4" md="4" v-show="!terUser.username==null">
+                            <v-col cols="12" md="4" v-show="!terUser.username==null">
                               <v-btn
                                 :color="temas.cen_btns_bg"
                                 :dark="temas.cen_btns_dark==true"
@@ -1483,7 +1412,7 @@
                             </v-col>
                           </v-row>
                           <v-row>
-                            <v-col cols="4" sm="4" md="4" v-show="dialogAcceso">
+                            <v-col cols="12" md="4" v-show="dialogAcceso">
                               <v-text-field
                                 ref="mail"
                                 v-model="terUser.email"
@@ -1497,7 +1426,7 @@
                             </v-col>
                           </v-row>
                           <v-row>
-                            <v-col cols="4" sm="4" md="4" v-show="dialogAcceso">
+                            <v-col cols="12" md="4" v-show="dialogAcceso">
                               <v-text-field
                                 v-model="terUser.password"
                                 :append-icon="show ? 'visibility' : 'visibility_off'"
@@ -1511,7 +1440,7 @@
                             </v-col>
                           </v-row>
                           <v-row>
-                            <v-col cols="4" sm="4" md="4"
+                            <v-col cols="12" md="4"
                               v-show="terUser.username==null&&terUser.email!=null&&
                               terUser.password!=null">
                               <v-btn
@@ -1522,82 +1451,9 @@
                               </v-btn>
                             </v-col>
                           </v-row>
+                          <!-- SELECCION DE SUCURSAL Y ACCESOS AL SISTEMA -->
                           <v-row justify="center" v-show="terUser.username!=null">
-                            <v-col cols="6" sm="6" md="6">
-                              <v-card max-width="1000"
-                                style="height: 410px;"
-                                v-scroll.self="onScroll"
-                                :elevation=0
-                                class="overflow-y-auto"
-                                max-height="600">
-                                <v-card-text>
-                                  <v-treeview
-                                    return-object
-                                    item-key="id"
-                                    hoverable activatable dense
-                                    :color="temas.forms_titulo_bg"
-                                    :item-color="temas.forms_titulo_bg"
-                                    :items="opTree">
-
-                                    <template slot="label" slot-scope="{ item }">
-                                      <v-tooltip bottom>
-                                        <template v-slot:activator="{ on }">
-                                          <v-btn
-                                            class="mr-2" fab x-small
-                                            :color="item.acceder ? temas.forms_titulo_bg :
-                                            temas.forms_titulo_bg"
-                                            :dark="item.acceder ? temas.forms_titulo_dark : false"
-                                            @click="rol(item, 'acceder')">
-                                            <v-icon dark>mdi-arrow-right-box</v-icon>
-                                          </v-btn>
-                                        </template>
-                                        <span>Acceder</span>
-                                      </v-tooltip>
-
-                                      <v-tooltip bottom>
-                                        <template v-slot:activator="{ on, attrs }">
-                                          <v-btn
-                                            v-show="item.tipo!='M'&&item.tipo!='I'&&item.tipo=='A'"
-                                            class="mr-2" fab x-small
-                                            :color="item.agregar ? temas.forms_titulo_bg :
-                                            temas.forms_titulo_bg"
-                                            :dark="item.agregar ? temas.forms_titulo_dark : false"
-                                            @click="rol(item,'agregar')">
-                                            <v-icon dark>mdi-plus</v-icon>
-                                          </v-btn>
-                                        </template>
-                                        <span>Agregar</span>
-                                      </v-tooltip>
-
-                                      <v-btn
-                                        v-show="item.tipo!='M' && item.tipo!='I' && item.tipo=='A'"
-                                        class="mr-2" fab x-small
-                                        :color="item.editar ? temas.forms_titulo_bg :
-                                        temas.forms_titulo_bg"
-                                        :dark="item.editar ? temas.forms_titulo_dark : false"
-                                        @click="rol(item,'editar')">
-                                        <v-icon dark>mdi-pencil</v-icon>
-                                      </v-btn>
-                                      <v-btn
-                                        v-show="item.tipo!='M' && item.tipo!='I' && item.tipo=='A'"
-                                        class="mr-2" fab x-small
-                                        :color="item.desactivar ? temas.forms_titulo_bg :
-                                        temas.forms_titulo_bg"
-                                        :dark="item.desactivar ? temas.forms_titulo_dark : false"
-                                        @click="rol(item,'desactivar')">
-                                        <v-icon dark>mdi-checkbox-marked-outline</v-icon>
-                                      </v-btn>
-
-                                      <span>
-                                        {{item.nombre}}
-                                      </span>
-
-                                    </template>
-                                  </v-treeview>
-                                </v-card-text>
-                              </v-card>
-                            </v-col>
-                            <v-col cols="6" sm="6" md="6">
+                            <v-col cols="12" md="6">
                               <v-card flat>
                                 <v-form ref="form">
                                   <v-card-title class="pl-7 pb-0">
@@ -1614,7 +1470,6 @@
                                     <v-container>
                                       <v-row>
                                         <v-col cols="12" sm="12" md="12">
-
                                           <v-combobox
                                             outlined
                                             v-model="sucsValue"
@@ -1628,19 +1483,127 @@
                                                 v-bind="attrs"
                                                 :input-value="selected"
                                                 close
+                                                :color="selected?
+                                                temas.barra_principal_bg:
+                                                temas.forms_titulo_bg"
+                                                :dark="selected?
+                                                temas.barra_principal_dark:
+                                                temas.forms_titulo_dark"
                                                 @click="select"
                                                 @click:close="removeSuc(item)">
                                                 <strong>{{ item }}</strong>&nbsp;
                                               </v-chip>
                                             </template>
                                           </v-combobox>
-
                                         </v-col>
                                       </v-row>
                                     </v-container>
                                   </v-card-text>
                                 </v-form>
                               </v-card>
+                            </v-col>
+                            <v-col cols="12" md="6">
+
+                              <v-row>
+                                <v-col cols="12" md="6">
+                                  <v-card flat>
+                                    <v-card-title class="pl-7 pb-0">
+                                      <p>Accesos al Sistema</p>
+                                    </v-card-title>
+                                    <v-card-subtitle class="pl-7 mt-0 pb-0">
+                                      <p>
+                                        Si no asignas accesos, el usuario podra ingresar a todas
+                                        las opciones del sistema.
+                                      </p>
+                                    </v-card-subtitle>
+                                  </v-card>
+                                </v-col>
+                              </v-row>
+                              <v-row>
+                                <v-col cols="12" md="6" class="pl-10">
+                                  <v-select
+                                    label="Sucursal"
+                                    :color="temas.forms_titulo_bg"
+                                    v-model="sucursalRol_id"
+                                    :items="sucsValue"
+                                    item-value="id"
+                                    item-text="nombre"
+                                    @change="cargoRoles()"
+                                    autocomplete>
+                                  </v-select>
+                                </v-col>
+                              </v-row>
+
+                              <v-row v-if="sucursalRol_id!=null">
+                                <v-card max-width="1000"
+                                  style="height: 230px;"
+                                  v-scroll.self="onScroll"
+                                  :elevation=0
+                                  class="overflow-y-auto"
+                                  max-height="230">
+                                  <v-card-text>
+                                    <v-treeview
+                                      return-object
+                                      item-key="id"
+                                      hoverable activatable dense
+                                      :color="temas.forms_titulo_bg"
+                                      :item-color="temas.forms_titulo_bg"
+                                      :items="opTree">
+                                      <template slot="label" slot-scope="{ item }">
+                                        <v-tooltip bottom>
+                                          <template v-slot:activator="{ on }">
+                                            <v-btn
+                                              class="mr-2" fab x-small
+                                              :color="item.acceder ? temas.forms_titulo_bg :
+                                              temas.forms_titulo_bg"
+                                              :dark="item.acceder ? temas.forms_titulo_dark : false"
+                                              @click="rol(item, 'acceder')">
+                                              <v-icon dark>mdi-arrow-right-box</v-icon>
+                                            </v-btn>
+                                          </template>
+                                          <span>Acceder</span>
+                                        </v-tooltip>
+                                        <v-tooltip bottom>
+                                          <template v-slot:activator="{ on, attrs }">
+                                            <v-btn
+                                              v-show=
+                                                "item.tipo!='M'&&item.tipo!='I'&&item.tipo=='A'"
+                                              class="mr-2" fab x-small
+                                              :color="item.agregar ? temas.forms_titulo_bg :
+                                              temas.forms_titulo_bg"
+                                              :dark="item.agregar ? temas.forms_titulo_dark : false"
+                                              @click="rol(item,'agregar')">
+                                              <v-icon dark>mdi-plus</v-icon>
+                                            </v-btn>
+                                          </template>
+                                          <span>Agregar</span>
+                                        </v-tooltip>
+                                        <v-btn
+                                          v-show="item.tipo!='M'&&item.tipo!='I'&&item.tipo=='A'"
+                                          class="mr-2" fab x-small
+                                          :color="item.editar ? temas.forms_titulo_bg :
+                                          temas.forms_titulo_bg"
+                                          :dark="item.editar ? temas.forms_titulo_dark : false"
+                                          @click="rol(item,'editar')">
+                                          <v-icon dark>mdi-pencil</v-icon>
+                                        </v-btn>
+                                        <v-btn
+                                          v-show="item.tipo!='M'&&item.tipo!='I'&&item.tipo=='A'"
+                                          class="mr-2" fab x-small
+                                          :color="item.desactivar ? temas.forms_titulo_bg :
+                                          temas.forms_titulo_bg"
+                                          :dark="item.desactivar ? temas.forms_titulo_dark : false"
+                                          @click="rol(item,'desactivar')">
+                                          <v-icon dark>mdi-checkbox-marked-outline</v-icon>
+                                        </v-btn>
+                                        <span>
+                                          {{item.nombre}}
+                                        </span>
+                                      </template>
+                                    </v-treeview>
+                                  </v-card-text>
+                                </v-card>
+                              </v-row>
                             </v-col>
 
                             <!--
@@ -2441,7 +2404,9 @@ export default {
     contactos: [],
     contactosTipos: [],
     sucsValue: [],
+    sucsRolValue: [],
     sucsItems: [],
+    sucsRolItems: [],
     sucsObj: [],
     expanded: [],
     listas: [],
@@ -2453,10 +2418,12 @@ export default {
       {id: 'X', nombre: 'Vendedor y Repartidor'}],
     search: '',         // para el cuadro de búsqueda de datatables  
     searchNuevosTerceros: '',
+    sucursalRol_id: null,
     dialog: false,      // para que la ventana de dialogo o modal no aparezca automáticamente
     dialogDir: false,
     dialogCon: false,
     dialogZona: false,
+    dialogRoles: false,
     dialogPromo: false,
     dialogCuenta: false,
     dialogAcceso: false,
@@ -3142,7 +3109,6 @@ export default {
     },
 
     clickRow(value) {
-      debugger
       if (value.tercero_id==2) {  // CONSUMIDOR FINAL, CUENTA GENERAL, NO SE MODIFICA
         return
       }
@@ -3158,7 +3124,6 @@ export default {
     setAcciones(item) {
       this.itemActual = item
       this.acciones = []
-      debugger
       this.puedeEditar = false
       // Puede editar cuando el usuario del tercero es = al usuario actual
 
@@ -3330,6 +3295,11 @@ export default {
     },
 
     generaracceso() {
+      debugger
+      let pos = this.itemActual.tercero.contactos.findIndex(x=>x.contacto_tipo_id==1)
+      if (pos!=-1) {
+        this.terUser.email = this.itemActual.tercero.contactos[pos].observaciones
+      }
       this.dialogAcceso = true
       this.$refs.mail.focus()
     },
@@ -3343,6 +3313,37 @@ export default {
     },
 
     roles() {
+    },
+
+    cargoRoles() {
+      if (this.cual==3 && this.editado.user!=null) {
+        debugger
+
+        let pos = this.sucursales.findIndex(x=>x.nombre==this.sucursalRol_id)
+        return HTTP().post('/roles',{user: this.editado.user.id,sucursal: this.sucursales[pos].id}).then(({ data }) => {
+          
+          debugger
+          for (let j=0; j<=this.opItems.length-1; j++) {
+            this.opItems[j].acceder = false
+            this.opItems[j].agregar = false
+            this.opItems[j].editar = false
+            this.opItems[j].desactivar = false
+          }
+          for (let i=0; i<=data.length-1; i++) {
+            for (let j=0; j<=this.opItems.length-1; j++) {
+              if (data[i].opcion_id == this.opItems[j].id) {
+                this.opItems[j].acceder = data[i].acceder
+                this.opItems[j].agregar = data[i].agregar
+                this.opItems[j].editar = data[i].editar
+                this.opItems[j].desactivar = data[i].desactivar
+                break
+              }
+            }
+          }
+          this.setAreaLaboral()
+          this.fetchOpciones()
+        })
+      }
     },
 
     cargoChequeras(item) {
@@ -3410,6 +3411,7 @@ export default {
     },
 
     nuevoTercero() {
+      this.dialogAcceso = false;
       this.tabInicial = 'pri';
       this.editedIndex = -1;
       this.editado = Object.assign({}, this.defaultItem);
@@ -3693,6 +3695,10 @@ export default {
       */
     },
 
+    setRolesOnOff() {
+      this.dialogRoles = !this.dialogRoles;
+    },
+
     buscoNombre(event) {
       const nom = event.target.value
       return HTTP().get(`/indexter/exists/${nom}`).then(({ data }) => {
@@ -3705,10 +3711,8 @@ export default {
         
     listarHTTP() {
       let sea = this.search==''?'null':this.search
-      debugger
       return HTTP().get('/indexter/'+this.verCuentasInactivas+'/'+this.cual+'/'+this.operarioEsVendedor+'/'+this.operarioTerceroId+'/'+this.operarioUserId+'/'+sea)
         .then(({data})=>{
-          debugger
           this.items = data;
           this.itemsAll = data;
       });
@@ -3752,12 +3756,12 @@ export default {
             this.mensaje(data.error, this.temas.forms_titulo_bg, 2500) 
           } else {
             this.mensaje('¡Alta Exitosa!', this.temas.forms_titulo_bg, 2500) 
-          }  
+          }
+          this.listarHTTP();
         });
     },
 
     editarHTTP:function(data) {
-
       let porRevUser = data.porrevuser==''?0:data.porrevuser
       data.porrevuser = porRevUser
       // actualizo datosEmpresa.cuentas, por si agrego alguna cuenta y se tenga que reflejar en pagos.
@@ -3845,6 +3849,8 @@ export default {
     },
 
     editar (item) {
+      this.sucursalRol_id = null
+      this.dialogAcceso = false
       this.editado.porrevuser = null
       this.editado.porrevuserid = null
       if (item.tercero.user!=null) {
@@ -3925,18 +3931,23 @@ export default {
       }
 
       return HTTP().get('/usertercero_dirconsuc/'+this.editado.tercero_id+'/'+item.id).then(({ data }) => {
-        this.sucsItems = [];
         this.sucsObj = [];
+        this.sucsItems = [];
         this.sucsValue = [];
         this.tabsValue = [];
         this.contactos = [];
+        this.sucsRolItems = [];
+        this.sucsRolValue = [];
         this.direcciones = data.direcciones
         for(let i=0; i<=this.sucursales.length-1; i++) {
           this.sucsItems.push(this.sucursales[i].nombre)
-          //this.sucsValue.push(this.sucursales[i].nombre)
+          this.sucsRolItems.push(this.sucursales[i].nombre)
         }
+        debugger
+        this.selected.push(this.sucsItems[0])
         for (let i=0; i<=data.sucursales.length-1; i++) {
           this.sucsValue.push(data.sucursales[i].sucursal.nombre)
+          this.sucsRolValue.push(data.sucursales[i].sucursal.nombre)
           this.sucsObj.push({
             id: data.sucursales[i].id,
             sucursal_id: data.sucursales[i].sucursal_id,
@@ -3954,6 +3965,7 @@ export default {
             activo: data.contactos[i].activo
           })
         }
+        /*
         if (this.cual==3 && this.editado.user!=null) {
           return HTTP().post('/roles',{user: this.editado.user.id,sucursal: this.sucursal}).then(({ data }) => {
             for (let j=0; j<=this.opItems.length-1; j++) {
@@ -3977,6 +3989,7 @@ export default {
             this.fetchOpciones()
           })
         }
+        */
         this.locateGeoLocation();
       })
     },
@@ -4872,14 +4885,26 @@ export default {
       } else if (accion=='desactivar') {
         item.desactivar = !item.desactivar
       }
+
+      let pos = this.sucursales.findIndex(x=>x.nombre==this.sucursalRol_id)
       return HTTP().post('/rol', {
         item:item,
         accion:accion,
         tercero:this.itemActual.tercero_id,
-        sucursal:this.sucursal
+        sucursal:this.sucursales[pos].id
       }).then(({data})=>{
         this.mensaje('¡Operación Exitosa!', this.temas.forms_titulo_bg, 1500) 
       });
+    },
+
+    selectxxx(x) {
+      debugger
+      let z = x
+      let a = this.sucsValue
+      let b = this.sucsItems
+      let c = this.selected
+      this.selected = []
+      this.selected.push(x)
     },
 
     removeSuc(item) {
